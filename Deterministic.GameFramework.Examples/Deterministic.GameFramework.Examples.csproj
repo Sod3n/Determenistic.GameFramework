@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <LangVersion>Latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj" />
+        <ProjectReference Include="..\Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Exclude MultiplayerHelloWorld since it has its own separate projects -->
+        <Compile Remove="Examples\MultiplayerHelloWorld\**" />
+        <EmbeddedResource Remove="Examples\MultiplayerHelloWorld\**" />
+        <None Remove="Examples\MultiplayerHelloWorld\**" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+- name: Action Injection & Domain References
+  href: 01-action-injection.md
+- name: Determinism
+  href: 02-determinism.md
+- name: Duck Typing (Structural Typing)
+  href: 03-duck-typing.md
+- name: Global Notifications via Root Domain
+  href: 04-global-notifications.md
+- name: Observable Attributes
+  href: 05-observable-attributes.md

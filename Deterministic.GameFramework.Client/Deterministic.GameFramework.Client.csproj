@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <LangVersion>Latest</LangVersion>
+        <RootNamespace>Deterministic.GameFramework.Client</RootNamespace>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="R3" Version="1.2.15" />
+      <PackageReference Include="RestSharp" Version="112.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj" />
+      <ProjectReference Include="..\Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj" />
+    </ItemGroup>
+
+    <!-- Auto-copy DLL to Client after build (configurable via CopyToClientPlugins property) -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToClientPlugins)' == 'true'">
+        <PropertyGroup>
+            <ClientPluginsPath Condition="'$(ClientPluginsPath)' == ''">$(ProjectDir)..\..\Client\plugins\Network\</ClientPluginsPath>
+        </PropertyGroup>
+        
+        <!-- Create directory if it doesn't exist -->
+        <MakeDir Directories="$(ClientPluginsPath)" Condition="!Exists('$(ClientPluginsPath)')" />
+        
+        <!-- Copy DLL and PDB to Client plugins folder -->
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ClientPluginsPath)" />
+        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ClientPluginsPath)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+        
+        <!-- Copy dependencies -->
+        <Copy SourceFiles="$(TargetDir)R3.dll" DestinationFolder="$(ClientPluginsPath)" Condition="Exists('$(TargetDir)R3.dll')" />
+        <Copy SourceFiles="$(TargetDir)RestSharp.dll" DestinationFolder="$(ClientPluginsPath)" Condition="Exists('$(TargetDir)RestSharp.dll')" />
+        <Copy SourceFiles="$(TargetDir)Microsoft.AspNetCore.SignalR.Client.dll" DestinationFolder="$(ClientPluginsPath)" Condition="Exists('$(TargetDir)Microsoft.AspNetCore.SignalR.Client.dll')" />
+        
+        <Message Text="Copied $(TargetFileName) to Client plugins folder" Importance="high" />
+    </Target>
+
+</Project>
