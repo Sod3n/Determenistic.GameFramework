@@ -53,3 +53,6 @@ api/
 # OS files
 .DS_Store
 Thumbs.db
+
+# SonarQube analysis files
+.sonarqube/
