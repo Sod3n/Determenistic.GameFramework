@@ -1,6 +1,9 @@
 using Deterministic.GameFramework.Server;
 using MultiplayerHelloWorld.Shared;
 
+// Optional: Enable strict whitelist mode if needed for security
+// JsonSerializerConfig.EnableStrictWhitelist();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add multiplayer server with factory function (includes ServerDomain, MatchManager, Factory, SignalR)

@@ -1,0 +1,14 @@
+‰
+MDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfigobjectñ
+"EnumConfig(string, string, string)pDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.EnumConfig(string, string, string)j
+EnumName.getZDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.EnumName.getj
+EnumName.setZDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.EnumName.setf
+
+Source.getXDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.Source.getf
+
+Source.setXDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.Source.setd
+	Field.getWDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.Field.getd
+	Field.setWDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.EnumConfig.Field.set‘
+BDeterministic.GameFramework.SourceGenerators.GameDataEnumGeneratorobject,Microsoft.CodeAnalysis.IIncrementalGenerator‡
+LInitialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)èDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)u
+GameDataEnumGenerator()ZDeterministic.GameFramework.SourceGenerators.GameDataEnumGenerator.GameDataEnumGenerator()

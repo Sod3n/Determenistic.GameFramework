@@ -5,12 +5,12 @@ namespace Deterministic.GameFramework.Examples.QuickStart;
 /// <summary>
 /// Action: Player makes a choice
 /// </summary>
-public class MakeChoiceAction : DARAction<RockPaperScissorsGame>
+public class MakeChoiceAction : DARAction<RockPaperScissorsGame, MakeChoiceAction>
 {
     public string PlayerName { get; set; } = "";
     public Choice Choice { get; set; }
 
-    public override void Execute(RockPaperScissorsGame domain)
+    protected override void ExecuteProcess(RockPaperScissorsGame domain)
     {
         // Find the player
         var player = domain.Player1.Name == PlayerName ? domain.Player1 : domain.Player2;

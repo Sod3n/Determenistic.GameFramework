@@ -1,0 +1,393 @@
+Û
+;Deterministic.GameFramework.Core.Actions.AddSubdomainActionDARAction<TDomain, TAction>objectî
+*AddSubdomainAction(LeafDomain, LeafDomain)fDeterministic.GameFramework.Core.Actions.AddSubdomainAction.AddSubdomainAction(LeafDomain, LeafDomain)t
+ExecuteProcess(LeafDomain)VDeterministic.GameFramework.Core.Actions.AddSubdomainAction.ExecuteProcess(LeafDomain)V
+MatchId.getGDeterministic.GameFramework.Core.Actions.AddSubdomainAction.MatchId.getV
+MatchId.setGDeterministic.GameFramework.Core.Actions.AddSubdomainAction.MatchId.setT
+
+Parent.getFDeterministic.GameFramework.Core.Actions.AddSubdomainAction.Parent.getT
+
+Parent.setFDeterministic.GameFramework.Core.Actions.AddSubdomainAction.Parent.setR
+	Child.getEDeterministic.GameFramework.Core.Actions.AddSubdomainAction.Child.getR
+	Child.setEDeterministic.GameFramework.Core.Actions.AddSubdomainAction.Child.setî
+>Deterministic.GameFramework.Core.Actions.RemoveSubdomainActionDARAction<TDomain, TAction>objectù
+-RemoveSubdomainAction(LeafDomain, LeafDomain)lDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.RemoveSubdomainAction(LeafDomain, LeafDomain)w
+ExecuteProcess(LeafDomain)YDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.ExecuteProcess(LeafDomain)Y
+MatchId.getJDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.MatchId.getY
+MatchId.setJDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.MatchId.setW
+
+Parent.getIDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.Parent.getW
+
+Parent.setIDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.Parent.setU
+	Child.getHDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.Child.getU
+	Child.setHDeterministic.GameFramework.Core.Actions.RemoveSubdomainAction.Child.set
+
+IDARActionó
+DARAction<TDomain, TAction>object
+IDARAction>
+GetTargetType()+DARAction<TDomain, TAction>.GetTargetType()J
+IsExecutable(IDomain)1DARAction<TDomain, TAction>.IsExecutable(IDomain)J
+IsRevertable(IDomain)1DARAction<TDomain, TAction>.IsRevertable(IDomain):
+From(IDomain))DARAction<TDomain, TAction>.From(IDomain)@
+Execute(IDomain),DARAction<TDomain, TAction>.Execute(IDomain)H
+Revert(BranchDomain)0DARAction<TDomain, TAction>.Revert(BranchDomain)L
+_IsExecutable(TDomain)2DARAction<TDomain, TAction>._IsExecutable(TDomain)L
+_IsRevertable(TDomain)2DARAction<TDomain, TAction>._IsRevertable(TDomain)L
+RevertProcess(TDomain)2DARAction<TDomain, TAction>.RevertProcess(TDomain)b
+!IDARAction.RevertProcess(IDomain)=DARAction<TDomain, TAction>.IDARAction.RevertProcess(IDomain)V
+IDARAction.Execute(IDomain)7DARAction<TDomain, TAction>.IDARAction.Execute(IDomain)>
+GetActionType()+DARAction<TDomain, TAction>.GetActionType()6
+DARAction()'DARAction<TDomain, TAction>.DARAction()H
+PrepareReactions.get0DARAction<TDomain, TAction>.PrepareReactions.getH
+PrepareReactions.set0DARAction<TDomain, TAction>.PrepareReactions.setD
+AbortReactions.get.DARAction<TDomain, TAction>.AbortReactions.getD
+AbortReactions.set.DARAction<TDomain, TAction>.AbortReactions.setF
+BeforeReactions.get/DARAction<TDomain, TAction>.BeforeReactions.getF
+BeforeReactions.set/DARAction<TDomain, TAction>.BeforeReactions.setD
+AfterReactions.get.DARAction<TDomain, TAction>.AfterReactions.getD
+AfterReactions.set.DARAction<TDomain, TAction>.AfterReactions.set4
+
+Source.get&DARAction<TDomain, TAction>.Source.get4
+
+Source.set&DARAction<TDomain, TAction>.Source.setÚ
+BranchDomain
+LeafDomainobjectG
+BranchDomain(BranchDomain?)(BranchDomain.BranchDomain(BranchDomain?)+
+GetChildren()BranchDomain.GetChildren()3
+GetSubdomain(int)BranchDomain.GetSubdomain(int)A
+HasSubdomain(LeafDomain)%BranchDomain.HasSubdomain(LeafDomain)3
+GetFirst<T>(bool)BranchDomain.GetFirst<T>(bool)S
+!GetFirst(System.Type, bool, bool).BranchDomain.GetFirst(System.Type, bool, bool);
+GetAll<T>(bool, bool)"BranchDomain.GetAll<T>(bool, bool)O
+GetAll(System.Type, bool, bool),BranchDomain.GetAll(System.Type, bool, bool)#
+	IsEmpty()BranchDomain.IsEmpty()#
+	Dispose()BranchDomain.Dispose()	
+IDomainÎ	
+
+LeafDomainobjectIDomainSystem.IDisposable)Deterministic.GameFramework.Core.INode<T>4Deterministic.GameFramework.Core.ICacheInvalidatableA
+LeafDomain(BranchDomain?)$LeafDomain.LeafDomain(BranchDomain?)-
+NodeGetParent()LeafDomain.NodeGetParent()%
+GetParent()LeafDomain.GetParent())
+GetChildren()LeafDomain.GetChildren()9
+InvalidateAllCaches() LeafDomain.InvalidateAllCaches()?
+RevertAction(IDARAction)#LeafDomain.RevertAction(IDARAction)I
+CollectPrepareAll(IDARAction)(LeafDomain.CollectPrepareAll(IDARAction)E
+CollectAbortAll(IDARAction)&LeafDomain.CollectAbortAll(IDARAction)G
+CollectBeforeAll(IDARAction)'LeafDomain.CollectBeforeAll(IDARAction)E
+CollectAfterAll(IDARAction)&LeafDomain.CollectAfterAll(IDARAction)=
+GetTotalReactionCount()"LeafDomain.GetTotalReactionCount()}
+7HasReaction(Deterministic.GameFramework.Core.IReaction)BLeafDomain.HasReaction(Deterministic.GameFramework.Core.IReaction)3
+RemoveFromParent()LeafDomain.RemoveFromParent()7
+GetInParent<T>(bool)LeafDomain.GetInParent<T>(bool)1
+GetFirst<T>(bool)LeafDomain.GetFirst<T>(bool)9
+GetAll<T>(bool, bool) LeafDomain.GetAll<T>(bool, bool)!
+	Dispose()LeafDomain.Dispose()
+Id.getLeafDomain.Id.get
+Id.setLeafDomain.Id.setÌ
+9Deterministic.GameFramework.Core.CachedListBuilder<TNode>objectn
+CachedListBuilder(TNode)RDeterministic.GameFramework.Core.CachedListBuilder<TNode>.CachedListBuilder(TNode)„
+RCachedListBuilder(TNode, Deterministic.GameFramework.Core.TreeCacheManager<TNode>)åDeterministic.GameFramework.Core.CachedListBuilder<TNode>.CachedListBuilder(TNode, Deterministic.GameFramework.Core.TreeCacheManager<TNode>)—
+IExtract<T>(System.Func<TNode, System.Collections.Generic.IEnumerable<T>>)ÉDeterministic.GameFramework.Core.CachedListBuilder<TNode>.Extract<T>(System.Func<TNode, System.Collections.Generic.IEnumerable<T>>)ß	
+<Deterministic.GameFramework.Core.CachedListBuilder<TNode, T>objectq
+CachedListBuilder(TNode)UDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.CachedListBuilder(TNode)Ê
+RCachedListBuilder(TNode, Deterministic.GameFramework.Core.TreeCacheManager<TNode>)èDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.CachedListBuilder(TNode, Deterministic.GameFramework.Core.TreeCacheManager<TNode>)Œ
+FExtract(System.Func<TNode, System.Collections.Generic.IEnumerable<T>>)ÉDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.Extract(System.Func<TNode, System.Collections.Generic.IEnumerable<T>>)s
+OnModified(System.Action)VDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.OnModified(System.Action)µ
+:Direction(Deterministic.GameFramework.Core.CacheDirection)wDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.Direction(Deterministic.GameFramework.Core.CacheDirection)U
+
+UpToRoot()GDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.UpToRoot()]
+DownToLeaves()KDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.DownToLeaves()O
+Build()DDeterministic.GameFramework.Core.CachedListBuilder<TNode, T>.Build()£
+=Deterministic.GameFramework.Core.CacheProperty<TNode, TValue>object◊
+JCacheProperty(TNode, System.Func<TNode, TValue>, System.Func<TNode, bool>)àDeterministic.GameFramework.Core.CacheProperty<TNode, TValue>.CacheProperty(TNode, System.Func<TNode, TValue>, System.Func<TNode, bool>)V
+
+GetValue()HDeterministic.GameFramework.Core.CacheProperty<TNode, TValue>.GetValue()Z
+Invalidate()JDeterministic.GameFramework.Core.CacheProperty<TNode, TValue>.Invalidate()\
+EnsureValid()KDeterministic.GameFramework.Core.CacheProperty<TNode, TValue>.EnsureValid()n
+FindValueInTree(TNode)TDeterministic.GameFramework.Core.CacheProperty<TNode, TValue>.FindValueInTree(TNode)+
+)Deterministic.GameFramework.Core.INode<T>¨
+8Deterministic.GameFramework.Core.TreeCacheManager<TNode>objectk
+TreeCacheManager(TNode)PDeterministic.GameFramework.Core.TreeCacheManager<TNode>.TreeCacheManager(TNode)÷
+LCreateProperty<TValue>(System.Func<TNode, TValue>, System.Func<TNode, bool>)ÖDeterministic.GameFramework.Core.TreeCacheManager<TNode>.CreateProperty<TValue>(System.Func<TNode, TValue>, System.Func<TNode, bool>)Ö
+$RegisterInvalidatable(System.Action)]Deterministic.GameFramework.Core.TreeCacheManager<TNode>.RegisterInvalidatable(System.Action)a
+CreateCachedList()KDeterministic.GameFramework.Core.TreeCacheManager<TNode>.CreateCachedList()k
+CreateCachedList(TNode)PDeterministic.GameFramework.Core.TreeCacheManager<TNode>.CreateCachedList(TNode)[
+InvalidateAll()HDeterministic.GameFramework.Core.TreeCacheManager<TNode>.InvalidateAll()m
+InvalidateAllRecursive()QDeterministic.GameFramework.Core.TreeCacheManager<TNode>.InvalidateAllRecursive()6
+4Deterministic.GameFramework.Core.ICacheInvalidatableß
+6Deterministic.GameFramework.Core.Domain.DomainRegistryBranchDomain
+LeafDomainobjects
+DomainRegistry(BranchDomain)SDeterministic.GameFramework.Core.Domain.DomainRegistry.DomainRegistry(BranchDomain)W
+GetDomain(int)EDeterministic.GameFramework.Core.Domain.DomainRegistry.GetDomain(int)}
+!TryGetDomain(int, out LeafDomain)XDeterministic.GameFramework.Core.Domain.DomainRegistry.TryGetDomain(int, out LeafDomain)ß
+2Deterministic.GameFramework.Core.Domain.RootDomainBranchDomain
+LeafDomainobjectO
+RootDomain()?Deterministic.GameFramework.Core.Domain.RootDomain.RootDomain()Ë
+FDeterministic.GameFramework.Core.CachedDictionary<TNode, TKey, TValue>object4System.Collections.Generic.IDictionary<TKey, TValue>„
+ÀCachedDictionary(TNode, System.Func<TNode, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>>, System.Action?, Deterministic.GameFramework.Core.CacheDirection)íDeterministic.GameFramework.Core.CachedDictionary<TNode, TKey, TValue>.CachedDictionary(TNode, System.Func<TNode, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>>, System.Action?, Deterministic.GameFramework.Core.CacheDirection)F
+Invalidate()6System.Collections.Generic.ICollection<T>.Invalidate()H
+EnsureValid()7System.Collections.Generic.ICollection<T>.EnsureValid() 
+NCollectFromParents(TNode, System.Collections.Generic.Dictionary<TKey, TValue>)xSystem.Collections.Generic.ICollection<T>.CollectFromParents(TNode, System.Collections.Generic.Dictionary<TKey, TValue>)Ã
+OCollectFromChildren(TNode, System.Collections.Generic.Dictionary<TKey, TValue>)ySystem.Collections.Generic.ICollection<T>.CollectFromChildren(TNode, System.Collections.Generic.Dictionary<TKey, TValue>)P
+Add(TKey, TValue);System.Collections.Generic.ICollection<T>.Add(TKey, TValue)¢
+:Add(System.Collections.Generic.KeyValuePair<TKey, TValue>)dSystem.Collections.Generic.ICollection<T>.Add(System.Collections.Generic.KeyValuePair<TKey, TValue>)<
+Clear()1System.Collections.Generic.ICollection<T>.Clear()F
+Remove(TKey)6System.Collections.Generic.ICollection<T>.Remove(TKey)®
+=Remove(System.Collections.Generic.KeyValuePair<TKey, TValue>)gSystem.Collections.Generic.ICollection<T>.Remove(System.Collections.Generic.KeyValuePair<TKey, TValue>)P
+ContainsKey(TKey);System.Collections.Generic.ICollection<T>.ContainsKey(TKey)¨
+?Contains(System.Collections.Generic.KeyValuePair<TKey, TValue>)iSystem.Collections.Generic.ICollection<T>.Contains(System.Collections.Generic.KeyValuePair<TKey, TValue>)h
+TryGetValue(TKey, out TValue)GSystem.Collections.Generic.ICollection<T>.TryGetValue(TKey, out TValue)∂
+DCopyTo(System.Collections.Generic.KeyValuePair<TKey, TValue>[], int)nSystem.Collections.Generic.ICollection<T>.CopyTo(System.Collections.Generic.KeyValuePair<TKey, TValue>[], int)L
+GetEnumerator()9System.Collections.Generic.ICollection<T>.GetEnumerator()ß
+.System.Collections.IEnumerable.GetEnumerator()uDeterministic.GameFramework.Core.CachedDictionary<TNode, TKey, TValue>.System.Collections.IEnumerable.GetEnumerator()L
+GetLocalItems()9System.Collections.Generic.ICollection<T>.GetLocalItems()J
+this[TKey].get8System.Collections.Generic.ICollection<T>.this[TKey].getJ
+this[TKey].set8System.Collections.Generic.ICollection<T>.this[TKey].set@
+	Count.get3System.Collections.Generic.ICollection<T>.Count.get@
+	Count.set3System.Collections.Generic.ICollection<T>.Count.setJ
+IsReadOnly.get8System.Collections.Generic.ICollection<T>.IsReadOnly.getJ
+IsReadOnly.set8System.Collections.Generic.ICollection<T>.IsReadOnly.set>
+Keys.get2System.Collections.Generic.ICollection<T>.Keys.get>
+Keys.set2System.Collections.Generic.ICollection<T>.Keys.setB
+
+Values.get4System.Collections.Generic.ICollection<T>.Values.getB
+
+Values.set4System.Collections.Generic.ICollection<T>.Values.set¨
+
+-Deterministic.GameFramework.Core.ExecutionLogobjectF
+
+ToString()8Deterministic.GameFramework.Core.ExecutionLog.ToString()û
+6Matches(Deterministic.GameFramework.Core.ExecutionLog)dDeterministic.GameFramework.Core.ExecutionLog.Matches(Deterministic.GameFramework.Core.ExecutionLog)N
+ExecutionLog()<Deterministic.GameFramework.Core.ExecutionLog.ExecutionLog()N
+SequenceId.get<Deterministic.GameFramework.Core.ExecutionLog.SequenceId.getN
+SequenceId.set<Deterministic.GameFramework.Core.ExecutionLog.SequenceId.setL
+EventType.get;Deterministic.GameFramework.Core.ExecutionLog.EventType.getL
+EventType.set;Deterministic.GameFramework.Core.ExecutionLog.EventType.setN
+ActionType.get<Deterministic.GameFramework.Core.ExecutionLog.ActionType.getN
+ActionType.set<Deterministic.GameFramework.Core.ExecutionLog.ActionType.setR
+ReactionType.get>Deterministic.GameFramework.Core.ExecutionLog.ReactionType.getR
+ReactionType.set>Deterministic.GameFramework.Core.ExecutionLog.ReactionType.setJ
+DomainId.get:Deterministic.GameFramework.Core.ExecutionLog.DomainId.getJ
+DomainId.set:Deterministic.GameFramework.Core.ExecutionLog.DomainId.setN
+DomainType.get<Deterministic.GameFramework.Core.ExecutionLog.DomainType.getN
+DomainType.set<Deterministic.GameFramework.Core.ExecutionLog.DomainType.setæ
+3Deterministic.GameFramework.Core.ExecutionEventTypeSystem.EnumSystem.ValueTypeobject`
+ExecutionEventType()HDeterministic.GameFramework.Core.ExecutionEventType.ExecutionEventType()⁄	
+0Deterministic.GameFramework.Core.ExecutionLoggerobjecty
+"LogActionStart(string, LeafDomain)SDeterministic.GameFramework.Core.ExecutionLogger.LogActionStart(string, LeafDomain)Å
+&LogPrepareReaction(string, LeafDomain)WDeterministic.GameFramework.Core.ExecutionLogger.LogPrepareReaction(string, LeafDomain)}
+$LogAbortReaction(string, LeafDomain)UDeterministic.GameFramework.Core.ExecutionLogger.LogAbortReaction(string, LeafDomain)
+%LogBeforeReaction(string, LeafDomain)VDeterministic.GameFramework.Core.ExecutionLogger.LogBeforeReaction(string, LeafDomain)}
+$LogActionExecute(string, LeafDomain)UDeterministic.GameFramework.Core.ExecutionLogger.LogActionExecute(string, LeafDomain)}
+$LogAfterReaction(string, LeafDomain)UDeterministic.GameFramework.Core.ExecutionLogger.LogAfterReaction(string, LeafDomain)u
+ LogActionEnd(string, LeafDomain)QDeterministic.GameFramework.Core.ExecutionLogger.LogActionEnd(string, LeafDomain)C
+Clear()8Deterministic.GameFramework.Core.ExecutionLogger.Clear()W
+ExecutionLogger()BDeterministic.GameFramework.Core.ExecutionLogger.ExecutionLogger()E
+Logs.get9Deterministic.GameFramework.Core.ExecutionLogger.Logs.getE
+Logs.set9Deterministic.GameFramework.Core.ExecutionLogger.Logs.setÆ
+/Deterministic.GameFramework.Core.CacheDirectionSystem.EnumSystem.ValueTypeobjectT
+CacheDirection()@Deterministic.GameFramework.Core.CacheDirection.CacheDirection()æ
+5Deterministic.GameFramework.Core.CachedList<TNode, T>object#System.Collections.Generic.IList<T>‹
+êCachedList(TNode, System.Func<TNode, System.Collections.Generic.IEnumerable<T>>, System.Action, Deterministic.GameFramework.Core.CacheDirection)∆Deterministic.GameFramework.Core.CachedList<TNode, T>.CachedList(TNode, System.Func<TNode, System.Collections.Generic.IEnumerable<T>>, System.Action, Deterministic.GameFramework.Core.CacheDirection)F
+Invalidate()6System.Collections.Generic.ICollection<T>.Invalidate()H
+EnsureValid()7System.Collections.Generic.ICollection<T>.EnsureValid()®
+=CollectFromParents(TNode, System.Collections.Generic.List<T>)gSystem.Collections.Generic.ICollection<T>.CollectFromParents(TNode, System.Collections.Generic.List<T>)™
+>CollectFromChildren(TNode, System.Collections.Generic.List<T>)hSystem.Collections.Generic.ICollection<T>.CollectFromChildren(TNode, System.Collections.Generic.List<T>):
+Add(T)0System.Collections.Generic.ICollection<T>.Add(T)<
+Clear()1System.Collections.Generic.ICollection<T>.Clear()@
+	Remove(T)3System.Collections.Generic.ICollection<T>.Remove(T)J
+Insert(int, T)8System.Collections.Generic.ICollection<T>.Insert(int, T)H
+RemoveAt(int)7System.Collections.Generic.ICollection<T>.RemoveAt(int)D
+Contains(T)5System.Collections.Generic.ICollection<T>.Contains(T)N
+CopyTo(T[], int):System.Collections.Generic.ICollection<T>.CopyTo(T[], int)B
+
+IndexOf(T)4System.Collections.Generic.ICollection<T>.IndexOf(T)L
+GetEnumerator()9System.Collections.Generic.ICollection<T>.GetEnumerator()ñ
+.System.Collections.IEnumerable.GetEnumerator()dDeterministic.GameFramework.Core.CachedList<TNode, T>.System.Collections.IEnumerable.GetEnumerator()L
+GetLocalItems()9System.Collections.Generic.ICollection<T>.GetLocalItems()H
+this[int].get7System.Collections.Generic.ICollection<T>.this[int].getH
+this[int].set7System.Collections.Generic.ICollection<T>.this[int].set@
+	Count.get3System.Collections.Generic.ICollection<T>.Count.get@
+	Count.set3System.Collections.Generic.ICollection<T>.Count.setJ
+IsReadOnly.get8System.Collections.Generic.ICollection<T>.IsReadOnly.getJ
+IsReadOnly.set8System.Collections.Generic.ICollection<T>.IsReadOnly.setˇ
+)Deterministic.GameFramework.Core.GameLoopobjectZ
+GameLoop(BranchDomain)@Deterministic.GameFramework.Core.GameLoop.GameLoop(BranchDomain)F
+OnUpdate.add6Deterministic.GameFramework.Core.GameLoop.OnUpdate.addL
+OnUpdate.remove9Deterministic.GameFramework.Core.GameLoop.OnUpdate.removeP
+SetTargetFps(int);Deterministic.GameFramework.Core.GameLoop.SetTargetFps(int)<
+Start()1Deterministic.GameFramework.Core.GameLoop.Start():
+Stop()0Deterministic.GameFramework.Core.GameLoop.Stop()\
+Schedule(System.Action)ADeterministic.GameFramework.Core.GameLoop.Schedule(System.Action)H
+Update(float)7Deterministic.GameFramework.Core.GameLoop.Update(float)d
+ProcessAllProcessors(float)EDeterministic.GameFramework.Core.GameLoop.ProcessAllProcessors(float)˘	
+1Deterministic.GameFramework.Core.IdProviderDomainBranchDomain
+LeafDomainobjectr
+IdProviderDomain(BranchDomain)PDeterministic.GameFramework.Core.IdProviderDomain.IdProviderDomain(BranchDomain)å
++AssignCounterBasedIdToNewDomain(LeafDomain)]Deterministic.GameFramework.Core.IdProviderDomain.AssignCounterBasedIdToNewDomain(LeafDomain)Ä
+%ProcessExistingSubdomains(LeafDomain)WDeterministic.GameFramework.Core.IdProviderDomain.ProcessExistingSubdomains(LeafDomain)f
+GenerateCounterBasedId()JDeterministic.GameFramework.Core.IdProviderDomain.GenerateCounterBasedId()n
+AssignIdsToExistingDomains()NDeterministic.GameFramework.Core.IdProviderDomain.AssignIdsToExistingDomains()€
+RCollectDomainsRecursively(LeafDomain, System.Collections.Generic.List<LeafDomain>)ÑDeterministic.GameFramework.Core.IdProviderDomain.CollectDomainsRecursively(LeafDomain, System.Collections.Generic.List<LeafDomain>)V
+OnIdAssigned.getBDeterministic.GameFramework.Core.IdProviderDomain.OnIdAssigned.getV
+OnIdAssigned.setBDeterministic.GameFramework.Core.IdProviderDomain.OnIdAssigned.setZ
+CurrentCounter.getDDeterministic.GameFramework.Core.IdProviderDomain.CurrentCounter.getZ
+CurrentCounter.setDDeterministic.GameFramework.Core.IdProviderDomain.CurrentCounter.setá
++Deterministic.GameFramework.Core.IProcessorX
+OnProcessorEnabled()@Deterministic.GameFramework.Core.IProcessor.OnProcessorEnabled()Z
+OnProcessorDisabled()ADeterministic.GameFramework.Core.IProcessor.OnProcessorDisabled()P
+ProcessOrder.get<Deterministic.GameFramework.Core.IProcessor.ProcessOrder.getP
+ProcessOrder.set<Deterministic.GameFramework.Core.IProcessor.ProcessOrder.setÁ
+ADeterministic.GameFramework.Core.IAbortReaction<TDomain, TAction>2Deterministic.GameFramework.Core.IHasAbortReactionÌ
+SDeterministic.GameFramework.Core.IHasAbortReaction.InvokeAbort(IDomain, IDARAction)ïDeterministic.GameFramework.Core.IAbortReaction<TDomain, TAction>.Deterministic.GameFramework.Core.IHasAbortReaction.InvokeAbort(IDomain, IDARAction)`
+2Deterministic.GameFramework.Core.IHasAfterReaction*Deterministic.GameFramework.Core.IReactionÁ
+ADeterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>2Deterministic.GameFramework.Core.IHasAfterReactionÌ
+SDeterministic.GameFramework.Core.IHasAfterReaction.InvokeAfter(IDomain, IDARAction)ïDeterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>.Deterministic.GameFramework.Core.IHasAfterReaction.InvokeAfter(IDomain, IDARAction)a
+3Deterministic.GameFramework.Core.IHasBeforeReaction*Deterministic.GameFramework.Core.IReactionÓ
+BDeterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>3Deterministic.GameFramework.Core.IHasBeforeReactionÚ
+UDeterministic.GameFramework.Core.IHasBeforeReaction.InvokeBefore(IDomain, IDARAction)òDeterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>.Deterministic.GameFramework.Core.IHasBeforeReaction.InvokeBefore(IDomain, IDARAction)b
+4Deterministic.GameFramework.Core.IHasPrepareReaction*Deterministic.GameFramework.Core.IReactionı
+CDeterministic.GameFramework.Core.IPrepareReaction<TDomain, TAction>4Deterministic.GameFramework.Core.IHasPrepareReaction˜
+WDeterministic.GameFramework.Core.IHasPrepareReaction.InvokePrepare(IDomain, IDARAction)õDeterministic.GameFramework.Core.IPrepareReaction<TDomain, TAction>.Deterministic.GameFramework.Core.IHasPrepareReaction.InvokePrepare(IDomain, IDARAction)@
+*Deterministic.GameFramework.Core.IReactionSystem.IDisposableà
+)Deterministic.GameFramework.Core.Reactionobject*Deterministic.GameFramework.Core.IReactionV
+Reaction(LeafDomain)>Deterministic.GameFramework.Core.Reaction.Reaction(LeafDomain)@
+	Dispose()3Deterministic.GameFramework.Core.Reaction.Dispose()R
+RemoveFromTarget()<Deterministic.GameFramework.Core.Reaction.RemoveFromTarget()∞
+AAddTo(Deterministic.GameFramework.Core.Utils.CompositeDisposable)kDeterministic.GameFramework.Core.Reaction.AddTo(Deterministic.GameFramework.Core.Utils.CompositeDisposable)B
+
+Target.get4Deterministic.GameFramework.Core.Reaction.Target.getB
+
+Target.set4Deterministic.GameFramework.Core.Reaction.Target.setÌ
+;Deterministic.GameFramework.Core.Reaction<TDomain, TAction>object*Deterministic.GameFramework.Core.IReactionCDeterministic.GameFramework.Core.IPrepareReaction<TDomain, TAction>ADeterministic.GameFramework.Core.IAbortReaction<TDomain, TAction>BDeterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>ADeterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>h
+Reaction(LeafDomain)PDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Reaction(LeafDomain)ê
+(Prepare(System.Action<TDomain, TAction>)dDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Prepare(System.Action<TDomain, TAction>)î
+*Abort(System.Func<TDomain, TAction, bool>)fDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Abort(System.Func<TDomain, TAction, bool>)é
+'Before(System.Action<TDomain, TAction>)cDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Before(System.Action<TDomain, TAction>)å
+&After(System.Action<TDomain, TAction>)bDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.After(System.Action<TDomain, TAction>)ˇ
+_Deterministic.GameFramework.Core.IPrepareReaction<TDomain, TAction>.OnPrepare(TDomain, TAction)õDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Deterministic.GameFramework.Core.IPrepareReaction<TDomain, TAction>.OnPrepare(TDomain, TAction)˜
+[Deterministic.GameFramework.Core.IAbortReaction<TDomain, TAction>.OnAbort(TDomain, TAction)óDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Deterministic.GameFramework.Core.IAbortReaction<TDomain, TAction>.OnAbort(TDomain, TAction)˚
+]Deterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>.OnBefore(TDomain, TAction)ôDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Deterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>.OnBefore(TDomain, TAction)˜
+[Deterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>.OnAfter(TDomain, TAction)óDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Deterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>.OnAfter(TDomain, TAction)R
+	Dispose()EDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Dispose()¬
+AAddTo(Deterministic.GameFramework.Core.Utils.CompositeDisposable)}Deterministic.GameFramework.Core.Reaction<TDomain, TAction>.AddTo(Deterministic.GameFramework.Core.Utils.CompositeDisposable)T
+
+Target.getFDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Target.getT
+
+Target.setFDeterministic.GameFramework.Core.Reaction<TDomain, TAction>.Target.set`
+2Deterministic.GameFramework.Core.IHasAbortReaction*Deterministic.GameFramework.Core.IReaction˜
+9Deterministic.GameFramework.Core.ListAddEventArgs<TValue>System.ValueTypeobjectx
+ListAddEventArgs(TValue, int)WDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.ListAddEventArgs(TValue, int)b
+ListAddEventArgs()LDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.ListAddEventArgs()N
+Item.getBDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.Item.getN
+Item.setBDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.Item.setP
+	Index.getCDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.Index.getP
+	Index.setCDeterministic.GameFramework.Core.ListAddEventArgs<TValue>.Index.set’,
+@Deterministic.GameFramework.Core.ObservableAttributeList<TValue>object#System.Collections.Generic.IList<T>W
+	OnAdd.addJDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnAdd.add]
+OnAdd.removeMDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnAdd.removei
+OnBeforeRemove.addSDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnBeforeRemove.addo
+OnBeforeRemove.removeVDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnBeforeRemove.remove]
+OnRemove.addMDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnRemove.addc
+OnRemove.removePDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnRemove.remove]
+OnInsert.addMDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnInsert.addc
+OnInsert.removePDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnInsert.removeW
+	OnSet.addJDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnSet.add]
+OnSet.removeMDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnSet.removeg
+OnBeforeClear.addRDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnBeforeClear.addm
+OnBeforeClear.removeUDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnBeforeClear.remove[
+OnClear.addLDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnClear.adda
+OnClear.removeODeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnClear.removeY
+
+OnSort.addKDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnSort.add_
+OnSort.removeNDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.OnSort.removew
+ObservableAttributeList()ZDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.ObservableAttributeList()‘
+GObservableAttributeList(System.Collections.Generic.IEnumerable<TValue>)àDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.ObservableAttributeList(System.Collections.Generic.IEnumerable<TValue>)D
+Add(TValue)5System.Collections.Generic.ICollection<T>.Add(TValue)û
+8AddRange(System.Collections.Generic.IEnumerable<TValue>)bSystem.Collections.Generic.ICollection<T>.AddRange(System.Collections.Generic.IEnumerable<TValue>)J
+Remove(TValue)8System.Collections.Generic.ICollection<T>.Remove(TValue)H
+RemoveAt(int)7System.Collections.Generic.ICollection<T>.RemoveAt(int)T
+Insert(int, TValue)=System.Collections.Generic.ICollection<T>.Insert(int, TValue)<
+Clear()1System.Collections.Generic.ICollection<T>.Clear():
+Sort()0System.Collections.Generic.ICollection<T>.Sort()í
+2Sort(System.Collections.Generic.IComparer<TValue>)\System.Collections.Generic.ICollection<T>.Sort(System.Collections.Generic.IComparer<TValue>)l
+Sort(System.Comparison<TValue>)ISystem.Collections.Generic.ICollection<T>.Sort(System.Comparison<TValue>)Z
+Shuffle(System.Random)@System.Collections.Generic.ICollection<T>.Shuffle(System.Random)N
+Contains(TValue):System.Collections.Generic.ICollection<T>.Contains(TValue)L
+IndexOf(TValue)9System.Collections.Generic.ICollection<T>.IndexOf(TValue)X
+CopyTo(TValue[], int)?System.Collections.Generic.ICollection<T>.CopyTo(TValue[], int)L
+GetEnumerator()9System.Collections.Generic.ICollection<T>.GetEnumerator()°
+.System.Collections.IEnumerable.GetEnumerator()oDeterministic.GameFramework.Core.ObservableAttributeList<TValue>.System.Collections.IEnumerable.GetEnumerator()Ô
+`ObserveAdd(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListAddEventArgs<TValue>>)äSystem.Collections.Generic.ICollection<T>.ObserveAdd(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListAddEventArgs<TValue>>)˚
+fObserveRemove(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>>)êSystem.Collections.Generic.ICollection<T>.ObserveRemove(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>>)á
+lObserveBeforeRemove(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>>)ñSystem.Collections.Generic.ICollection<T>.ObserveBeforeRemove(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>>)ı
+cObserveInsert(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListAddEventArgs<TValue>>)çSystem.Collections.Generic.ICollection<T>.ObserveInsert(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListAddEventArgs<TValue>>)Ô
+`ObserveSet(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListSetEventArgs<TValue>>)äSystem.Collections.Generic.ICollection<T>.ObserveSet(LeafDomain, System.Action<Deterministic.GameFramework.Core.ListSetEventArgs<TValue>>)|
+'ObserveClear(LeafDomain, System.Action)QSystem.Collections.Generic.ICollection<T>.ObserveClear(LeafDomain, System.Action)à
+-ObserveBeforeClear(LeafDomain, System.Action)WSystem.Collections.Generic.ICollection<T>.ObserveBeforeClear(LeafDomain, System.Action)z
+&ObserveSort(LeafDomain, System.Action)PSystem.Collections.Generic.ICollection<T>.ObserveSort(LeafDomain, System.Action)º
+GObserveItemPresence(LeafDomain, TValue, System.Action?, System.Action?)qSystem.Collections.Generic.ICollection<T>.ObserveItemPresence(LeafDomain, TValue, System.Action?, System.Action?)H
+this[int].get7System.Collections.Generic.ICollection<T>.this[int].getH
+this[int].set7System.Collections.Generic.ICollection<T>.this[int].set@
+	Count.get3System.Collections.Generic.ICollection<T>.Count.get@
+	Count.set3System.Collections.Generic.ICollection<T>.Count.setJ
+IsReadOnly.get8System.Collections.Generic.ICollection<T>.IsReadOnly.getJ
+IsReadOnly.set8System.Collections.Generic.ICollection<T>.IsReadOnly.setô
+<Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>System.ValueTypeobjectÅ
+ ListRemoveEventArgs(TValue, int)]Deterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.ListRemoveEventArgs(TValue, int)k
+ListRemoveEventArgs()RDeterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.ListRemoveEventArgs()Q
+Item.getEDeterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.Item.getQ
+Item.setEDeterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.Item.setS
+	Index.getFDeterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.Index.getS
+	Index.setFDeterministic.GameFramework.Core.ListRemoveEventArgs<TValue>.Index.set»
+9Deterministic.GameFramework.Core.ListSetEventArgs<TValue>System.ValueTypeobjectà
+%ListSetEventArgs(TValue, TValue, int)_Deterministic.GameFramework.Core.ListSetEventArgs<TValue>.ListSetEventArgs(TValue, TValue, int)b
+ListSetEventArgs()LDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.ListSetEventArgs()V
+OldValue.getFDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.OldValue.getV
+OldValue.setFDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.OldValue.setV
+NewValue.getFDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.NewValue.getV
+NewValue.setFDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.NewValue.setP
+	Index.getCDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.Index.getP
+	Index.setCDeterministic.GameFramework.Core.ListSetEventArgs<TValue>.Index.set=
+/Deterministic.GameFramework.Core.IRequireRandom
+IDARActionÓ
+5Deterministic.GameFramework.Core.RandomProviderDomainBranchDomain
+LeafDomainobjectä
+(RandomProviderDomain(BranchDomain, int?)^Deterministic.GameFramework.Core.RandomProviderDomain.RandomProviderDomain(BranchDomain, int?)N
+
+Reset(int)@Deterministic.GameFramework.Core.RandomProviderDomain.Reset(int)N
+
+Random.get@Deterministic.GameFramework.Core.RandomProviderDomain.Random.getN
+
+Random.set@Deterministic.GameFramework.Core.RandomProviderDomain.Random.setJ
+Seed.get>Deterministic.GameFramework.Core.RandomProviderDomain.Seed.getJ
+Seed.set>Deterministic.GameFramework.Core.RandomProviderDomain.Seed.set·
+<Deterministic.GameFramework.Core.ObservableAttribute<TValue>objectw
+ObservableAttribute(TValue)XDeterministic.GameFramework.Core.ObservableAttribute<TValue>.ObservableAttribute(TValue)e
+OnChangeAction.addODeterministic.GameFramework.Core.ObservableAttribute<TValue>.OnChangeAction.addk
+OnChangeAction.removeRDeterministic.GameFramework.Core.ObservableAttribute<TValue>.OnChangeAction.remove°
+0Observe(LeafDomain, System.Action<TValue>, bool)mDeterministic.GameFramework.Core.ObservableAttribute<TValue>.Observe(LeafDomain, System.Action<TValue>, bool)S
+	Value.getFDeterministic.GameFramework.Core.ObservableAttribute<TValue>.Value.getS
+	Value.setFDeterministic.GameFramework.Core.ObservableAttribute<TValue>.Value.setè
+1Deterministic.GameFramework.Core.ActionDisposableobjectSystem.IDisposablet
+ActionDisposable(System.Action)QDeterministic.GameFramework.Core.ActionDisposable.ActionDisposable(System.Action)H
+	Dispose();Deterministic.GameFramework.Core.ActionDisposable.Dispose()¶
+KDeterministic.GameFramework.Core.RandomProviderDomain.ProvideRandomReaction)Deterministic.GameFramework.Core.ReactionobjectBDeterministic.GameFramework.Core.IBeforeReaction<TDomain, TAction>Å
+XProvideRandomReaction(Deterministic.GameFramework.Core.RandomProviderDomain, LeafDomain)§Deterministic.GameFramework.Core.RandomProviderDomain.ProvideRandomReaction.ProvideRandomReaction(Deterministic.GameFramework.Core.RandomProviderDomain, LeafDomain)€
+EOnBefore(LeafDomain, Deterministic.GameFramework.Core.IRequireRandom)ëDeterministic.GameFramework.Core.RandomProviderDomain.ProvideRandomReaction.OnBefore(LeafDomain, Deterministic.GameFramework.Core.IRequireRandom)√
+:Deterministic.GameFramework.Core.Utils.CompositeDisposableobjectSystem.IDisposablem
+Add(System.IDisposable)RDeterministic.GameFramework.Core.Utils.CompositeDisposable.Add(System.IDisposable)Q
+	Dispose()DDeterministic.GameFramework.Core.Utils.CompositeDisposable.Dispose()i
+CompositeDisposable()PDeterministic.GameFramework.Core.Utils.CompositeDisposable.CompositeDisposable()]
+Disposables.getJDeterministic.GameFramework.Core.Utils.CompositeDisposable.Disposables.get]
+Disposables.setJDeterministic.GameFramework.Core.Utils.CompositeDisposable.Disposables.set∞
++Deterministic.GameFramework.Core.Shuffle<T>DARAction<TDomain, TAction>object/Deterministic.GameFramework.Core.IRequireRandom∏
+DShuffle(Deterministic.GameFramework.Core.ObservableAttributeList<T>)pDeterministic.GameFramework.Core.Shuffle<T>.Shuffle(Deterministic.GameFramework.Core.ObservableAttributeList<T>)d
+ExecuteProcess(LeafDomain)FDeterministic.GameFramework.Core.Shuffle<T>.ExecuteProcess(LeafDomain)D
+
+Random.get6Deterministic.GameFramework.Core.Shuffle<T>.Random.getD
+
+Random.set6Deterministic.GameFramework.Core.Shuffle<T>.Random.set”
+MDeterministic.GameFramework.Core.Utils.JsonSerializer.SafeSerializationBinder8Newtonsoft.Json.Serialization.DefaultSerializationBinder0System.Runtime.Serialization.SerializationBinderobjectÜ
+BindToType(string, string)hDeterministic.GameFramework.Core.Utils.JsonSerializer.SafeSerializationBinder.BindToType(string, string)Ñ
+SafeSerializationBinder()gDeterministic.GameFramework.Core.Utils.JsonSerializer.SafeSerializationBinder.SafeSerializationBinder()

@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.11.0.0",
+        "fileVersion": "4.11.0-3.24554.2 (bc1c3011)",
+        "semanticVersion": "4.11.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'configContent' in 'List<EnumConfig> GameDataEnumGenerator.ParseEnumConfig(string configContent)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 52,
+                  "startColumn": 47,
+                  "endLine": 52,
+                  "endColumn": 60
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'jsonContent' in 'List<string> GameDataEnumGenerator.ExtractUniqueValues(string jsonContent, string fieldName)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 122,
+                  "startColumn": 48,
+                  "endLine": 122,
+                  "endColumn": 59
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3260",
+          "level": "warning",
+          "message": "Private classes which are not derived in the current assembly should be marked as 'sealed'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 251,
+                  "startColumn": 19,
+                  "endLine": 251,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "RS1036",
+          "level": "warning",
+          "message": "'Deterministic.GameFramework.SourceGenerators.GameDataEnumGenerator': A project containing analyzers or source generators should specify the property '<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 14,
+                  "endLine": 9,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal 'GameDataEnumGenerator' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 21,
+                  "endLine": 37,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 67,
+                  "startColumn": 21,
+                  "endLine": 67,
+                  "endColumn": 44
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 109,
+                  "startColumn": 21,
+                  "endLine": 109,
+                  "endColumn": 44
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 131,
+                  "startColumn": 21,
+                  "endLine": 131,
+                  "endColumn": 44
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S6444",
+          "level": "warning",
+          "message": "Pass a timeout to limit the execution time.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 173,
+                  "startColumn": 23,
+                  "endLine": 173,
+                  "endColumn": 58
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S6444",
+          "level": "warning",
+          "message": "Pass a timeout to limit the execution time.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/GameDataEnumGenerator.cs",
+                "region": {
+                  "startLine": 80,
+                  "startColumn": 23,
+                  "endLine": 80,
+                  "endColumn": 60
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CS8604": {
+          "id": "CS8604",
+          "shortDescription": "Possible null reference argument.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8604)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "RS1036": {
+          "id": "RS1036",
+          "shortDescription": "Specify analyzer banned API enforcement setting",
+          "fullDescription": "A project containing analyzers or source generators should specify the property '<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>'.",
+          "defaultLevel": "warning",
+          "properties": {
+            "category": "MicrosoftCodeAnalysisCorrectness",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "S1192": {
+          "id": "S1192",
+          "shortDescription": "String literals should not be duplicated",
+          "fullDescription": "Duplicated string literals make the process of refactoring complex and error-prone, as any change would need to be propagated on all occurrences.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1192",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3260": {
+          "id": "S3260",
+          "shortDescription": "Non-derived \"private\" classes and records should be \"sealed\"",
+          "fullDescription": "Classes and records with either private or file access modifiers aren’t visible outside of their assemblies or files, so if they’re not extended inside their scope, they should be made explicitly non-extensible with the addition of the sealed keyword.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3260",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S6444": {
+          "id": "S6444",
+          "shortDescription": "Not specifying a timeout for regular expressions is security-sensitive",
+          "fullDescription": "Not specifying a timeout for regular expressions can lead to a Denial-of-Service attack. Pass a timeout when using System.Text.RegularExpressions to process untrusted input because a malicious user might craft a value for which the evaluation lasts excessively long.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-6444",
+          "properties": {
+            "category": "Major Security Hotspot",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -11,17 +11,13 @@ public static class RockPaperScissorsExample
         // Create game state
         var game = new RockPaperScissorsGame();
 
-        // Create game loop
-        var gameLoop = new GameLoop();
-        gameLoop.AddDomain(game);
-
         // Simulate a game
-        SimulateGame(game, gameLoop);
+        SimulateGame(game);
 
         Console.WriteLine("\nGame Over!");
     }
 
-    private static void SimulateGame(RockPaperScissorsGame game, GameLoop gameLoop)
+    private static void SimulateGame(RockPaperScissorsGame game)
     {
         var random = new Random(42); // Fixed seed for determinism
         
@@ -34,7 +30,7 @@ public static class RockPaperScissorsExample
                 PlayerName = game.Player1.Name,
                 Choice = p1Choice
             };
-            gameLoop.ExecuteAction(action1);
+            action1.Execute(game);
             
             // Small delay for readability
             Thread.Sleep(500);
@@ -46,7 +42,7 @@ public static class RockPaperScissorsExample
                 PlayerName = game.Player2.Name,
                 Choice = p2Choice
             };
-            gameLoop.ExecuteAction(action2);
+            action2.Execute(game);
             
             // Wait before next round
             if (game.Winner == null)

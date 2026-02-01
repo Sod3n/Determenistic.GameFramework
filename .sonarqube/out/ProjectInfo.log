@@ -1,0 +1,28 @@
+Product projects
+---------------------------------------
+/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/Deterministic.GameFramework.Client.csproj
+/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/Deterministic.GameFramework.SourceGenerators.csproj
+/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Core/Deterministic.GameFramework.Core.csproj
+/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/Deterministic.GameFramework.Server.csproj
+/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Deterministic.GameFramework.Examples.csproj
+
+
+Test projects
+---------------------------------------
+
+
+Invalid projects
+---------------------------------------
+{none}
+
+
+Skipped projects
+---------------------------------------
+{none}
+
+
+Excluded projects
+---------------------------------------
+{none}
+
+

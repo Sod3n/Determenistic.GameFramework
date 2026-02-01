@@ -10,3 +10,5 @@
   href: 04-time-synchronization.md
 - name: Network Threads
   href: 05-network-threads.md
+- name: Serialization Optimization
+  href: 06-serialization-optimization.md

@@ -1,0 +1,1525 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.11.0.0",
+        "fileVersion": "4.11.0-3.24554.2 (bc1c3011)",
+        "semanticVersion": "4.11.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 33,
+                  "endLine": 45,
+                  "endColumn": 68
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'input' in 'Guid Guid.Parse(string input)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 46,
+                  "startColumn": 34,
+                  "endLine": 46,
+                  "endColumn": 70
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable event 'BeforeAction' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the event as nullable.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 12,
+                  "endLine": 25,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 16,
+                  "startColumn": 41,
+                  "endLine": 16,
+                  "endColumn": 53
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 26,
+                  "endLine": 45,
+                  "endColumn": 48
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8600",
+          "level": "warning",
+          "message": "Converting null literal or possible null value to non-nullable type.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 49,
+                  "startColumn": 26,
+                  "endLine": 49,
+                  "endColumn": 62
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'actionsJson' in 'int NetworkActionExecutor.ExecuteBatch(string actionsJson, Guid? executorId = null, Action<string>? onError = null)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 221,
+                  "startColumn": 17,
+                  "endLine": 221,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S125",
+          "level": "warning",
+          "message": "Remove this commented out code.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 206,
+                  "startColumn": 13,
+                  "endLine": 206,
+                  "endColumn": 62
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1135",
+          "level": "warning",
+          "message": "Complete the task associated to this 'TODO' comment.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 205,
+                  "startColumn": 16,
+                  "endLine": 205,
+                  "endColumn": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1450",
+          "level": "warning",
+          "message": "Remove the field '_innerManager' and declare it as a local variable in the relevant methods.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidatingMatchManager.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 47,
+                  "endLine": 9,
+                  "endColumn": 60
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2743",
+          "level": "warning",
+          "message": "A static field in a generic type is not shared among instances of different close constructed types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 24,
+                  "endLine": 25,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2743",
+          "level": "warning",
+          "message": "A static field in a generic type is not shared among instances of different close constructed types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 31,
+                  "startColumn": 24,
+                  "endLine": 31,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2743",
+          "level": "warning",
+          "message": "A static field in a generic type is not shared among instances of different close constructed types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 24,
+                  "endLine": 37,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '╠══════════════════════════════════════════════════════════════╣' 5 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 219,
+                  "startColumn": 27,
+                  "endLine": 219,
+                  "endColumn": 93
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 224,
+                  "startColumn": 27,
+                  "endLine": 224,
+                  "endColumn": 93
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 270,
+                  "startColumn": 27,
+                  "endLine": 270,
+                  "endColumn": 93
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 274,
+                  "startColumn": 27,
+                  "endLine": 274,
+                  "endColumn": 93
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 277,
+                  "startColumn": 27,
+                  "endLine": 277,
+                  "endColumn": 93
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null
+            }
+          }
+        },
+        {
+          "ruleId": "S2743",
+          "level": "warning",
+          "message": "A static field in a generic type is not shared among instances of different close constructed types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 20,
+                  "startColumn": 89,
+                  "endLine": 20,
+                  "endColumn": 100
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2743",
+          "level": "warning",
+          "message": "A static field in a generic type is not shared among instances of different close constructed types.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 61,
+                  "endLine": 23,
+                  "endColumn": 78
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2933",
+          "level": "warning",
+          "message": "Make '_syncInterval' 'readonly'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkSyncManager.cs",
+                "region": {
+                  "startLine": 19,
+                  "startColumn": 19,
+                  "endLine": 19,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3604",
+          "level": "warning",
+          "message": "Remove the member initializer, all constructors set an initial value for the member.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkSyncManager.cs",
+                "region": {
+                  "startLine": 19,
+                  "startColumn": 33,
+                  "endLine": 19,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S927",
+          "level": "warning",
+          "message": "Rename parameter 'gameState' to 'domain' to match the base class declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/SyncGameStateAction.cs",
+                "region": {
+                  "startLine": 32,
+                  "startColumn": 55,
+                  "endLine": 32,
+                  "endColumn": 64
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1481",
+          "level": "warning",
+          "message": "Remove the unused local variable 'executor'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/SyncGameStateAction.cs",
+                "region": {
+                  "startLine": 38,
+                  "startColumn": 13,
+                  "endLine": 38,
+                  "endColumn": 21
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1854",
+          "level": "warning",
+          "message": "Remove this useless assignment to local variable 'gameState'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 55,
+                  "startColumn": 13,
+                  "endLine": 55,
+                  "endColumn": 58
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkSyncManager.cs",
+                "region": {
+                  "startLine": 70,
+                  "startColumn": 14,
+                  "endLine": 70,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkSyncManager.cs",
+                "region": {
+                  "startLine": 74,
+                  "startColumn": 9,
+                  "endLine": 74,
+                  "endColumn": 40
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkSyncManager.cs",
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 13,
+                  "endLine": 72,
+                  "endColumn": 74
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S4201",
+          "level": "warning",
+          "message": "Remove this unnecessary null check; 'is' returns false for nulls.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 119,
+                  "startColumn": 13,
+                  "endLine": 119,
+                  "endColumn": 30
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3267",
+          "level": "warning",
+          "message": "Loops should be simplified using the \"Where\" LINQ method",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 107,
+                  "startColumn": 36,
+                  "endLine": 107,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/NetworkActionExecutor.cs",
+                "region": {
+                  "startLine": 109,
+                  "startColumn": 21,
+                  "endLine": 109,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null
+            }
+          }
+        },
+        {
+          "ruleId": "S3776",
+          "level": "warning",
+          "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 17,
+                  "endLine": 78,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 80,
+                  "startColumn": 9,
+                  "endLine": 80,
+                  "endColumn": 11
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 94,
+                  "startColumn": 13,
+                  "endLine": 94,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 117,
+                  "startColumn": 13,
+                  "endLine": 117,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 123,
+                  "startColumn": 13,
+                  "endLine": 123,
+                  "endColumn": 17
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 129,
+                  "startColumn": 13,
+                  "endLine": 129,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 131,
+                  "startColumn": 17,
+                  "endLine": 131,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 137,
+                  "startColumn": 21,
+                  "endLine": 137,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 147,
+                  "startColumn": 17,
+                  "endLine": 147,
+                  "endColumn": 21
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 153,
+                  "startColumn": 21,
+                  "endLine": 153,
+                  "endColumn": 23
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 163,
+                  "startColumn": 13,
+                  "endLine": 163,
+                  "endColumn": 17
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 169,
+                  "startColumn": 13,
+                  "endLine": 169,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 176,
+                  "startColumn": 9,
+                  "endLine": 176,
+                  "endColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": "+1",
+              "1": "+1",
+              "10": "+1",
+              "11": "+1",
+              "2": "+1",
+              "3": "+1",
+              "4": "+1",
+              "5": "+2 (incl 1 for nesting)",
+              "6": "+3 (incl 2 for nesting)",
+              "7": "+1",
+              "8": "+3 (incl 2 for nesting)",
+              "9": "+1"
+            }
+          }
+        },
+        {
+          "ruleId": "S2589",
+          "level": "warning",
+          "message": "Change this condition so that it does not always evaluate to 'True'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/GameHub.cs",
+                "region": {
+                  "startLine": 119,
+                  "startColumn": 34,
+                  "endLine": 119,
+                  "endColumn": 68
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 14,
+                  "endLine": 39,
+                  "endColumn": 53
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 53,
+                  "startColumn": 9,
+                  "endLine": 53,
+                  "endColumn": 36
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 55,
+                  "startColumn": 28,
+                  "endLine": 55,
+                  "endColumn": 55
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 41,
+                  "startColumn": 13,
+                  "endLine": 41,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2325",
+          "level": "warning",
+          "message": "Make 'CompareExecutionLogs' a static method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 188,
+                  "startColumn": 17,
+                  "endLine": 188,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2325",
+          "level": "warning",
+          "message": "Make 'FindFirstDifference' a static method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 299,
+                  "startColumn": 17,
+                  "endLine": 299,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2325",
+          "level": "warning",
+          "message": "Make 'GetStateHash' a static method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 312,
+                  "startColumn": 20,
+                  "endLine": 312,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1850",
+          "level": "note",
+          "message": "Prefer static 'System.Security.Cryptography.SHA256.HashData' method over 'ComputeHash'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 316,
+                  "startColumn": 25,
+                  "endLine": 316,
+                  "endColumn": 73
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 315,
+                  "startColumn": 19,
+                  "endLine": 315,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ComputeTypePropertyKey": "ComputeHash",
+              "DeleteHashCreationPropertyKey": "DeleteHashCreationPropertyKey",
+              "HashCreationIndexPropertyKey": "0",
+              "TargetHashTypeDiagnosticPropertyKey": "SHA256"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 14,
+                  "endLine": 78,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 92,
+                  "startColumn": 37,
+                  "endLine": 92,
+                  "endColumn": 58
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 97,
+                  "startColumn": 14,
+                  "endLine": 97,
+                  "endColumn": 35
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 99,
+                  "startColumn": 13,
+                  "endLine": 99,
+                  "endColumn": 34
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 102,
+                  "startColumn": 9,
+                  "endLine": 102,
+                  "endColumn": 30
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 104,
+                  "startColumn": 25,
+                  "endLine": 104,
+                  "endColumn": 46
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 107,
+                  "startColumn": 30,
+                  "endLine": 107,
+                  "endColumn": 51
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 80,
+                  "startColumn": 13,
+                  "endLine": 80,
+                  "endColumn": 77
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1854",
+          "level": "note",
+          "message": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 97,
+                  "startColumn": 14,
+                  "endLine": 97,
+                  "endColumn": 55
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 102,
+                  "startColumn": 9,
+                  "endLine": 102,
+                  "endColumn": 38
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/CollectiveActions/CollectiveActionManager.cs",
+                "region": {
+                  "startLine": 99,
+                  "startColumn": 13,
+                  "endLine": 99,
+                  "endColumn": 65
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1481",
+          "level": "warning",
+          "message": "Remove the unused local variable 'contextEnd'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 282,
+                  "startColumn": 13,
+                  "endLine": 282,
+                  "endColumn": 23
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CompareExecutionLogs' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 188,
+                  "startColumn": 17,
+                  "endLine": 188,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetStateHash' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 312,
+                  "startColumn": 20,
+                  "endLine": 312,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'FindFirstDifference' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Server/DeterminismValidator.cs",
+                "region": {
+                  "startLine": 299,
+                  "startColumn": 17,
+                  "endLine": 299,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CA1822": {
+          "id": "CA1822",
+          "shortDescription": "Mark members as static",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1850": {
+          "id": "CA1850",
+          "shortDescription": "Prefer static 'HashData' method over 'ComputeHash'",
+          "fullDescription": "It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1854": {
+          "id": "CA1854",
+          "shortDescription": "Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method",
+          "fullDescription": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CS8600": {
+          "id": "CS8600",
+          "shortDescription": "Converting null literal or possible null value to non-nullable type.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8600)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8604": {
+          "id": "CS8604",
+          "shortDescription": "Possible null reference argument.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8604)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8618": {
+          "id": "CS8618",
+          "shortDescription": "Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8618)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "S1135": {
+          "id": "S1135",
+          "shortDescription": "Track uses of \"TODO\" tags",
+          "fullDescription": "Developers often use TODO tags to mark areas in the code where additional work or improvements are needed but are not implemented immediately. However, these TODO tags sometimes get overlooked or forgotten, leading to incomplete or unfinished code. This rule aims to identify and address unattended TODO tags to ensure a clean and maintainable codebase. This description explores why this is a problem and how it can be fixed to improve the overall code quality.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1135",
+          "properties": {
+            "category": "Info Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1192": {
+          "id": "S1192",
+          "shortDescription": "String literals should not be duplicated",
+          "fullDescription": "Duplicated string literals make the process of refactoring complex and error-prone, as any change would need to be propagated on all occurrences.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1192",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S125": {
+          "id": "S125",
+          "shortDescription": "Sections of code should not be commented out",
+          "fullDescription": "Commented-out code distracts the focus from the actual executed code. It creates a noise that increases maintenance code. And because it is never executed, it quickly becomes out of date and invalid.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-125",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1450": {
+          "id": "S1450",
+          "shortDescription": "Private fields only used as local variables in methods should become local variables",
+          "fullDescription": "When the value of a private field is always assigned to in a class' methods before being read, then it is not being used to store class information. Therefore, it should become a local variable in the relevant methods to prevent any misunderstanding.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1450",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1481": {
+          "id": "S1481",
+          "shortDescription": "Unused local variables should be removed",
+          "fullDescription": "An unused local variable is a variable that has been declared but is not used anywhere in the block of code where it is defined. It is dead code, contributing to unnecessary complexity and leading to confusion when reading the code. Therefore, it should be removed from your code to maintain clarity and efficiency.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1481",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1854": {
+          "id": "S1854",
+          "shortDescription": "Unused assignments should be removed",
+          "fullDescription": "Dead stores refer to assignments made to local variables that are subsequently never used or immediately overwritten. Such assignments are unnecessary and don’t contribute to the functionality or clarity of the code. They may even negatively impact performance. Removing them enhances code cleanliness and readability. Even if the unnecessary operations do not do any harm in terms of the program’s correctness, they are - at best - a waste of computing resources.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1854",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2325": {
+          "id": "S2325",
+          "shortDescription": "Methods and properties that don't access instance data should be static",
+          "fullDescription": "Methods and properties that don’t access instance data should be marked as static for the following reasons:",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2325",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2589": {
+          "id": "S2589",
+          "shortDescription": "Boolean expressions should not be gratuitous",
+          "fullDescription": "Gratuitous boolean expressions are conditions that do not change the evaluation of a program. This issue can indicate logical errors and affect the correctness of an application, as well as its maintainability.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2589",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2743": {
+          "id": "S2743",
+          "shortDescription": "Static fields should not be used in generic types",
+          "fullDescription": "A static field in a generic type is not shared among instances of different closed constructed types, thus LengthLimitedSingletonCollection<int>.instances and LengthLimitedSingletonCollection<string>.instances will point to different objects, even though instances is seemingly shared among all LengthLimitedSingletonCollection<> generic classes.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2743",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2933": {
+          "id": "S2933",
+          "shortDescription": "Fields that are only assigned in the constructor should be \"readonly\"",
+          "fullDescription": "readonly fields can only be assigned in a class constructor. If a class has a field that’s not marked readonly but is only set in the constructor, it could cause confusion about the field’s intended use. To avoid confusion, such fields should be marked readonly to make their intended use explicit, and to prevent future maintainers from inadvertently changing their use.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2933",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3267": {
+          "id": "S3267",
+          "shortDescription": "Loops should be simplified with \"LINQ\" expressions",
+          "fullDescription": "Using explicit loops for filtering, selecting, or aggregating elements can make code more verbose and harder to read. LINQ expressions provide a more concise and expressive way to perform these operations, improving code clarity and maintainability.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3267",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3604": {
+          "id": "S3604",
+          "shortDescription": "Member initializer values should not be redundant",
+          "fullDescription": "Fields, properties and events can be initialized either inline or in the constructor. Initializing them inline and in the constructor at the same time is redundant; the inline initialization will be overridden.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3604",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3776": {
+          "id": "S3776",
+          "shortDescription": "Cognitive Complexity of methods should not be too high",
+          "fullDescription": "This rule raises an issue when the code cognitive complexity of a function is above a certain threshold.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3776",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S4201": {
+          "id": "S4201",
+          "shortDescription": "Null checks should not be combined with \"is\" operator checks",
+          "fullDescription": "There’s no need to null test in conjunction with an is test. null is not an instance of anything, so a null check is redundant.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-4201",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S927": {
+          "id": "S927",
+          "shortDescription": "Parameter names should match base declaration and other partial definitions",
+          "fullDescription": "Parameters are part of the method signature and its identity.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-927",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

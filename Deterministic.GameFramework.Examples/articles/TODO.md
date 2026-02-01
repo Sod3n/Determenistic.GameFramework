@@ -18,8 +18,12 @@ This page lists features and topics that are planned but not yet implemented or 
 - **Lag Compensation & Client-Side Prediction** - Techniques for handling network latency
 - **Versioning Between Client-Server** - Managing protocol and state compatibility across versions
 - **Integration with PlayFab (BaaS)** - Backend-as-a-Service integration patterns
-- **Production and Deployment** - Best practices for deploying to production environments
+- **Production and Deployment** - Best practices for deploying to production environments. CI/CD Pipeline
 - **Replay & Spectating Feature** - Recording and replaying game sessions, spectator mode
+- **Game specific features** - Implementing game specific features like inventory, turn cycle, etc.
+- **Bandwidth Optimization** - Implementing bandwidth optimization techniques
+- **Undo/Redo System** - Implementing undo/redo system for game state
+
 
 ## Contributing
 

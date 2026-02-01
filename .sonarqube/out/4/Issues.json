@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.11.0.0",
+        "fileVersion": "4.11.0-3.24554.2 (bc1c3011)",
+        "semanticVersion": "4.11.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS0305",
+          "level": "error",
+          "message": "Using the generic type 'DARAction<TDomain, TAction>' requires 2 type arguments",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/MakeChoiceAction.cs",
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 33,
+                  "endLine": 8,
+                  "endColumn": 65
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "rules": {
+        "CS0305": {
+          "id": "CS0305",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0305)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

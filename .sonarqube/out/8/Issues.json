@@ -1,0 +1,1947 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "4.11.0.0",
+        "fileVersion": "4.11.0-3.24554.2 (bc1c3011)",
+        "semanticVersion": "4.11.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Message' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example08_GlobalNotifications.cs",
+                "region": {
+                  "startLine": 86,
+                  "startColumn": 19,
+                  "endLine": 86,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example08_GlobalNotifications.cs",
+                "region": {
+                  "startLine": 86,
+                  "startColumn": 19,
+                  "endLine": 86,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS7036",
+          "level": "error",
+          "message": "There is no argument given that corresponds to the required parameter 'rootDomain' of 'GameLoop.GameLoop(BranchDomain)'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/RockPaperScissorsExample.cs",
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 28,
+                  "endLine": 15,
+                  "endColumn": 36
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1061",
+          "level": "error",
+          "message": "'GameLoop' does not contain a definition for 'AddDomain' and no accessible extension method 'AddDomain' accepting a first argument of type 'GameLoop' could be found (are you missing a using directive or an assembly reference?)",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/RockPaperScissorsExample.cs",
+                "region": {
+                  "startLine": 16,
+                  "startColumn": 18,
+                  "endLine": 16,
+                  "endColumn": 27
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'target' in 'Reaction<LeafDomain, SomethingHappenedAction>.Reaction(LeafDomain target)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example08_GlobalNotifications.cs",
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 59,
+                  "endLine": 72,
+                  "endColumn": 63
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS1061",
+          "level": "error",
+          "message": "'GameLoop' does not contain a definition for 'ExecuteAction' and no accessible extension method 'ExecuteAction' accepting a first argument of type 'GameLoop' could be found (are you missing a using directive or an assembly reference?)",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/RockPaperScissorsExample.cs",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 22,
+                  "endLine": 37,
+                  "endColumn": 35
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1061",
+          "level": "error",
+          "message": "'GameLoop' does not contain a definition for 'ExecuteAction' and no accessible extension method 'ExecuteAction' accepting a first argument of type 'GameLoop' could be found (are you missing a using directive or an assembly reference?)",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/RockPaperScissorsExample.cs",
+                "region": {
+                  "startLine": 49,
+                  "startColumn": 22,
+                  "endLine": 49,
+                  "endColumn": 35
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS8618",
+          "level": "warning",
+          "message": "Non-nullable property 'Game' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example06_ActionInjection.cs",
+                "region": {
+                  "startLine": 93,
+                  "startColumn": 41,
+                  "endLine": 93,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example06_ActionInjection.cs",
+                "region": {
+                  "startLine": 93,
+                  "startColumn": 41,
+                  "endLine": 93,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 105,
+                  "startColumn": 56,
+                  "endLine": 105,
+                  "endColumn": 68
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'action' in 'bool NetworkActionExecutor.ExecuteAction(INetworkAction action, Guid? executorId = null, Action<string>? onError = null)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 105,
+                  "startColumn": 42,
+                  "endLine": 105,
+                  "endColumn": 54
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8602",
+          "level": "warning",
+          "message": "Dereference of a possibly null reference.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 229,
+                  "startColumn": 59,
+                  "endLine": 229,
+                  "endColumn": 71
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'action' in 'bool NetworkActionExecutor.ExecuteAction(INetworkAction action, Guid? executorId = null, Action<string>? onError = null)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 229,
+                  "startColumn": 45,
+                  "endLine": 229,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example07_DuckTyping' to match pascal case naming rules, consider using 'Example07DuckTyping'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example07_DuckTyping.cs",
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 21,
+                  "endLine": 14,
+                  "endColumn": 41
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example06_ActionInjection' to match pascal case naming rules, consider using 'Example06ActionInjection'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example06_ActionInjection.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 21,
+                  "endLine": 13,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example08_GlobalNotifications' to match pascal case naming rules, consider using 'Example08GlobalNotifications'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example08_GlobalNotifications.cs",
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 21,
+                  "endLine": 25,
+                  "endColumn": 50
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1118",
+          "level": "warning",
+          "message": "Add a 'protected' constructor or the 'static' keyword to the class declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 14,
+                  "endLine": 10,
+                  "endColumn": 50
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'DeterminismValidation_DesyncExamples' to match pascal case naming rules, consider using 'DeterminismValidationDesyncExamples'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 14,
+                  "endLine": 10,
+                  "endColumn": 50
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '\\n✓ Desync caught! Validation failed.\\n' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 31,
+                  "endLine": 40,
+                  "endColumn": 72
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 87,
+                  "startColumn": 31,
+                  "endLine": 87,
+                  "endColumn": 72
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 134,
+                  "startColumn": 31,
+                  "endLine": 134,
+                  "endColumn": 72
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 181,
+                  "startColumn": 31,
+                  "endLine": 181,
+                  "endColumn": 72
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '\\n✓ Desync caught! Validator marked as failed.\\n' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 47,
+                  "startColumn": 35,
+                  "endLine": 47,
+                  "endColumn": 85
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 94,
+                  "startColumn": 35,
+                  "endLine": 94,
+                  "endColumn": 85
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 141,
+                  "startColumn": 35,
+                  "endLine": 141,
+                  "endColumn": 85
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 188,
+                  "startColumn": 35,
+                  "endLine": 188,
+                  "endColumn": 85
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '\\n❌ UNEXPECTED: Action succeeded without detecting desync!\\n' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 51,
+                  "startColumn": 35,
+                  "endLine": 51,
+                  "endColumn": 97
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 98,
+                  "startColumn": 35,
+                  "endLine": 98,
+                  "endColumn": 97
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 145,
+                  "startColumn": 35,
+                  "endLine": 145,
+                  "endColumn": 97
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 35,
+                  "endLine": 192,
+                  "endColumn": 97
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example01_HelloWorld' to match pascal case naming rules, consider using 'Example01HelloWorld'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example01_HelloWorld.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 21,
+                  "endLine": 9,
+                  "endColumn": 41
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example07_CollectiveActions' to match pascal case naming rules, consider using 'Example07CollectiveActions'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Network/Example07_CollectiveActions.cs",
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 21,
+                  "endLine": 14,
+                  "endColumn": 48
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1118",
+          "level": "warning",
+          "message": "Add a 'protected' constructor or the 'static' keyword to the class declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 14,
+                  "endLine": 11,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1118",
+          "level": "warning",
+          "message": "Add a 'protected' constructor or the 'static' keyword to the class declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 14,
+                  "endLine": 13,
+                  "endColumn": 48
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'DeterminismValidation_Complex' to match pascal case naming rules, consider using 'DeterminismValidationComplex'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 14,
+                  "endLine": 11,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'DeterminismValidation_Reconnection' to match pascal case naming rules, consider using 'DeterminismValidationReconnection'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 14,
+                  "endLine": 13,
+                  "endColumn": 48
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '─────────────────────────────────────────────────────────────' 6 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 32,
+                  "startColumn": 27,
+                  "endLine": 32,
+                  "endColumn": 90
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 34,
+                  "startColumn": 27,
+                  "endLine": 34,
+                  "endColumn": 90
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 82,
+                  "startColumn": 27,
+                  "endLine": 82,
+                  "endColumn": 90
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 84,
+                  "startColumn": 27,
+                  "endLine": 84,
+                  "endColumn": 90
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 116,
+                  "startColumn": 27,
+                  "endLine": 116,
+                  "endColumn": 90
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 118,
+                  "startColumn": 27,
+                  "endLine": 118,
+                  "endColumn": 90
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null,
+              "3": null,
+              "4": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1192",
+          "level": "warning",
+          "message": "Define a constant instead of using this literal '╠══════════════════════════════════════════════════════════════╣' 4 times.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 144,
+                  "startColumn": 27,
+                  "endLine": 144,
+                  "endColumn": 93
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 149,
+                  "startColumn": 31,
+                  "endLine": 149,
+                  "endColumn": 97
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 154,
+                  "startColumn": 31,
+                  "endLine": 154,
+                  "endColumn": 97
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 169,
+                  "startColumn": 31,
+                  "endLine": 169,
+                  "endColumn": 97
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": null,
+              "1": null,
+              "2": null
+            }
+          }
+        },
+        {
+          "ruleId": "S1118",
+          "level": "warning",
+          "message": "Add a 'protected' constructor or the 'static' keyword to the class declaration.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Simple.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 14,
+                  "endLine": 10,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'DeterminismValidation_Simple' to match pascal case naming rules, consider using 'DeterminismValidationSimple'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Simple.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 14,
+                  "endLine": 10,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example02_Reactions' to match pascal case naming rules, consider using 'Example02Reactions'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example02_Reactions.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 21,
+                  "endLine": 10,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example03_DomainHierarchy' to match pascal case naming rules, consider using 'Example03DomainHierarchy'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example03_DomainHierarchy.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 21,
+                  "endLine": 9,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example04_ObservableAttributes' to match pascal case naming rules, consider using 'Example04ObservableAttributes'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example04_ObservableAttributes.cs",
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 21,
+                  "endLine": 12,
+                  "endColumn": 51
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S101",
+          "level": "warning",
+          "message": "Rename class 'Example05_NetworkActions' to match pascal case naming rules, consider using 'Example05NetworkActions'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example05_NetworkActions.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 21,
+                  "endLine": 10,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1144",
+          "level": "warning",
+          "message": "Remove the unused private field '_root'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example05_NetworkActions.cs",
+                "region": {
+                  "startLine": 39,
+                  "startColumn": 5,
+                  "endLine": 39,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1481",
+          "level": "warning",
+          "message": "Remove the unused local variable 'domainB'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/Advanced/Example08_GlobalNotifications.cs",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 13,
+                  "endLine": 35,
+                  "endColumn": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2245",
+          "level": "warning",
+          "message": "Make sure that using this pseudorandom number generator is safe here.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/RockPaperScissorsExample.cs",
+                "region": {
+                  "startLine": 26,
+                  "startColumn": 22,
+                  "endLine": 26,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2325",
+          "level": "warning",
+          "message": "Make 'IsWinner' a static method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/MakeChoiceAction.cs",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 18,
+                  "endLine": 78,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'IsWinner' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/QuickStart/MakeChoiceAction.cs",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 18,
+                  "endLine": 78,
+                  "endColumn": 26
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1699",
+          "level": "warning",
+          "message": "Remove this call from a constructor to the overridable 'GetHashCode' method.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_DesyncExamples.cs",
+                "region": {
+                  "startLine": 249,
+                  "startColumn": 29,
+                  "endLine": 249,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CreateMoveAction' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example05_NetworkActions.cs",
+                "region": {
+                  "startLine": 75,
+                  "startColumn": 19,
+                  "endLine": 75,
+                  "endColumn": 35
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1848",
+          "level": "warning",
+          "message": "Either remove this useless object instantiation of class 'ItemDomain' or use it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example03_DomainHierarchy.cs",
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 9,
+                  "endLine": 17,
+                  "endColumn": 65
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1848",
+          "level": "warning",
+          "message": "Either remove this useless object instantiation of class 'ItemDomain' or use it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example03_DomainHierarchy.cs",
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 9,
+                  "endLine": 18,
+                  "endColumn": 66
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1806",
+          "level": "note",
+          "message": "Run creates a new instance of ItemDomain which is never used. Pass the instance as an argument to another method, assign the instance to a variable, or remove the object creation if it is unnecessary.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example03_DomainHierarchy.cs",
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 9,
+                  "endLine": 17,
+                  "endColumn": 65
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1806",
+          "level": "note",
+          "message": "Run creates a new instance of ItemDomain which is never used. Pass the instance as an argument to another method, assign the instance to a variable, or remove the object creation if it is unnecessary.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example03_DomainHierarchy.cs",
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 9,
+                  "endLine": 18,
+                  "endColumn": 66
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S3776",
+          "level": "warning",
+          "message": "Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 24,
+                  "endLine": 13,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 13,
+                  "endLine": 44,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 53,
+                  "endLine": 44,
+                  "endColumn": 55
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 9,
+                  "endLine": 81,
+                  "endColumn": 12
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 33,
+                  "endLine": 81,
+                  "endColumn": 35
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 83,
+                  "startColumn": 48,
+                  "endLine": 83,
+                  "endColumn": 49
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 86,
+                  "startColumn": 52,
+                  "endLine": 86,
+                  "endColumn": 58
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 96,
+                  "startColumn": 17,
+                  "endLine": 96,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 105,
+                  "startColumn": 17,
+                  "endLine": 105,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 110,
+                  "startColumn": 13,
+                  "endLine": 110,
+                  "endColumn": 18
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 123,
+                  "startColumn": 9,
+                  "endLine": 123,
+                  "endColumn": 11
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 132,
+                  "startColumn": 13,
+                  "endLine": 132,
+                  "endColumn": 15
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": "+2 (incl 1 for nesting)",
+              "1": "+1",
+              "10": "+2 (incl 1 for nesting)",
+              "2": "+1",
+              "3": "+1",
+              "4": "+2 (incl 1 for nesting)",
+              "5": "+2 (incl 1 for nesting)",
+              "6": "+2 (incl 1 for nesting)",
+              "7": "+2 (incl 1 for nesting)",
+              "8": "+2 (incl 1 for nesting)",
+              "9": "+1"
+            }
+          }
+        },
+        {
+          "ruleId": "S3776",
+          "level": "warning",
+          "message": "Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 149,
+                  "startColumn": 24,
+                  "endLine": 149,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 170,
+                  "startColumn": 13,
+                  "endLine": 170,
+                  "endColumn": 16
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 172,
+                  "startColumn": 49,
+                  "endLine": 172,
+                  "endColumn": 50
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 174,
+                  "startColumn": 17,
+                  "endLine": 174,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 176,
+                  "startColumn": 17,
+                  "endLine": 176,
+                  "endColumn": 21
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 179,
+                  "startColumn": 17,
+                  "endLine": 179,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 181,
+                  "startColumn": 17,
+                  "endLine": 181,
+                  "endColumn": 21
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 184,
+                  "startColumn": 17,
+                  "endLine": 184,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 13,
+                  "endLine": 192,
+                  "endColumn": 15
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 192,
+                  "startColumn": 54,
+                  "endLine": 192,
+                  "endColumn": 56
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 197,
+                  "startColumn": 17,
+                  "endLine": 197,
+                  "endColumn": 19
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 197,
+                  "startColumn": 55,
+                  "endLine": 197,
+                  "endColumn": 57
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 203,
+                  "startColumn": 17,
+                  "endLine": 203,
+                  "endColumn": 21
+                }
+              }
+            },
+            {
+              "physicalLocation": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 209,
+                  "startColumn": 13,
+                  "endLine": 209,
+                  "endColumn": 17
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "0": "+2 (incl 1 for nesting)",
+              "1": "+3 (incl 2 for nesting)",
+              "10": "+1",
+              "11": "+1",
+              "12": "+1",
+              "2": "+3 (incl 2 for nesting)",
+              "3": "+1",
+              "4": "+3 (incl 2 for nesting)",
+              "5": "+1",
+              "6": "+3 (incl 2 for nesting)",
+              "7": "+2 (incl 1 for nesting)",
+              "8": "+1",
+              "9": "+3 (incl 2 for nesting)"
+            }
+          }
+        },
+        {
+          "ruleId": "S1854",
+          "level": "warning",
+          "message": "Remove this useless assignment to local variable 'desyncDetected'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 98,
+                  "startColumn": 21,
+                  "endLine": 98,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1854",
+          "level": "warning",
+          "message": "Remove this useless assignment to local variable 'desyncDetected'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 112,
+                  "startColumn": 17,
+                  "endLine": 112,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2245",
+          "level": "warning",
+          "message": "Make sure that using this pseudorandom number generator is safe here.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 77,
+                  "startColumn": 22,
+                  "endLine": 77,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S1481",
+          "level": "warning",
+          "message": "Remove the unused local variable 'healthBar'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/GettingStarted/Example04_ObservableAttributes.cs",
+                "region": {
+                  "startLine": 22,
+                  "startColumn": 13,
+                  "endLine": 22,
+                  "endColumn": 22
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2245",
+          "level": "warning",
+          "message": "Make sure that using this pseudorandom number generator is safe here.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Reconnection.cs",
+                "region": {
+                  "startLine": 51,
+                  "startColumn": 22,
+                  "endLine": 51,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "S2589",
+          "level": "warning",
+          "message": "Change this condition so that it does not always evaluate to 'False'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Examples/Examples/DetermenismValidation/DeterminismValidation_Complex.cs",
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 37,
+                  "endLine": 81,
+                  "endColumn": 51
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "CA1806": {
+          "id": "CA1806",
+          "shortDescription": "Do not ignore method results",
+          "fullDescription": "A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1822": {
+          "id": "CA1822",
+          "shortDescription": "Mark members as static",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CS1061": {
+          "id": "CS1061",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS1061)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        },
+        "CS7036": {
+          "id": "CS7036",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS7036)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        },
+        "CS8602": {
+          "id": "CS8602",
+          "shortDescription": "Dereference of a possibly null reference.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8602)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8604": {
+          "id": "CS8604",
+          "shortDescription": "Possible null reference argument.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8604)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8618": {
+          "id": "CS8618",
+          "shortDescription": "Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8618)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "S101": {
+          "id": "S101",
+          "shortDescription": "Types should be named in PascalCase",
+          "fullDescription": "Shared naming conventions allow teams to collaborate efficiently.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-101",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1118": {
+          "id": "S1118",
+          "shortDescription": "Utility classes should not have public constructors",
+          "fullDescription": "Whenever there are portions of code that are duplicated and do not depend on the state of their container class, they can be centralized inside a \"utility class\". A utility class is a class that only has static members, hence it should not be instantiated.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1118",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1144": {
+          "id": "S1144",
+          "shortDescription": "Unused private types or members should be removed",
+          "fullDescription": "This rule raises an issue when a private/internal type or member is never referenced in the code.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1144",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1192": {
+          "id": "S1192",
+          "shortDescription": "String literals should not be duplicated",
+          "fullDescription": "Duplicated string literals make the process of refactoring complex and error-prone, as any change would need to be propagated on all occurrences.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1192",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1481": {
+          "id": "S1481",
+          "shortDescription": "Unused local variables should be removed",
+          "fullDescription": "An unused local variable is a variable that has been declared but is not used anywhere in the block of code where it is defined. It is dead code, contributing to unnecessary complexity and leading to confusion when reading the code. Therefore, it should be removed from your code to maintain clarity and efficiency.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1481",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1699": {
+          "id": "S1699",
+          "shortDescription": "Constructors should only call non-overridable methods",
+          "fullDescription": "Calling an overridable method from a constructor could result in failures or strange behaviors when instantiating a subclass which overrides the method.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1699",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1848": {
+          "id": "S1848",
+          "shortDescription": "Objects should not be created to be dropped immediately without being used",
+          "fullDescription": "Creating objects that are not used is a vulnerability that can lead to unexpected behavior.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1848",
+          "properties": {
+            "category": "Major Bug",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S1854": {
+          "id": "S1854",
+          "shortDescription": "Unused assignments should be removed",
+          "fullDescription": "Dead stores refer to assignments made to local variables that are subsequently never used or immediately overwritten. Such assignments are unnecessary and don’t contribute to the functionality or clarity of the code. They may even negatively impact performance. Removing them enhances code cleanliness and readability. Even if the unnecessary operations do not do any harm in terms of the program’s correctness, they are - at best - a waste of computing resources.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-1854",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2245": {
+          "id": "S2245",
+          "shortDescription": "Using pseudorandom number generators (PRNGs) is security-sensitive",
+          "fullDescription": "PRNGs are algorithms that produce sequences of numbers that only approximate true randomness. While they are suitable for applications like simulations or modeling, they are not appropriate for security-sensitive contexts because their outputs can be predictable if the internal state is known.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2245",
+          "properties": {
+            "category": "Critical Security Hotspot",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2325": {
+          "id": "S2325",
+          "shortDescription": "Methods and properties that don't access instance data should be static",
+          "fullDescription": "Methods and properties that don’t access instance data should be marked as static for the following reasons:",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2325",
+          "properties": {
+            "category": "Minor Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S2589": {
+          "id": "S2589",
+          "shortDescription": "Boolean expressions should not be gratuitous",
+          "fullDescription": "Gratuitous boolean expressions are conditions that do not change the evaluation of a program. This issue can indicate logical errors and affect the correctness of an application, as well as its maintainability.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-2589",
+          "properties": {
+            "category": "Major Code Smell",
+            "isEnabledByDefault": true,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        },
+        "S3776": {
+          "id": "S3776",
+          "shortDescription": "Cognitive Complexity of methods should not be too high",
+          "fullDescription": "This rule raises an issue when the code cognitive complexity of a function is above a certain threshold.",
+          "defaultLevel": "warning",
+          "helpUri": "https://rules.sonarsource.com/csharp/RSPEC-3776",
+          "properties": {
+            "category": "Critical Code Smell",
+            "isEnabledByDefault": false,
+            "tags": [
+              "C#",
+              "MainSourceScope",
+              "TestSourceScope",
+              "SonarWay"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

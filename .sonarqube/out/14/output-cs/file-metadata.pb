@@ -1,0 +1,13 @@
+³
+§/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/obj/Debug/net8.0/Deterministic.GameFramework.Client.AssemblyInfo.csutf-8¯
+£/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.csutf-8µ
+©/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/obj/Debug/net8.0/Deterministic.GameFramework.Client.GlobalUsings.g.csutf-8|
+s/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/Utils/Locker.csutf-8
+v/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/SignalR/SignalR.csutf-8{
+r/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/NetworkTime.csutf-8}
+t/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/NetworkLogger.csutf-8}
+t/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/NetworkClient.csutf-8~
+u/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/JsonSerializer.csutf-8~
+u/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/INetworkLogger.csutf-8s
+j/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/Api.csutf-8
+v/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Client/ActionProcessor.csutf-8

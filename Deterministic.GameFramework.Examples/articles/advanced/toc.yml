@@ -8,3 +8,7 @@
   href: 04-global-notifications.md
 - name: Observable Attributes
   href: 05-observable-attributes.md
+- name: Action Preconditions
+  href: 06-action-preconditions.md
+- name: GameLoop & Action Scheduling
+  href: 07-gameloop-scheduling.md
