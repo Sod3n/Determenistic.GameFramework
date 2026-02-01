@@ -1,223 +1,0 @@
-ê
-FDeterministic.GameFramework.Server.CollectiveActions.IWaitForAllActionFDeterministic.GameFramework.Server.CollectiveActions.ICollectiveAction{
-FDeterministic.GameFramework.Server.CollectiveActions.ICollectiveAction1Deterministic.GameFramework.Server.INetworkAction?
-1Deterministic.GameFramework.Server.INetworkAction
-IDARActionb
-TDeterministic.GameFramework.Server.CollectiveActions.IRequireCollectiveActionManager
-IDARActionç
-CDeterministic.GameFramework.Server.CollectiveActions.IVoteForActionFDeterministic.GameFramework.Server.CollectiveActions.ICollectiveAction·
-FDeterministic.GameFramework.Server.DefaultGameStateFactory<TGameState>object@Deterministic.GameFramework.Server.IGameStateFactory<TGameState>∆
-=DefaultGameStateFactory(System.Func<System.Guid, TGameState>)ÑDeterministic.GameFramework.Server.DefaultGameStateFactory<TGameState>.DefaultGameStateFactory(System.Func<System.Guid, TGameState>)É
-CreateGameState(System.Guid)cDeterministic.GameFramework.Server.DefaultGameStateFactory<TGameState>.CreateGameState(System.Guid)†
-0Deterministic.GameFramework.Server.HistoryDomainBranchDomain
-LeafDomainobjectk
-HistoryDomain(BranchDomain)LDeterministic.GameFramework.Server.HistoryDomain.HistoryDomain(BranchDomain)C
-Clear()8Deterministic.GameFramework.Server.HistoryDomain.Clear()K
-History.get<Deterministic.GameFramework.Server.HistoryDomain.History.getK
-History.set<Deterministic.GameFramework.Server.HistoryDomain.History.setˆ
-0Deterministic.GameFramework.Server.MatchIdDomainBranchDomain
-LeafDomainobjectÖ
-(MatchIdDomain(BranchDomain, System.Guid)YDeterministic.GameFramework.Server.MatchIdDomain.MatchIdDomain(BranchDomain, System.Guid)K
-MatchId.get<Deterministic.GameFramework.Server.MatchIdDomain.MatchId.getK
-MatchId.set<Deterministic.GameFramework.Server.MatchIdDomain.MatchId.setB
-@Deterministic.GameFramework.Server.IGameStateFactory<TGameState>Ë
-8Deterministic.GameFramework.Server.NetworkActionExecutorobject]
-BeforeAction.addIDeterministic.GameFramework.Server.NetworkActionExecutor.BeforeAction.addc
-BeforeAction.removeLDeterministic.GameFramework.Server.NetworkActionExecutor.BeforeAction.removeÿ
-MNetworkActionExecutor(Deterministic.GameFramework.Core.Domain.DomainRegistry)ÜDeterministic.GameFramework.Server.NetworkActionExecutor.NetworkActionExecutor(Deterministic.GameFramework.Core.Domain.DomainRegistry)ä
-fExecuteAction(Deterministic.GameFramework.Server.INetworkAction, System.Guid?, System.Action<string>?)üDeterministic.GameFramework.Server.NetworkActionExecutor.ExecuteAction(Deterministic.GameFramework.Server.INetworkAction, System.Guid?, System.Action<string>?)±
-:ExecuteBatch(string, System.Guid?, System.Action<string>?)sDeterministic.GameFramework.Server.NetworkActionExecutor.ExecuteBatch(string, System.Guid?, System.Action<string>?)a
-ValidationHook.getKDeterministic.GameFramework.Server.NetworkActionExecutor.ValidationHook.geta
-ValidationHook.setKDeterministic.GameFramework.Server.NetworkActionExecutor.ValidationHook.set«	
-;Deterministic.GameFramework.Server.MatchManager<TGameState>objectd
-OnMatchCreated.addNDeterministic.GameFramework.Server.MatchManager<TGameState>.OnMatchCreated.addj
-OnMatchCreated.removeQDeterministic.GameFramework.Server.MatchManager<TGameState>.OnMatchCreated.removeø
-MatchManager(Deterministic.GameFramework.Server.ServerDomain, Deterministic.GameFramework.Server.IGameStateFactory<TGameState>)ªDeterministic.GameFramework.Server.MatchManager<TGameState>.MatchManager(Deterministic.GameFramework.Server.ServerDomain, Deterministic.GameFramework.Server.IGameStateFactory<TGameState>)p
-CreateMatch(System.Guid)TDeterministic.GameFramework.Server.MatchManager<TGameState>.CreateMatch(System.Guid)j
-GetMatch(System.Guid)QDeterministic.GameFramework.Server.MatchManager<TGameState>.GetMatch(System.Guid)p
-RemoveMatch(System.Guid)TDeterministic.GameFramework.Server.MatchManager<TGameState>.RemoveMatch(System.Guid)`
-GetAllMatchIds()LDeterministic.GameFramework.Server.MatchManager<TGameState>.GetAllMatchIds()\
-MatchCount.getJDeterministic.GameFramework.Server.MatchManager<TGameState>.MatchCount.get\
-MatchCount.setJDeterministic.GameFramework.Server.MatchManager<TGameState>.MatchCount.setï
-CDeterministic.GameFramework.Server.DeterminismValidator<TGameState>object∫
-9DeterminismValidator(TGameState, TGameState, System.Guid)}Deterministic.GameFramework.Server.DeterminismValidator<TGameState>.DeterminismValidator(TGameState, TGameState, System.Guid)È
-PValidateAction(Deterministic.GameFramework.Server.INetworkAction, System.Action)îDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.ValidateAction(Deterministic.GameFramework.Server.INetworkAction, System.Action)≤
-¥CompareExecutionLogs(System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>)¯Deterministic.GameFramework.Server.DeterminismValidator<TGameState>.CompareExecutionLogs(System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>)∏
-˜LogEventSequenceFailure(Deterministic.GameFramework.Server.INetworkAction, string, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, int)ªDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.LogEventSequenceFailure(Deterministic.GameFramework.Server.INetworkAction, string, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, System.Collections.Generic.List<Deterministic.GameFramework.Core.ExecutionLog>, int)ç
-bLogStateSnapshotFailure(Deterministic.GameFramework.Server.INetworkAction, string, string, string)¶Deterministic.GameFramework.Server.DeterminismValidator<TGameState>.LogStateSnapshotFailure(Deterministic.GameFramework.Server.INetworkAction, string, string, string)é
-#FindFirstDifference(string, string)gDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.FindFirstDifference(string, string)x
-GetStateHash(TGameState)\Deterministic.GameFramework.Server.DeterminismValidator<TGameState>.GetStateHash(TGameState)^
-Primary.getODeterministic.GameFramework.Server.DeterminismValidator<TGameState>.Primary.get^
-Primary.setODeterministic.GameFramework.Server.DeterminismValidator<TGameState>.Primary.set\
-
-Shadow.getNDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.Shadow.get\
-
-Shadow.setNDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.Shadow.setb
-HasFailed.getQDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.HasFailed.getb
-HasFailed.setQDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.HasFailed.setf
-ActionCount.getSDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.ActionCount.getf
-ActionCount.setSDeterministic.GameFramework.Server.DeterminismValidator<TGameState>.ActionCount.set˚
-3Deterministic.GameFramework.Server.NetworkGameStateBranchDomain
-LeafDomainobject|
-"NetworkGameState(System.Guid, int)VDeterministic.GameFramework.Server.NetworkGameState.NetworkGameState(System.Guid, int)T
-GetDomain(int)BDeterministic.GameFramework.Server.NetworkGameState.GetDomain(int)z
-!TryGetDomain(int, out LeafDomain)UDeterministic.GameFramework.Server.NetworkGameState.TryGetDomain(int, out LeafDomain)Z
-MatchIdDomain.getEDeterministic.GameFramework.Server.NetworkGameState.MatchIdDomain.getZ
-MatchIdDomain.setEDeterministic.GameFramework.Server.NetworkGameState.MatchIdDomain.setP
-Registry.get@Deterministic.GameFramework.Server.NetworkGameState.Registry.getP
-Registry.set@Deterministic.GameFramework.Server.NetworkGameState.Registry.setZ
-HistoryDomain.getEDeterministic.GameFramework.Server.NetworkGameState.HistoryDomain.getZ
-HistoryDomain.setEDeterministic.GameFramework.Server.NetworkGameState.HistoryDomain.seth
-RandomProviderDomain.getLDeterministic.GameFramework.Server.NetworkGameState.RandomProviderDomain.geth
-RandomProviderDomain.setLDeterministic.GameFramework.Server.NetworkGameState.RandomProviderDomain.setT
-IdProvider.getBDeterministic.GameFramework.Server.NetworkGameState.IdProvider.getT
-IdProvider.setBDeterministic.GameFramework.Server.NetworkGameState.IdProvider.setN
-MatchId.get?Deterministic.GameFramework.Server.NetworkGameState.MatchId.getN
-MatchId.set?Deterministic.GameFramework.Server.NetworkGameState.MatchId.setN
-History.get?Deterministic.GameFramework.Server.NetworkGameState.History.getN
-History.set?Deterministic.GameFramework.Server.NetworkGameState.History.set≠
-LDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager
-LeafDomainobject{
-OnWaitForAllReady.addbDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.OnWaitForAllReady.addÅ
-OnWaitForAllReady.removeeDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.OnWaitForAllReady.removeu
-OnVoteResolved.add_Deterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.OnVoteResolved.add{
-OnVoteResolved.removebDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.OnVoteResolved.remove†
-gCollectiveActionManager(BranchDomain, System.Func<System.Collections.Generic.IEnumerable<System.Guid>>)¥Deterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.CollectiveActionManager(BranchDomain, System.Func<System.Collections.Generic.IEnumerable<System.Guid>>)Ç
-XSubmitWaitForAll(Deterministic.GameFramework.Server.CollectiveActions.IWaitForAllAction)•Deterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.SubmitWaitForAll(Deterministic.GameFramework.Server.CollectiveActions.IWaitForAllAction)
-OSubmitVote(Deterministic.GameFramework.Server.CollectiveActions.IVoteForAction)úDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.SubmitVote(Deterministic.GameFramework.Server.CollectiveActions.IVoteForAction)á
-GetWaitForAllStatus(string)hDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.GetWaitForAllStatus(string){
-GetVoteCounts(string)bDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.GetVoteCounts(string)ì
-!HasSubmitted(string, System.Guid)nDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.HasSubmitted(string, System.Guid)ã
-HasVoted(string, System.Guid)jDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.HasVoted(string, System.Guid)ç
-CancelCollectiveAction(string)kDeterministic.GameFramework.Server.CollectiveActions.CollectiveActionManager.CancelCollectiveAction(string)Í
-0Deterministic.GameFramework.Server.NetworkThreadobjectSystem.IEquatable<T>i
-NetworkThread(int, string)KDeterministic.GameFramework.Server.NetworkThread.NetworkThread(int, string)ß
-9Equals(Deterministic.GameFramework.Server.NetworkThread?)jDeterministic.GameFramework.Server.NetworkThread.Equals(Deterministic.GameFramework.Server.NetworkThread?)S
-Equals(object?)@Deterministic.GameFramework.Server.NetworkThread.Equals(object?)O
-GetHashCode()>Deterministic.GameFramework.Server.NetworkThread.GetHashCode()I
-
-ToString();Deterministic.GameFramework.Server.NetworkThread.ToString()A
-Id.get7Deterministic.GameFramework.Server.NetworkThread.Id.getA
-Id.set7Deterministic.GameFramework.Server.NetworkThread.Id.setE
-Name.get9Deterministic.GameFramework.Server.NetworkThread.Name.getE
-Name.set9Deterministic.GameFramework.Server.NetworkThread.Name.set‘
--Deterministic.GameFramework.Server.SendActionDARAction<TDomain, TAction>objectƒ
-ISendAction(Deterministic.GameFramework.Server.INetworkAction, LeafDomain)wDeterministic.GameFramework.Server.SendAction.SendAction(Deterministic.GameFramework.Server.INetworkAction, LeafDomain)∂
-BExecuteProcess(Deterministic.GameFramework.Core.Domain.RootDomain)pDeterministic.GameFramework.Server.SendAction.ExecuteProcess(Deterministic.GameFramework.Core.Domain.RootDomain)µ
-5Deterministic.GameFramework.Server.NetworkSyncManagerBranchDomain
-LeafDomainobject+Deterministic.GameFramework.Core.IProcessorN
-
-OnSync.add@Deterministic.GameFramework.Server.NetworkSyncManager.OnSync.addT
-OnSync.removeCDeterministic.GameFramework.Server.NetworkSyncManager.OnSync.removeà
-'NetworkSyncManager(BranchDomain, float)]Deterministic.GameFramework.Server.NetworkSyncManager.NetworkSyncManager(BranchDomain, float)V
-Process(float)DDeterministic.GameFramework.Server.NetworkSyncManager.Process(float)H
-Flush()=Deterministic.GameFramework.Server.NetworkSyncManager.Flush()Ÿ
-OAddPendingAction(LeafDomain, Deterministic.GameFramework.Server.INetworkAction)ÖDeterministic.GameFramework.Server.NetworkSyncManager.AddPendingAction(LeafDomain, Deterministic.GameFramework.Server.INetworkAction)…
-
-PDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>objectá
-GetValidator(System.Guid)jDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.GetValidator(System.Guid)ó
-†DeterminismValidatingMatchManager(Deterministic.GameFramework.Server.MatchManager<TGameState>, Deterministic.GameFramework.Server.IGameStateFactory<TGameState>)ÒDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.DeterminismValidatingMatchManager(Deterministic.GameFramework.Server.MatchManager<TGameState>, Deterministic.GameFramework.Server.IGameStateFactory<TGameState>)£
-'OnMatchCreated(System.Guid, TGameState)xDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.OnMatchCreated(System.Guid, TGameState)ã
-OnMatchRemoved(System.Guid)lDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.OnMatchRemoved(System.Guid)É
-GetValidatorSummaries()hDeterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.GetValidatorSummaries()é
-\InstallValidationHook(System.Guid, Deterministic.GameFramework.Server.NetworkActionExecutor)≠Deterministic.GameFramework.Server.DeterminismValidatingMatchManager<TGameState>.InstallValidationHook(System.Guid, Deterministic.GameFramework.Server.NetworkActionExecutor)Ú
-1Deterministic.GameFramework.Server.UserIdProviderobject,Microsoft.AspNetCore.SignalR.IUserIdProviderÆ
-<GetUserId(Microsoft.AspNetCore.SignalR.HubConnectionContext)nDeterministic.GameFramework.Server.UserIdProvider.GetUserId(Microsoft.AspNetCore.SignalR.HubConnectionContext)V
-UserIdProvider()BDeterministic.GameFramework.Server.UserIdProvider.UserIdProvider()û
-SDeterministic.GameFramework.Server.NetworkSyncManager.CollectNetworkActionsReaction)Deterministic.GameFramework.Core.ReactionobjectADeterministic.GameFramework.Core.IAfterReaction<TDomain, TAction>‰
-ÖCollectNetworkActionsReaction(Deterministic.GameFramework.Server.NetworkSyncManager, Deterministic.GameFramework.Server.ServerDomain)ŸDeterministic.GameFramework.Server.NetworkSyncManager.CollectNetworkActionsReaction.CollectNetworkActionsReaction(Deterministic.GameFramework.Server.NetworkSyncManager, Deterministic.GameFramework.Server.ServerDomain)È
-HOnAfter(BranchDomain, Deterministic.GameFramework.Server.INetworkAction)úDeterministic.GameFramework.Server.NetworkSyncManager.CollectNetworkActionsReaction.OnAfter(BranchDomain, Deterministic.GameFramework.Server.INetworkAction)Ó
-=Deterministic.GameFramework.Server.DefaultGameHub<TGameState>EDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState> Microsoft.AspNetCore.SignalR.Hubobjectª
-|DefaultGameHub(Deterministic.GameFramework.Server.ServerDomain, Deterministic.GameFramework.Server.MatchManager<TGameState>)∫Deterministic.GameFramework.Server.DefaultGameHub<TGameState>.DefaultGameHub(Deterministic.GameFramework.Server.ServerDomain, Deterministic.GameFramework.Server.MatchManager<TGameState>)ª
-BDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>DARAction<TDomain, TAction>object1Deterministic.GameFramework.Server.INetworkActione
-NetworkAction()RDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.NetworkAction()c
-ExecutorId.getQDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.ExecutorId.getc
-ExecutorId.setQDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.ExecutorId.set]
-MatchId.getNDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.MatchId.get]
-MatchId.setNDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.MatchId.set_
-DomainId.getODeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.DomainId.get_
-DomainId.setODeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.DomainId.set_
-IsServer.getODeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.IsServer.get_
-IsServer.setODeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.IsServer.setg
-SyncToClient.getSDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.SyncToClient.getg
-SyncToClient.setSDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.SyncToClient.set[
-
-Thread.getMDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.Thread.get[
-
-Thread.setMDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.Thread.seta
-CurrentId.getPDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.CurrentId.geta
-CurrentId.setPDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.CurrentId.setk
-IsServerSecret.getUDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.IsServerSecret.getk
-IsServerSecret.setUDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>.IsServerSecret.setÖ
-/Deterministic.GameFramework.Server.ServerDomain2Deterministic.GameFramework.Core.Domain.RootDomainBranchDomain
-LeafDomainobjectP
-ServerDomain()>Deterministic.GameFramework.Server.ServerDomain.ServerDomain()L
-ServerId.get<Deterministic.GameFramework.Server.ServerDomain.ServerId.getL
-ServerId.set<Deterministic.GameFramework.Server.ServerDomain.ServerId.set`
-NetworkSyncManager.getFDeterministic.GameFramework.Server.ServerDomain.NetworkSyncManager.get`
-NetworkSyncManager.setFDeterministic.GameFramework.Server.ServerDomain.NetworkSyncManager.setL
-GameLoop.get<Deterministic.GameFramework.Server.ServerDomain.GameLoop.getL
-GameLoop.set<Deterministic.GameFramework.Server.ServerDomain.GameLoop.setV
-RelayOnlyMode.getADeterministic.GameFramework.Server.ServerDomain.RelayOnlyMode.getV
-RelayOnlyMode.setADeterministic.GameFramework.Server.ServerDomain.RelayOnlyMode.setè
-;Deterministic.GameFramework.Server.ClientDomain<TGameState>2Deterministic.GameFramework.Core.Domain.RootDomainBranchDomain
-LeafDomainobject§
-2ClientDomain(System.Guid, System.Guid, TGameState)nDeterministic.GameFramework.Server.ClientDomain<TGameState>.ClientDomain(System.Guid, System.Guid, TGameState)Æ
-7Send(Deterministic.GameFramework.Server.INetworkAction)sDeterministic.GameFramework.Server.ClientDomain<TGameState>.Send(Deterministic.GameFramework.Server.INetworkAction)T
-
-UserId.getFDeterministic.GameFramework.Server.ClientDomain<TGameState>.UserId.getT
-
-UserId.setFDeterministic.GameFramework.Server.ClientDomain<TGameState>.UserId.setV
-MatchId.getGDeterministic.GameFramework.Server.ClientDomain<TGameState>.MatchId.getV
-MatchId.setGDeterministic.GameFramework.Server.ClientDomain<TGameState>.MatchId.setX
-GameLoop.getHDeterministic.GameFramework.Server.ClientDomain<TGameState>.GameLoop.getX
-GameLoop.setHDeterministic.GameFramework.Server.ClientDomain<TGameState>.GameLoop.setl
-NetworkSyncManager.getRDeterministic.GameFramework.Server.ClientDomain<TGameState>.NetworkSyncManager.getl
-NetworkSyncManager.setRDeterministic.GameFramework.Server.ClientDomain<TGameState>.NetworkSyncManager.setZ
-GameState.getIDeterministic.GameFramework.Server.ClientDomain<TGameState>.GameState.getZ
-GameState.setIDeterministic.GameFramework.Server.ClientDomain<TGameState>.GameState.setœ
-WDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>BDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>DARAction<TDomain, TAction>objectFDeterministic.GameFramework.Server.CollectiveActions.IWaitForAllActionTDeterministic.GameFramework.Server.CollectiveActions.IRequireCollectiveActionManagerä
-ExecuteProcess(TDomain)oDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.ExecuteProcess(TDomain)ê
-OnPlayerSubmitted(TDomain)rDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.OnPlayerSubmitted(TDomain)Ä
-WaitForAllAction()jDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.WaitForAllAction()~
-CollectiveKey.getiDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.CollectiveKey.get~
-CollectiveKey.setiDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.CollectiveKey.setí
-CollectiveActionManager.getsDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.CollectiveActionManager.getí
-CollectiveActionManager.setsDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.CollectiveActionManager.seté
-IsCollectiveExecution.getqDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.IsCollectiveExecution.geté
-IsCollectiveExecution.setqDeterministic.GameFramework.Server.CollectiveActions.WaitForAllAction<TDomain, TAction>.IsCollectiveExecution.setÕ
-EDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState> Microsoft.AspNetCore.SignalR.HubobjectŸ
-GGameHub(Deterministic.GameFramework.Server.ServerDomain, TMatchManager)çDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.GameHub(Deterministic.GameFramework.Server.ServerDomain, TMatchManager)n
-OnConnectedAsync()XDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.OnConnectedAsync()ñ
-&OnDisconnectedAsync(System.Exception?)lDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.OnDisconnectedAsync(System.Exception?)†
-+OnClientConnected(System.Guid, System.Guid)qDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.OnClientConnected(System.Guid, System.Guid)¶
-.SendStateSyncToClient(TGameState, System.Guid)tDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.SendStateSyncToClient(TGameState, System.Guid)h
-GetConnection()UDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.GetConnection()Ñ
-ScheduleAction(System.Action)cDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.ScheduleAction(System.Action)^
-
-Ping(long)PDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.Ping(long)f
-TimeSync(long)TDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.TimeSync(long)p
-SyncActions(string)YDeterministic.GameFramework.Server.GameHub<TMatchManager, TGameState>.SyncActions(string)í
-TDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>BDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>DARAction<TDomain, TAction>objectCDeterministic.GameFramework.Server.CollectiveActions.IVoteForActionTDeterministic.GameFramework.Server.CollectiveActions.IRequireCollectiveActionManagerá
-ExecuteProcess(TDomain)lDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.ExecuteProcess(TDomain)â
-OnVoteSubmitted(TDomain)mDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.OnVoteSubmitted(TDomain)
-KTriggerWinningExecution(System.Collections.Generic.Dictionary<string, int>)†Deterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.TriggerWinningExecution(System.Collections.Generic.Dictionary<string, int>)w
-VoteForAction()dDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.VoteForAction()è
-CollectiveActionManager.getpDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.CollectiveActionManager.getè
-CollectiveActionManager.setpDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.CollectiveActionManager.setÖ
-IsWinningExecution.getkDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.IsWinningExecution.getÖ
-IsWinningExecution.setkDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.IsWinningExecution.set
-FinalVoteCounts.gethDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.FinalVoteCounts.get
-FinalVoteCounts.sethDeterministic.GameFramework.Server.CollectiveActions.VoteForAction<TDomain, TAction>.FinalVoteCounts.setœ
-BDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>BDeterministic.GameFramework.Server.NetworkAction<TDomain, TAction>DARAction<TDomain, TAction>objectq
-SyncGameStateAction()XDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.SyncGameStateAction()Ö
-SyncGameStateAction(TGameState)bDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.SyncGameStateAction(TGameState){
-ExecuteProcess(TGameState)]Deterministic.GameFramework.Server.SyncGameStateAction<TGameState>.ExecuteProcess(TGameState)]
-History.getNDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.History.get]
-History.setNDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.History.setW
-Seed.getKDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.Seed.getW
-Seed.setKDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.Seed.set[
-
-Thread.getMDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.Thread.get[
-
-Thread.setMDeterministic.GameFramework.Server.SyncGameStateAction<TGameState>.Thread.set

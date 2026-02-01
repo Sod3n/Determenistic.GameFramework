@@ -1,101 +1,0 @@
-£
-/Deterministic.GameFramework.Client.Utils.Lockerobject@
-Lock()6Deterministic.GameFramework.Client.Utils.Locker.Lock()D
-Unlock()8Deterministic.GameFramework.Client.Utils.Locker.Unlock()D
-Locker()8Deterministic.GameFramework.Client.Utils.Locker.Locker()L
-IsLocked.get<Deterministic.GameFramework.Client.Utils.Locker.IsLocked.getL
-IsLocked.set<Deterministic.GameFramework.Client.Utils.Locker.IsLocked.set3
-1Deterministic.GameFramework.Client.INetworkLoggerÇ
-@Deterministic.GameFramework.Client.Utils.Locker.LockerDisposableobjectSystem.IDisposable»
-ALockerDisposable(Deterministic.GameFramework.Client.Utils.Locker)ÇDeterministic.GameFramework.Client.Utils.Locker.LockerDisposable.LockerDisposable(Deterministic.GameFramework.Client.Utils.Locker)W
-	Dispose()JDeterministic.GameFramework.Client.Utils.Locker.LockerDisposable.Dispose()≈
-&Deterministic.GameFramework.Client.ApiobjectA
-Api(string)2Deterministic.GameFramework.Client.Api.Api(string)G
-Get<T>(string)5Deterministic.GameFramework.Client.Api.Get<T>(string)Y
-Post<T>(string, object)>Deterministic.GameFramework.Client.Api.Post<T>(string, object)W
-Put<T>(string, object)=Deterministic.GameFramework.Client.Api.Put<T>(string, object)M
-Delete<T>(string)8Deterministic.GameFramework.Client.Api.Delete<T>(string)A
-BaseUrl.get2Deterministic.GameFramework.Client.Api.BaseUrl.getA
-BaseUrl.set2Deterministic.GameFramework.Client.Api.BaseUrl.setÛ
-6Deterministic.GameFramework.Client.ConnectionEventArgsSystem.EventArgsobjecte
-ConnectionEventArgs()LDeterministic.GameFramework.Client.ConnectionEventArgs.ConnectionEventArgs()[
-ConnectionId.getGDeterministic.GameFramework.Client.ConnectionEventArgs.ConnectionId.get[
-ConnectionId.setGDeterministic.GameFramework.Client.ConnectionEventArgs.ConnectionId.set°
-0Deterministic.GameFramework.Client.NetworkClientobject_
-NetworkClient(string)FDeterministic.GameFramework.Client.NetworkClient.NetworkClient(string)C
-Close()8Deterministic.GameFramework.Client.NetworkClient.Close()I
-
-Ping(long);Deterministic.GameFramework.Client.NetworkClient.Ping(long)_
-RequestTimeSync(long)FDeterministic.GameFramework.Client.NetworkClient.RequestTimeSync(long)s
-Invoke(string, params object[])PDeterministic.GameFramework.Client.NetworkClient.Invoke(string, params object[])K
-SignalR.get<Deterministic.GameFramework.Client.NetworkClient.SignalR.getK
-SignalR.set<Deterministic.GameFramework.Client.NetworkClient.SignalR.setS
-OnConnected.get@Deterministic.GameFramework.Client.NetworkClient.OnConnected.getS
-OnConnected.set@Deterministic.GameFramework.Client.NetworkClient.OnConnected.setY
-OnDisconnected.getCDeterministic.GameFramework.Client.NetworkClient.OnDisconnected.getY
-OnDisconnected.setCDeterministic.GameFramework.Client.NetworkClient.OnDisconnected.setQ
-OnTimeSync.get?Deterministic.GameFramework.Client.NetworkClient.OnTimeSync.getQ
-OnTimeSync.set?Deterministic.GameFramework.Client.NetworkClient.OnTimeSync.set[
-ActionsByThread.getDDeterministic.GameFramework.Client.NetworkClient.ActionsByThread.get[
-ActionsByThread.setDDeterministic.GameFramework.Client.NetworkClient.ActionsByThread.seta
-TotalBytesReceived.getGDeterministic.GameFramework.Client.NetworkClient.TotalBytesReceived.geta
-TotalBytesReceived.setGDeterministic.GameFramework.Client.NetworkClient.TotalBytesReceived.setø
-*Deterministic.GameFramework.Client.SignalRobjectA
-	SignalR()4Deterministic.GameFramework.Client.SignalR.SignalR()Y
-ConnectionStarted.add@Deterministic.GameFramework.Client.SignalR.ConnectionStarted.add_
-ConnectionStarted.removeCDeterministic.GameFramework.Client.SignalR.ConnectionStarted.removeW
-ConnectionClosed.add?Deterministic.GameFramework.Client.SignalR.ConnectionClosed.add]
-ConnectionClosed.removeBDeterministic.GameFramework.Client.SignalR.ConnectionClosed.removeG
-Init(string)7Deterministic.GameFramework.Client.SignalR.Init(string)A
-	Connect()4Deterministic.GameFramework.Client.SignalR.Connect();
-Stop()1Deterministic.GameFramework.Client.SignalR.Stop()K
-Invoke(string)9Deterministic.GameFramework.Client.SignalR.Invoke(string)[
-Invoke(string, object)ADeterministic.GameFramework.Client.SignalR.Invoke(string, object)k
-Invoke(string, object, object)IDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object){
-&Invoke(string, object, object, object)QDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object)ã
-.Invoke(string, object, object, object, object)YDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object)õ
-6Invoke(string, object, object, object, object, object)aDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object)´
->Invoke(string, object, object, object, object, object, object)iDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object, object)ª
-FInvoke(string, object, object, object, object, object, object, object)qDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object, object, object)À
-NInvoke(string, object, object, object, object, object, object, object, object)yDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object, object, object, object)‹
-VInvoke(string, object, object, object, object, object, object, object, object, object)ÅDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object, object, object, object, object)Ï
-^Invoke(string, object, object, object, object, object, object, object, object, object, object)âDeterministic.GameFramework.Client.SignalR.Invoke(string, object, object, object, object, object, object, object, object, object, object)a
-On(string, System.Action)DDeterministic.GameFramework.Client.SignalR.On(string, System.Action)q
-!On<T1>(string, System.Action<T1>)LDeterministic.GameFramework.Client.SignalR.On<T1>(string, System.Action<T1>)Å
-)On<T1, T2>(string, System.Action<T1, T2>)TDeterministic.GameFramework.Client.SignalR.On<T1, T2>(string, System.Action<T1, T2>)ë
-1On<T1, T2, T3>(string, System.Action<T1, T2, T3>)\Deterministic.GameFramework.Client.SignalR.On<T1, T2, T3>(string, System.Action<T1, T2, T3>)°
-9On<T1, T2, T3, T4>(string, System.Action<T1, T2, T3, T4>)dDeterministic.GameFramework.Client.SignalR.On<T1, T2, T3, T4>(string, System.Action<T1, T2, T3, T4>)±
-AOn<T1, T2, T3, T4, T5>(string, System.Action<T1, T2, T3, T4, T5>)lDeterministic.GameFramework.Client.SignalR.On<T1, T2, T3, T4, T5>(string, System.Action<T1, T2, T3, T4, T5>)¡
-IOn<T1, T2, T3, T4, T5, T6>(string, System.Action<T1, T2, T3, T4, T5, T6>)tDeterministic.GameFramework.Client.SignalR.On<T1, T2, T3, T4, T5, T6>(string, System.Action<T1, T2, T3, T4, T5, T6>)—
-QOn<T1, T2, T3, T4, T5, T6, T7>(string, System.Action<T1, T2, T3, T4, T5, T6, T7>)|Deterministic.GameFramework.Client.SignalR.On<T1, T2, T3, T4, T5, T6, T7>(string, System.Action<T1, T2, T3, T4, T5, T6, T7>)‚
-YOn<T1, T2, T3, T4, T5, T6, T7, T8>(string, System.Action<T1, T2, T3, T4, T5, T6, T7, T8>)ÑDeterministic.GameFramework.Client.SignalR.On<T1, T2, T3, T4, T5, T6, T7, T8>(string, System.Action<T1, T2, T3, T4, T5, T6, T7, T8>)ì	
-.Deterministic.GameFramework.Client.NetworkTimeobjectSystem.IDisposable—
-ONetworkTime(Deterministic.GameFramework.Client.NetworkClient, System.TimeSpan?)~Deterministic.GameFramework.Client.NetworkTime.NetworkTime(Deterministic.GameFramework.Client.NetworkClient, System.TimeSpan?)E
-	SyncNow()8Deterministic.GameFramework.Client.NetworkTime.SyncNow()W
-OnServerTime(long)ADeterministic.GameFramework.Client.NetworkTime.OnServerTime(long)E
-	Dispose()8Deterministic.GameFramework.Client.NetworkTime.Dispose()Y
-TimeOffsetTicks.getBDeterministic.GameFramework.Client.NetworkTime.TimeOffsetTicks.getY
-TimeOffsetTicks.setBDeterministic.GameFramework.Client.NetworkTime.TimeOffsetTicks.setK
-IsSynced.get;Deterministic.GameFramework.Client.NetworkTime.IsSynced.getK
-IsSynced.set;Deterministic.GameFramework.Client.NetworkTime.IsSynced.setS
-OnTimeSynced.get?Deterministic.GameFramework.Client.NetworkTime.OnTimeSynced.getS
-OnTimeSynced.set?Deterministic.GameFramework.Client.NetworkTime.OnTimeSynced.setG
-
-UtcNow.get9Deterministic.GameFramework.Client.NetworkTime.UtcNow.getG
-
-UtcNow.set9Deterministic.GameFramework.Client.NetworkTime.UtcNow.setı
->Deterministic.GameFramework.Client.ActionProcessor<TGameState>object∆
-AActionProcessor(Deterministic.GameFramework.Client.NetworkClient)ÄDeterministic.GameFramework.Client.ActionProcessor<TGameState>.ActionProcessor(Deterministic.GameFramework.Client.NetworkClient)‰
-PSetGameState(TGameState, Deterministic.GameFramework.Core.Domain.DomainRegistry)èDeterministic.GameFramework.Client.ActionProcessor<TGameState>.SetGameState(TGameState, Deterministic.GameFramework.Core.Domain.DomainRegistry)U
-	Dispose()HDeterministic.GameFramework.Client.ActionProcessor<TGameState>.Dispose()O
-Lock()EDeterministic.GameFramework.Client.ActionProcessor<TGameState>.Lock()Ø
-6Lock(Deterministic.GameFramework.Server.NetworkThread)uDeterministic.GameFramework.Client.ActionProcessor<TGameState>.Lock(Deterministic.GameFramework.Server.NetworkThread)√
-@IsThreadLocked(Deterministic.GameFramework.Server.NetworkThread)Deterministic.GameFramework.Client.ActionProcessor<TGameState>.IsThreadLocked(Deterministic.GameFramework.Server.NetworkThread)S
-Update()GDeterministic.GameFramework.Client.ActionProcessor<TGameState>.Update()e
-NetworkClient.getPDeterministic.GameFramework.Client.ActionProcessor<TGameState>.NetworkClient.gete
-NetworkClient.setPDeterministic.GameFramework.Client.ActionProcessor<TGameState>.NetworkClient.set[
-OnAction.getKDeterministic.GameFramework.Client.ActionProcessor<TGameState>.OnAction.get[
-OnAction.setKDeterministic.GameFramework.Client.ActionProcessor<TGameState>.OnAction.setÉ
-UDeterministic.GameFramework.Client.JsonSerializer.DotNetCompatibleSerializationBinder8Newtonsoft.Json.Serialization.DefaultSerializationBinder0System.Runtime.Serialization.SerializationBinderobjecté
-BindToType(string, string)pDeterministic.GameFramework.Client.JsonSerializer.DotNetCompatibleSerializationBinder.BindToType(string, string)§
-%DotNetCompatibleSerializationBinder(){Deterministic.GameFramework.Client.JsonSerializer.DotNetCompatibleSerializationBinder.DotNetCompatibleSerializationBinder()

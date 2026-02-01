@@ -1,1 +1,0 @@
-ÀR¡/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.SourceGenerators/Deterministic.GameFramework.SourceGenerators.csproj¢netstandard2.0òCSharp12

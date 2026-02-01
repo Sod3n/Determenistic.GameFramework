@@ -1,7 +1,0 @@
-organization=sod3n
-projectKey=Sod3n_Determenistic.GameFramework
-serverUrl=https://sonarcloud.io
-serverVersion=8.0.0.79246
-dashboardUrl=https://sonarcloud.io/dashboard?id=Sod3n_Determenistic.GameFramework
-ceTaskId=AZwZiCqhJDKkY_PoYk_1
-ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZwZiCqhJDKkY_PoYk_1

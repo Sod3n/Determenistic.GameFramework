@@ -1,1 +1,0 @@
- R‰/Users/a1/Documents/GitHub/turn-based-prototype/Server/Framework/Deterministic.GameFramework.Core/Deterministic.GameFramework.Core.csproj¢net8.0òCSharp12
