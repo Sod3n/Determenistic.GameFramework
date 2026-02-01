@@ -1,8 +1,12 @@
 - name: Introduction
   href: intro.md
+- name: Installation
+  href: installation/toc.yml
 - name: Getting Started
   href: getting-started/
 - name: Network
   href: network/
 - name: Advanced
   href: advanced/
+- name: TODO
+  href: TODO.md

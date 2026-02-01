@@ -1,5 +1,7 @@
 # Deterministic Game Framework
 
+> **License:** All Rights Reserved - See [LICENSE](LICENSE) for details.
+
 A universal, deterministic game state management framework for building multiplayer games with lockstep synchronization.
 
 ## Projects
