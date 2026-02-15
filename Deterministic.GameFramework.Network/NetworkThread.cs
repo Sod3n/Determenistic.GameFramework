@@ -1,4 +1,4 @@
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Network thread/channel types for organizing different types of messages.

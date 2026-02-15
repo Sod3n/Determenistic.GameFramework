@@ -4,10 +4,10 @@ namespace Deterministic.GameFramework.Server;
 /// A MatchManager wrapper that creates shadow game states for determinism validation.
 /// When DeterminismValidator.IsEnabled is true, each match gets a shadow copy.
 /// </summary>
-public class DeterminismValidatingMatchManager<TGameState> where TGameState : NetworkGameState
+public class DeterminismValidatingMatchManager<TMatchData, TGameState> where TGameState : NetworkGameState
 {
-    private readonly MatchManager<TGameState> _innerManager;
-    private readonly IGameStateFactory<TGameState> _gameStateFactory;
+    private readonly MatchManager<TMatchData, TGameState> _innerManager;
+    private readonly IGameStateFactory<TMatchData, TGameState> _gameStateFactory;
     private readonly Dictionary<Guid, DeterminismValidator<TGameState>> _validators = new();
     private readonly object _lock = new();
     
@@ -23,8 +23,8 @@ public class DeterminismValidatingMatchManager<TGameState> where TGameState : Ne
     }
     
     public DeterminismValidatingMatchManager(
-        MatchManager<TGameState> innerManager, 
-        IGameStateFactory<TGameState> gameStateFactory)
+        MatchManager<TMatchData, TGameState> innerManager, 
+        IGameStateFactory<TMatchData, TGameState> gameStateFactory)
     {
         _innerManager = innerManager;
         _gameStateFactory = gameStateFactory;
@@ -33,7 +33,7 @@ public class DeterminismValidatingMatchManager<TGameState> where TGameState : Ne
         _innerManager.OnMatchCreated += OnMatchCreated;
     }
     
-    private void OnMatchCreated(Guid matchId, TGameState primary)
+    private void OnMatchCreated(TMatchData matchData, Guid matchId, TGameState primary)
     {
         if (!DeterminismValidator<TGameState>.IsEnabled)
         {
@@ -42,9 +42,9 @@ public class DeterminismValidatingMatchManager<TGameState> where TGameState : Ne
         
         lock (_lock)
         {
-            // Create shadow game state with same matchId (same random seed)
+            // Create shadow game state with same match data (same random seed)
             // Shadow is NOT added to server domain - it's isolated
-            var shadow = _gameStateFactory.CreateGameState(matchId);
+            var shadow = _gameStateFactory.CreateGameState(matchData);
             
             // Note: Shadow starts with same matchId (same random seed) so initial state should match
             // Validation happens during action execution via ExecutionLogger

@@ -19,12 +19,12 @@ public class ObservableAttribute<TValue>(TValue initialValue = default)
     }
     
 
-    public IDisposable Observe(LeafDomain observer, Action<TValue> callback, bool fireImmediately = true)
+    public IDisposable Observe(LeafDomain? observer, Action<TValue> callback, bool fireImmediately = true)
     {
         if (fireImmediately) callback(_value);
         OnChangeAction += callback;
         var disposable = new ActionDisposable(() => OnChangeAction -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 }

@@ -1,4 +1,5 @@
 using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 using Deterministic.GameFramework.Core;
 
 namespace Deterministic.GameFramework.Examples;
@@ -20,10 +21,10 @@ public class DeterminismValidation_Simple
         // Step 2: Create server domain and match manager
         var serverDomain = new ServerDomain();
         var gameStateFactory = new MyGameStateFactory();
-        var matchManager = new MatchManager<MyGameState>(serverDomain, gameStateFactory);
+        var matchManager = new MatchManager<Guid, MyGameState>(serverDomain, gameStateFactory);
         
         // Step 3: Wrap with validating manager
-        var validatingManager = new DeterminismValidatingMatchManager<MyGameState>(
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, MyGameState>(
             matchManager, 
             gameStateFactory
         );
@@ -78,7 +79,7 @@ public class MyGameState : NetworkGameState
     public MyGameState(Guid matchId) : base(matchId, matchId.GetHashCode()) { }
 }
 
-public class MyGameStateFactory : IGameStateFactory<MyGameState>
+public class MyGameStateFactory : IGameStateFactory<Guid, MyGameState>
 {
     public MyGameState CreateGameState(Guid matchId) => new MyGameState(matchId);
 }

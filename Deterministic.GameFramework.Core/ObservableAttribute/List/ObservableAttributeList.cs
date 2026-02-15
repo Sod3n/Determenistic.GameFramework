@@ -150,74 +150,74 @@ public class ObservableAttributeList<TValue> : IList<TValue>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     // Observe methods - auto-add to observer's Disposables AND return IDisposable
-    public IDisposable ObserveAdd(LeafDomain observer, Action<ListAddEventArgs<TValue>> callback)
+    public IDisposable ObserveAdd(LeafDomain? observer, Action<ListAddEventArgs<TValue>> callback)
     {
         OnAdd += callback;
         var disposable = new ActionDisposable(() => OnAdd -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveRemove(LeafDomain observer, Action<ListRemoveEventArgs<TValue>> callback)
+    public IDisposable ObserveRemove(LeafDomain? observer, Action<ListRemoveEventArgs<TValue>> callback)
     {
         OnRemove += callback;
         var disposable = new ActionDisposable(() => OnRemove -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveBeforeRemove(LeafDomain observer, Action<ListRemoveEventArgs<TValue>> callback)
+    public IDisposable ObserveBeforeRemove(LeafDomain? observer, Action<ListRemoveEventArgs<TValue>> callback)
     {
         OnBeforeRemove += callback;
         var disposable = new ActionDisposable(() => OnBeforeRemove -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveInsert(LeafDomain observer, Action<ListAddEventArgs<TValue>> callback)
+    public IDisposable ObserveInsert(LeafDomain? observer, Action<ListAddEventArgs<TValue>> callback)
     {
         OnInsert += callback;
         var disposable = new ActionDisposable(() => OnInsert -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveSet(LeafDomain observer, Action<ListSetEventArgs<TValue>> callback)
+    public IDisposable ObserveSet(LeafDomain? observer, Action<ListSetEventArgs<TValue>> callback)
     {
         OnSet += callback;
         var disposable = new ActionDisposable(() => OnSet -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveClear(LeafDomain observer, Action callback)
+    public IDisposable ObserveClear(LeafDomain? observer, Action callback)
     {
         OnClear += callback;
         var disposable = new ActionDisposable(() => OnClear -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveBeforeClear(LeafDomain observer, Action callback)
+    public IDisposable ObserveBeforeClear(LeafDomain? observer, Action callback)
     {
         OnBeforeClear += callback;
         var disposable = new ActionDisposable(() => OnBeforeClear -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
-    public IDisposable ObserveSort(LeafDomain observer, Action callback)
+    public IDisposable ObserveSort(LeafDomain? observer, Action callback)
     {
         OnSort += callback;
         var disposable = new ActionDisposable(() => OnSort -= callback);
-        observer.Disposables.Add(disposable);
+        observer?.Disposables.Add(disposable);
         return disposable;
     }
 
     /// <summary>
     /// Observes when a specific item is added to or removed from this list.
     /// </summary>
-    public IDisposable ObserveItemPresence(LeafDomain observer, TValue item, Action? onAdded = null, Action? onRemoved = null)
+    public IDisposable ObserveItemPresence(LeafDomain? observer, TValue item, Action? onAdded = null, Action? onRemoved = null)
     {
         var disposables = new CompositeDisposable();
 
@@ -243,7 +243,7 @@ public class ObservableAttributeList<TValue> : IList<TValue>
             disposables.Add(new ActionDisposable(() => OnRemove -= removeCallback));
         }
 
-        observer.Disposables.Add(disposables);
+        observer?.Disposables.Add(disposables);
         return disposables;
     }
 }

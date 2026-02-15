@@ -1,6 +1,6 @@
 using Deterministic.GameFramework.Core;
 
-namespace Deterministic.GameFramework.Server.CollectiveActions;
+namespace Deterministic.GameFramework.Network.CollectiveActions;
 
 public interface IRequireCollectiveActionManager : IDARAction
 {

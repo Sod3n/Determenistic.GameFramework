@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Deterministic.GameFramework.Server;
 
@@ -11,16 +12,17 @@ public static class ServiceCollectionExtensions
     /// Adds all required services for a multiplayer server with a factory function.
     /// Uses DefaultGameHub and a simple delegate factory.
     /// </summary>
-    public static IServiceCollection AddMultiplayerServer<TGameState>(
+    public static IServiceCollection AddMultiplayerServer<TMatchData, TGameState>(
         this IServiceCollection services,
-        Func<Guid, TGameState> gameStateFactory)
+        Func<TMatchData, TGameState> gameStateFactory)
         where TGameState : NetworkGameState
     {
         services.AddSingleton<ServerDomain>();
-        services.AddSingleton<IGameStateFactory<TGameState>>(
-            _ => new DefaultGameStateFactory<TGameState>(gameStateFactory));
-        services.AddSingleton<MatchManager<TGameState>>();
-        services.AddSignalR();
+        services.AddSingleton<IGameStateFactory<TMatchData, TGameState>>(
+            _ => new DefaultGameStateFactory<TMatchData, TGameState>(gameStateFactory));
+        services.AddSingleton<MatchManager<TMatchData, TGameState>>();
+        services.AddSignalR()
+            .AddNewtonsoftJsonProtocol();
         
         return services;
     }
@@ -29,14 +31,15 @@ public static class ServiceCollectionExtensions
     /// Adds all required services for a multiplayer server with a custom factory.
     /// Uses DefaultGameHub but allows custom game state creation logic.
     /// </summary>
-    public static IServiceCollection AddMultiplayerServer<TGameState, TFactory>(this IServiceCollection services)
+    public static IServiceCollection AddMultiplayerServer<TMatchData, TGameState, TFactory>(this IServiceCollection services)
         where TGameState : NetworkGameState
-        where TFactory : class, IGameStateFactory<TGameState>
+        where TFactory : class, IGameStateFactory<TMatchData, TGameState>
     {
         services.AddSingleton<ServerDomain>();
-        services.AddSingleton<IGameStateFactory<TGameState>, TFactory>();
-        services.AddSingleton<MatchManager<TGameState>>();
-        services.AddSignalR();
+        services.AddSingleton<IGameStateFactory<TMatchData, TGameState>, TFactory>();
+        services.AddSingleton<MatchManager<TMatchData, TGameState>>();
+        services.AddSignalR()
+            .AddNewtonsoftJsonProtocol();
         
         return services;
     }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 using Deterministic.GameFramework.Core;
 using Deterministic.GameFramework.Core.Utils;
 
@@ -270,7 +271,7 @@ public class ReconnectionGameState : NetworkGameState
     }
 }
 
-public class ReconnectionGameStateFactory : IGameStateFactory<ReconnectionGameState>
+public class ReconnectionGameStateFactory : IGameStateFactory<Guid, ReconnectionGameState>
 {
     public ReconnectionGameState CreateGameState(Guid matchId) => new ReconnectionGameState(matchId);
 }

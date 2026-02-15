@@ -2,7 +2,7 @@ using System;
 using Deterministic.GameFramework.Core.Domain;
 using Deterministic.GameFramework.Core.Utils;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 public class ServerDomain : RootDomain
 {
@@ -33,6 +33,7 @@ public class ServerDomain : RootDomain
 			{
 				action.ExecutorId ??= ServerId;
 				action.IsServer = true;
+				action.Tick = GameLoop.CurrentTick;
 			})
 			.AddTo(Disposables);
 	}

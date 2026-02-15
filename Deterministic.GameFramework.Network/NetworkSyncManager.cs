@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Deterministic.GameFramework.Core.Domain;
 using JsonSerializer = Deterministic.GameFramework.Core.Utils.JsonSerializer;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Global NetworkSyncManager that monitors all GameStates in the ServerDomain.
@@ -33,7 +33,7 @@ public class NetworkSyncManager : BranchDomain, IProcessor
     }
     
     // IProcessor implementation - syncs on fixed interval
-    public void Process(float delta)
+    public void Process(float delta, long currentTick)
     {
         _timeSinceLastSync += delta;
         

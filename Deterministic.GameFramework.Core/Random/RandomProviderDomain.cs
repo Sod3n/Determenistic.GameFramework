@@ -12,7 +12,7 @@ public class RandomProviderDomain : BranchDomain
     
     public RandomProviderDomain(BranchDomain targetDomain, int? initialSeed = null) : base(targetDomain)
     {
-        var seed = initialSeed ?? System.Random.Shared.Next();
+        var seed = initialSeed ?? new System.Random().Next();
         Random = new Random(seed);
         Seed = seed;
         

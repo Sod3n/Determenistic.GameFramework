@@ -1,8 +1,8 @@
 using Newtonsoft.Json;
 using Deterministic.GameFramework.Core;
 using Deterministic.GameFramework.Core.Domain;
-using Deterministic.GameFramework.Server;
-using Deterministic.GameFramework.Server.CollectiveActions;
+using Deterministic.GameFramework.Network;
+using Deterministic.GameFramework.Network.CollectiveActions;
 
 namespace Deterministic.GameFramework.Examples.Network;
 
