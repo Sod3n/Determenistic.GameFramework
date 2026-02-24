@@ -20,4 +20,11 @@
         <None Remove="Examples\MultiplayerHelloWorld\**" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- Copy data files to output directory -->
+        <None Update="Examples\Advanced\Data\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

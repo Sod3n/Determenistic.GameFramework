@@ -1,0 +1,14 @@
+{
+  "sword": {
+    "name": "Iron Sword",
+    "components": [
+      { "type": "damage", "value": 15 }
+    ]
+  },
+  "potion": {
+    "name": "Health Potion",
+    "components": [
+      { "type": "heal", "value": 30 }
+    ]
+  }
+}
