@@ -1,7 +1,7 @@
 using Deterministic.GameFramework.Core;
 using Deterministic.GameFramework.Core.Domain;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Generic action to send a network action to the server.

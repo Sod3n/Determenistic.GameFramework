@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 public interface INetworkAction : IDARAction
 {
@@ -12,6 +12,7 @@ public interface INetworkAction : IDARAction
     NetworkThread Thread { get; }
     int CurrentId { get; set; }
     bool SyncToClient { get; set; }
+    long Tick { get; set; }
 }
 
 
@@ -23,7 +24,8 @@ public abstract class NetworkAction<TDomain, TAction> : DARAction<TDomain, TActi
     public bool IsServer { get; set; }
     public bool SyncToClient { get; set; }
     public virtual NetworkThread Thread { get; protected set; } = NetworkThread.Main;
-    public int CurrentId { get; set; }    
+    public int CurrentId { get; set; }
+    public long Tick { get; set; }
     /// <summary>
     /// If true, this action contains server secrets and should NOT be sent to clients.
     /// Only the result/effect should be visible to clients.

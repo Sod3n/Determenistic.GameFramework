@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Deterministic.GameFramework.Core.Extensions;
 
-namespace Deterministic.GameFramework.Server.CollectiveActions;
+namespace Deterministic.GameFramework.Network.CollectiveActions;
 
 public class CollectiveActionManager : LeafDomain
 {

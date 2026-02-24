@@ -8,8 +8,8 @@ namespace Deterministic.GameFramework.Server;
 /// Base SignalR hub for game communication using DAR architecture.
 /// This is a partial class - action files can add their own hub methods.
 /// </summary>
-public partial class GameHub<TMatchManager, TGameState> : Hub 
-    where TMatchManager : MatchManager<TGameState>
+public partial class GameHub<TMatchData, TMatchManager, TGameState> : Hub 
+    where TMatchManager : MatchManager<TMatchData, TGameState>
     where TGameState : NetworkGameState
 {
     // Injected dependencies
@@ -48,12 +48,13 @@ public partial class GameHub<TMatchManager, TGameState> : Hub
         // Store connection mapping
         Connections[Context.ConnectionId] = (userId, matchId);
         
-        // Create match if it doesn't exist
+        // Look up existing match (matches should be pre-created by matchmaking)
         var gameState = MatchManager.GetMatch(matchId);
         if (gameState == null)
         {
-            gameState = MatchManager.CreateMatch(matchId);
-            Console.WriteLine($"[GameHub] Created new match {matchId}");
+            Console.WriteLine($"[GameHub] Match {matchId} not found - rejecting connection");
+            Context.Abort();
+            return;
         }
         
         // Increment player count for this match
@@ -188,13 +189,21 @@ public partial class GameHub<TMatchManager, TGameState> : Hub
         Console.WriteLine($"[GameHub] SyncActions called by user {userId}, json length: {actionsJson?.Length ?? 0}");
         Console.WriteLine($"[GameHub] JSON preview: {actionsJson?.Substring(0, Math.Min(200, actionsJson?.Length ?? 0))}");
         
-        // Relay-only mode: just broadcast actions to all clients without simulation
+        // Relay-only mode: stamp tick and broadcast without simulation
         if (ServerDomain.RelayOnlyMode)
         {
             ScheduleAction(() =>
             {
+                var tick = ServerDomain.GameLoop.CurrentTick;
+                var actions = JsonSerializer.FromJson<List<INetworkAction>>(actionsJson);
+                if (actions != null)
+                {
+                    foreach (var action in actions)
+                        action.Tick = tick;
+                    actionsJson = JsonSerializer.ToJson(actions);
+                }
                 Clients.Group(matchId.ToString()).SendAsync("SyncActions", actionsJson);
-                Console.WriteLine($"[GameHub] Relayed actions from user {userId} to match {matchId}");
+                Console.WriteLine($"[GameHub] Relayed actions from user {userId} to match {matchId} (tick {tick})");
             });
             return;
         }

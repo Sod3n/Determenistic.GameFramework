@@ -7,7 +7,7 @@ using MultiplayerHelloWorld.Shared;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add multiplayer server with factory function (includes ServerDomain, MatchManager, Factory, SignalR)
-builder.Services.AddMultiplayerServer<CounterGameState>(matchId => new CounterGameState(matchId));
+builder.Services.AddMultiplayerServer<Guid, CounterGameState>(matchId => new CounterGameState(matchId));
 
 // Add CORS for client connections
 builder.Services.AddCors(options =>
@@ -24,7 +24,7 @@ var app = builder.Build();
 app.UseCors();
 
 // Map the default GameHub endpoint
-app.MapHub<DefaultGameHub<CounterGameState>>("/gamehub");
+app.MapHub<DefaultGameHub<Guid, CounterGameState>>("/gamehub");
 
 app.MapGet("/", () => "Multiplayer Counter Server - Connect to /gamehub");
 

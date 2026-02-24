@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Deterministic.GameFramework.Core.Domain;
 using Deterministic.GameFramework.Core.Utils;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Reusable helper for deserializing and executing network actions.

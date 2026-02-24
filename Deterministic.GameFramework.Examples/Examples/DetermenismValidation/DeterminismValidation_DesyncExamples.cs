@@ -1,4 +1,5 @@
 using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 using Deterministic.GameFramework.Core;
 
 namespace Deterministic.GameFramework.Examples;
@@ -21,8 +22,8 @@ public class DeterminismValidation_DesyncExamples
         
         var serverDomain = new ServerDomain();
         var factory = new DesyncGameState1Factory();
-        var matchManager = new MatchManager<DesyncGameState1>(serverDomain, factory);
-        var validatingManager = new DeterminismValidatingMatchManager<DesyncGameState1>(matchManager, factory);
+        var matchManager = new MatchManager<Guid, DesyncGameState1>(serverDomain, factory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, DesyncGameState1>(matchManager, factory);
         
         var matchId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
@@ -68,8 +69,8 @@ public class DeterminismValidation_DesyncExamples
         
         var serverDomain = new ServerDomain();
         var factory = new DesyncGameState2Factory();
-        var matchManager = new MatchManager<DesyncGameState2>(serverDomain, factory);
-        var validatingManager = new DeterminismValidatingMatchManager<DesyncGameState2>(matchManager, factory);
+        var matchManager = new MatchManager<Guid, DesyncGameState2>(serverDomain, factory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, DesyncGameState2>(matchManager, factory);
         
         var matchId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
@@ -115,8 +116,8 @@ public class DeterminismValidation_DesyncExamples
         
         var serverDomain = new ServerDomain();
         var factory = new DesyncGameState3Factory();
-        var matchManager = new MatchManager<DesyncGameState3>(serverDomain, factory);
-        var validatingManager = new DeterminismValidatingMatchManager<DesyncGameState3>(matchManager, factory);
+        var matchManager = new MatchManager<Guid, DesyncGameState3>(serverDomain, factory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, DesyncGameState3>(matchManager, factory);
         
         var matchId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
@@ -162,8 +163,8 @@ public class DeterminismValidation_DesyncExamples
         
         var serverDomain = new ServerDomain();
         var factory = new DesyncGameState4Factory();
-        var matchManager = new MatchManager<DesyncGameState4>(serverDomain, factory);
-        var validatingManager = new DeterminismValidatingMatchManager<DesyncGameState4>(matchManager, factory);
+        var matchManager = new MatchManager<Guid, DesyncGameState4>(serverDomain, factory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, DesyncGameState4>(matchManager, factory);
         
         var matchId = Guid.NewGuid();
         var playerId = Guid.NewGuid();
@@ -283,7 +284,7 @@ public class ReactionB : Reaction, IAfterReaction<DesyncGameState1, TriggerReact
     }
 }
 
-public class DesyncGameState1Factory : IGameStateFactory<DesyncGameState1>
+public class DesyncGameState1Factory : IGameStateFactory<Guid, DesyncGameState1>
 {
     public DesyncGameState1 CreateGameState(Guid matchId) => new DesyncGameState1(matchId);
 }
@@ -332,7 +333,7 @@ public class ConditionalReaction : Reaction, IAfterReaction<DesyncGameState2, Co
     }
 }
 
-public class DesyncGameState2Factory : IGameStateFactory<DesyncGameState2>
+public class DesyncGameState2Factory : IGameStateFactory<Guid, DesyncGameState2>
 {
     public DesyncGameState2 CreateGameState(Guid matchId) => new DesyncGameState2(matchId);
 }
@@ -372,7 +373,7 @@ public class ChildCountReaction : Reaction, IAfterReaction<DesyncGameState3, Cre
     }
 }
 
-public class DesyncGameState3Factory : IGameStateFactory<DesyncGameState3>
+public class DesyncGameState3Factory : IGameStateFactory<Guid, DesyncGameState3>
 {
     public DesyncGameState3 CreateGameState(Guid matchId) => new DesyncGameState3(matchId);
 }
@@ -433,7 +434,7 @@ public class CounterReaction : Reaction, IAfterReaction<DesyncGameState4, TimeBa
     }
 }
 
-public class DesyncGameState4Factory : IGameStateFactory<DesyncGameState4>
+public class DesyncGameState4Factory : IGameStateFactory<Guid, DesyncGameState4>
 {
     public DesyncGameState4 CreateGameState(Guid matchId) => new DesyncGameState4(matchId);
 }

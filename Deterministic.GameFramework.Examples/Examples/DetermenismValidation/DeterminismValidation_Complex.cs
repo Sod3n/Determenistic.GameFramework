@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 using Deterministic.GameFramework.Core;
 
 namespace Deterministic.GameFramework.Examples;
@@ -53,8 +54,8 @@ public class DeterminismValidation_Complex
         // Step 2: Setup
         var serverDomain = new ServerDomain();
         var gameStateFactory = new ComplexGameStateFactory();
-        var matchManager = new MatchManager<ComplexGameState>(serverDomain, gameStateFactory);
-        var validatingManager = new DeterminismValidatingMatchManager<ComplexGameState>(
+        var matchManager = new MatchManager<Guid, ComplexGameState>(serverDomain, gameStateFactory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, ComplexGameState>(
             matchManager, 
             gameStateFactory
         );
@@ -217,8 +218,8 @@ public class DeterminismValidation_Complex
         // Setup and execute problematic action
         var serverDomain = new ServerDomain();
         var gameStateFactory = new ComplexGameStateFactory();
-        var matchManager = new MatchManager<ComplexGameState>(serverDomain, gameStateFactory);
-        var validatingManager = new DeterminismValidatingMatchManager<ComplexGameState>(
+        var matchManager = new MatchManager<Guid, ComplexGameState>(serverDomain, gameStateFactory);
+        var validatingManager = new DeterminismValidatingMatchManager<Guid, ComplexGameState>(
             matchManager, 
             gameStateFactory
         );
@@ -268,7 +269,7 @@ public class ComplexGameState : NetworkGameState
     }
 }
 
-public class ComplexGameStateFactory : IGameStateFactory<ComplexGameState>
+public class ComplexGameStateFactory : IGameStateFactory<Guid, ComplexGameState>
 {
     public ComplexGameState CreateGameState(Guid matchId) => new ComplexGameState(matchId);
 }

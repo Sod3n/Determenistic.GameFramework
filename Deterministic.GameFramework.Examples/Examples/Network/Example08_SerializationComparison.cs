@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Deterministic.GameFramework.Core;
+using Deterministic.GameFramework.Core.Domain;
 using Deterministic.GameFramework.Core.Utils;
-using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 
 namespace Deterministic.GameFramework.Examples.Network;
 

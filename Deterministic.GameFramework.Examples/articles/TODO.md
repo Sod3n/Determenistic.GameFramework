@@ -6,7 +6,6 @@ This page lists features and topics that are planned but not yet implemented or 
 
 - **State Serialization** - Custom serialization for complex game states
 - **Save/Load Feature** - Implementing game state persistence and loading
-- **Custom Matchmaking** - Implementing custom matchmaking logic and systems
 - **Benchmarks** - Performance benchmarks and profiling guidelines
 - **Complex Example** - Implementing a complex game with multiple features for references
 

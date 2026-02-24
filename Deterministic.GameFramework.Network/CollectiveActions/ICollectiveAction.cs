@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Deterministic.GameFramework.Server.CollectiveActions;
+namespace Deterministic.GameFramework.Network.CollectiveActions;
 
 public interface ICollectiveAction : INetworkAction
 {

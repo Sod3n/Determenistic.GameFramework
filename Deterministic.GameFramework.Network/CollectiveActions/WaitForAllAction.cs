@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Deterministic.GameFramework.Server.CollectiveActions;
+namespace Deterministic.GameFramework.Network.CollectiveActions;
 
 public abstract class WaitForAllAction<TDomain, TAction> : NetworkAction<TDomain, TAction>, IWaitForAllAction, IRequireCollectiveActionManager 
     where TDomain : class, IDomain 

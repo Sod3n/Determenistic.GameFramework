@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using R3;
 using Deterministic.GameFramework.Core;
 using Deterministic.GameFramework.Core.Domain;
-using Deterministic.GameFramework.Server;
+using Deterministic.GameFramework.Network;
 using Deterministic.GameFramework.Client.Utils;
 
 namespace Deterministic.GameFramework.Client

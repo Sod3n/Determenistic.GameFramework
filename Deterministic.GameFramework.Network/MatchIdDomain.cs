@@ -1,6 +1,6 @@
 using Deterministic.GameFramework.Core.Domain;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Provides match identification. Automatically sets MatchId on network actions.

@@ -1,27 +1,27 @@
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Manages all active matches in the server.
 /// Thread-safe match creation, retrieval, and removal.
 /// NetworkSyncManager is global and automatically handles all matches.
 /// </summary>
-public class MatchManager<TGameState> where TGameState : LeafDomain
+public class MatchManager<TMatchData, TGameState> where TGameState : NetworkGameState
 {
 	private readonly ServerDomain _serverDomain;
-	private readonly IGameStateFactory<TGameState> _gameStateFactory;
+	private readonly IGameStateFactory<TMatchData, TGameState> _gameStateFactory;
 	private readonly Dictionary<Guid, TGameState> _matches = new();
 	private readonly object _lock = new();
 	
-	// Event fired when a new match is created - (matchId, gameState)
-	public event Action<Guid, TGameState>? OnMatchCreated;
+	// Event fired when a new match is created - (matchData, matchId, gameState)
+	public event Action<TMatchData, Guid, TGameState>? OnMatchCreated;
 	
 	/// <summary>
 	/// Creates a match manager.
 	/// </summary>
 	/// <param name="serverDomain">The server domain to add matches to</param>
 	/// <param name="gameStateFactory">Factory for creating game state instances</param>
-	public MatchManager(ServerDomain serverDomain, IGameStateFactory<TGameState> gameStateFactory)
+	public MatchManager(ServerDomain serverDomain, IGameStateFactory<TMatchData, TGameState> gameStateFactory)
 	{
 		_serverDomain = serverDomain;
 		_gameStateFactory = gameStateFactory;
@@ -30,8 +30,11 @@ public class MatchManager<TGameState> where TGameState : LeafDomain
 	/// <summary>
 	/// Creates a new match and adds it to the server domain.
 	/// </summary>
-	public TGameState CreateMatch(Guid matchId)
+	public TGameState CreateMatch(TMatchData matchData)
 	{
+		var match = _gameStateFactory.CreateGameState(matchData);
+		var matchId = match.MatchId;
+		
 		lock (_lock)
 		{
 			if (_matches.ContainsKey(matchId))
@@ -39,13 +42,11 @@ public class MatchManager<TGameState> where TGameState : LeafDomain
 				throw new InvalidOperationException($"Match {matchId} already exists");
 			}
 			
-			Console.WriteLine($"[MatchManager] Using matchId for deterministic IDs: {matchId}");
-			var match = _gameStateFactory.CreateGameState(matchId);
 			_matches[matchId] = match;
 			_serverDomain.GameLoop.Schedule(() => _serverDomain.Subdomains.Add(match));
 			
 			// Fire event for match creation
-			OnMatchCreated?.Invoke(matchId, match);
+			OnMatchCreated?.Invoke(matchData, matchId, match);
 			
 			Console.WriteLine($"[MatchManager] Match {matchId} registered");
 			

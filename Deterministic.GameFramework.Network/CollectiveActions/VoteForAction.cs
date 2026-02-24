@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Deterministic.GameFramework.Server.CollectiveActions;
+namespace Deterministic.GameFramework.Network.CollectiveActions;
 
 public abstract class VoteForAction<TDomain, TAction> : NetworkAction<TDomain, TAction>, IVoteForAction, IRequireCollectiveActionManager 
     where TDomain : class, IDomain 

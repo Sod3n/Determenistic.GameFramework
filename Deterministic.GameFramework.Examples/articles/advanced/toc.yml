@@ -14,3 +14,5 @@
   href: 07-gameloop-scheduling.md
 - name: Data-Driven Component Architecture
   href: 08-data-driven-components.md
+- name: Tick-Based Game Loop
+  href: 08-tick-based-gameloop.md

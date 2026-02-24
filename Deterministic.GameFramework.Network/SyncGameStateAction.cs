@@ -1,6 +1,6 @@
 using Deterministic.GameFramework.Core.Domain;
 
-namespace Deterministic.GameFramework.Server;
+namespace Deterministic.GameFramework.Network;
 
 /// <summary>
 /// Generic action to synchronize full game state from server to client.
@@ -34,11 +34,43 @@ public class SyncGameStateAction<TGameState> : NetworkAction<TGameState, SyncGam
         // Step 1: Restore the random seed to ensure deterministic behavior
         gameState.RandomProviderDomain.Reset(Seed);
         
-        // Step 2: Replay all actions from history to rebuild game state
-        var executor = new NetworkActionExecutor(gameState.Registry);
+        // Step 2: Find the GameLoop in the domain tree
+        var gameLoop = gameState.GetInParent<GameLoop>();
+        if (gameLoop == null)
+        {
+            // Fallback: replay without tick advancement (no game loop available)
+            foreach (var action in History)
+            {
+                action.Execute(gameState);
+            }
+            return;
+        }
+        
+        // Step 3: Schedule each history action on its stamped tick
         foreach (var action in History)
         {
-            action.Execute(gameState);
+            var tick = action.Tick;
+            if (tick > 0)
+            {
+                gameLoop.ScheduleOnTick(tick, () => action.Execute(gameState));
+            }
+            else
+            {
+                // Actions without a tick (e.g. setup actions) execute immediately
+                action.Execute(gameState);
+            }
+        }
+        
+        // Step 4: Find the highest tick in history and advance the game loop to it
+        long maxTick = 0;
+        foreach (var action in History)
+        {
+            if (action.Tick > maxTick) maxTick = action.Tick;
+        }
+        
+        if (maxTick > 0)
+        {
+            gameLoop.AdvanceToTick(maxTick);
         }
     }
 }

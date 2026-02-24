@@ -6,7 +6,7 @@ namespace Deterministic.GameFramework.Core;
 
 public interface IProcessor
 {
-	void Process(float delta);
+	void Process(float delta, long currentTick);
 	
 	// Deterministic ordering - lower values process first
 	int ProcessOrder => 0;
