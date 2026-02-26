@@ -49,7 +49,24 @@ public struct Vector2 : IParam, IEquatable<Vector2>
         get
         {
             Float mag = Magnitude;
-            return mag > 0 ? this / mag : Zero;
+            return mag > (Float)0 ? this / mag : Zero;
         }
     }
+
+    public static Float Dot(Vector2 a, Vector2 b) => a.X * b.X + a.Y * b.Y;
+    
+    public static Float Distance(Vector2 a, Vector2 b) => (a - b).Magnitude;
+    public static Float DistanceSquared(Vector2 a, Vector2 b) => (a - b).SqrMagnitude;
+
+    public static Vector2 Lerp(Vector2 a, Vector2 b, Float t)
+    {
+        t = Float.Clamp(t, 0, 1);
+        return new Vector2(
+            Float.Lerp(a.X, b.X, t),
+            Float.Lerp(a.Y, b.Y, t)
+        );
+    }
+
+    public static Vector2 Min(Vector2 a, Vector2 b) => new Vector2(Float.Min(a.X, b.X), Float.Min(a.Y, b.Y));
+    public static Vector2 Max(Vector2 a, Vector2 b) => new Vector2(Float.Max(a.X, b.X), Float.Max(a.Y, b.Y));
 }

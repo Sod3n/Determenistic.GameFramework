@@ -1,16 +1,57 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.CoreV2;
 
 public class GlobalState
 {
-    private Array[] _componentArrays = new Array[128];
-    private HashSet<int>[] _componentMasks = new HashSet<int>[128];
+    internal Array[] _componentArrays = new Array[128];
+    internal int[] _componentElementSizes = new int[128];
+    internal Type[] _componentTypes = new Type[128];
+    internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
+    internal int _nextEntityId = 0;
 
     public GlobalState()
     {
-        InitializeMasks(0, _componentMasks.Length);
+    }
+
+    public Entity CreateEntity()
+    {
+        var id = _nextEntityId++;
+        EnsureEntityCapacity(id);
+        return new Entity(id);
+    }
+
+    public void AddComponent<T>(Entity entity, T component) where T : struct, IComponent
+    {
+        ref var storage = ref GetState<T>(entity);
+        storage = component;
+    }
+
+    public void RemoveComponent<T>(Entity entity) where T : struct, IComponent
+    {
+        if (entity.Id >= _entityMasks.Length) return;
+        
+        var typeId = InternalTypeId<T>.Value;
+        
+        // Unset mask
+        _entityMasks[entity.Id].Unset(typeId);
+        
+        // We don't necessarily need to clear the data array for value types, 
+        // as the mask determines presence. 
+        // But for safety/determinism (to avoid stale data if re-added without init), 
+        // we can default it if we want, or leave it. 
+        // In ECS, usually mask is the source of truth.
+        // Let's clear it to be safe against partial updates on re-add.
+        if (typeId < _componentArrays.Length && _componentArrays[typeId] != null)
+        {
+             var specificArray = (T[])_componentArrays[typeId];
+             if (entity.Id < specificArray.Length)
+             {
+                 specificArray[entity.Id] = default;
+             }
+        }
     }
 
     public ref T GetState<T>(Entity entity) where T : struct, IComponent
@@ -18,27 +59,54 @@ public class GlobalState
         var typeId = InternalTypeId<T>.Value;
         
         EnsureTypedCapacity<T>(typeId);
+        EnsureEntityCapacity(entity.Id);
 
         var specificArray = (T[])_componentArrays[typeId];
         
         if (entity.Id >= specificArray.Length)
         {
-            ExpandEntityCapacity<T>(typeId, specificArray, entity.Id);
+            ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
             specificArray = (T[])_componentArrays[typeId]; // Re-fetch after expansion
         }
 
-        _componentMasks[typeId].Add(entity.Id);
+        // Mark component as present using bitmask (Fast!)
+        _entityMasks[entity.Id].Set(typeId);
 
         return ref specificArray[entity.Id];
     }
     
     public bool HasComponent<T>(Entity entity) where T : struct, IComponent
     {
+        if (entity.Id >= _entityMasks.Length) return false;
+        
         var typeId = InternalTypeId<T>.Value;
-        if (typeId >= _componentMasks.Length) return false;
-        return _componentMasks[typeId].Contains(entity.Id);
+        return _entityMasks[entity.Id].IsSet(typeId);
     }
     
+    // Example of a fast filter query using BitMasks
+    public IEnumerable<Entity> Filter<T1, T2>() 
+        where T1 : struct, IComponent 
+        where T2 : struct, IComponent
+    {
+        var mask = new BitMask128();
+        mask.Set(InternalTypeId<T1>.Value);
+        mask.Set(InternalTypeId<T2>.Value);
+        
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].HasAll(mask))
+            {
+                yield return new Entity(i);
+            }
+        }
+    }
+    
+    public void RegisterComponent<T>() where T : struct, IComponent
+    {
+        var typeId = InternalTypeId<T>.Value;
+        EnsureTypedCapacity<T>(typeId);
+    }
+
     public T[] GetRawArray<T>() where T : struct, IComponent
     {
         var typeId = InternalTypeId<T>.Value;
@@ -46,16 +114,32 @@ public class GlobalState
         return (T[])_componentArrays[typeId];
     }
 
-    internal void EnsureTypedCapacity<T>(int typeId) where T : struct, IComponent
+    internal void EnsureTypedCapacityInternal(int typeId)
     {
-        if (typeId >= _componentArrays.Length)
+         if (typeId >= _componentArrays.Length)
         {
             ExpandTypeCapacity(typeId);
         }
+    }
+
+    internal void EnsureTypedCapacity<T>(int typeId) where T : struct, IComponent
+    {
+        EnsureTypedCapacityInternal(typeId);
 
         if (_componentArrays[typeId] == null)
         {
             _componentArrays[typeId] = new T[256];
+            _componentElementSizes[typeId] = System.Runtime.InteropServices.Marshal.SizeOf<T>();
+            _componentTypes[typeId] = typeof(T);
+        }
+    }
+    
+    internal void EnsureEntityCapacity(int entityId)
+    {
+        if (entityId >= _entityMasks.Length)
+        {
+            int newSize = Math.Max(_entityMasks.Length * 2, entityId + 1);
+            Array.Resize(ref _entityMasks, newSize);
         }
     }
 
@@ -64,26 +148,15 @@ public class GlobalState
         dispatcher.Execute(action, this, entity);
     }
 
-    private void InitializeMasks(int startIndex, int endIndex)
-    {
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            _componentMasks[i] = new HashSet<int>();
-        }
-    }
-
     private void ExpandTypeCapacity(int typeId)
     {
         int newSize = Math.Max(_componentArrays.Length * 2, typeId + 1);
-        
         Array.Resize(ref _componentArrays, newSize);
-        
-        var oldLength = _componentMasks.Length;
-        Array.Resize(ref _componentMasks, newSize);
-        InitializeMasks(oldLength, newSize);
+        Array.Resize(ref _componentElementSizes, newSize);
+        Array.Resize(ref _componentTypes, newSize);
     }
 
-    private void ExpandEntityCapacity<T>(int typeId, T[] specificArray, int entityId) where T : struct, IComponent
+    private void ExpandComponentArrayCapacity<T>(int typeId, T[] specificArray, int entityId) where T : struct, IComponent
     {
         Array.Resize(ref specificArray, Math.Max(specificArray.Length * 2, entityId + 1));
         _componentArrays[typeId] = specificArray;

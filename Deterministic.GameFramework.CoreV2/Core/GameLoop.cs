@@ -8,6 +8,7 @@ public class GameLoop
 {
     private readonly GlobalState _state;
     private readonly Dispatcher _dispatcher;
+    private readonly ActionScheduler _scheduler;
 
     private bool _isRunning;
     private readonly Stopwatch _stopwatch = new();
@@ -26,10 +27,14 @@ public class GameLoop
     
     public event Action? OnTick;
 
-    public GameLoop(GlobalState state, Dispatcher dispatcher)
+    private readonly StateHistory _history;
+
+    public GameLoop(GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler)
     {
         _state = state;
         _dispatcher = dispatcher;
+        _scheduler = scheduler;
+        _history = new StateHistory(60); // 1 second of history @ 60hz
     }
 
     public void SetTickRate(int tickRate)
@@ -112,7 +117,7 @@ public class GameLoop
         {
             Tick();
             _accumulator -= _fixedDeltaTime;
-            CurrentTick++;
+            // CurrentTick is handled inside Tick()
             ticksThisFrame++;
         }
     }
@@ -145,24 +150,72 @@ public class GameLoop
         while (CurrentTick < targetTick)
         {
             Tick();
-            CurrentTick++;
+            // CurrentTick is handled inside Tick()
         }
     }
 
     public void Schedule<TAction>(TAction action, Entity target) where TAction : struct, IAction
     {
-        if (!_isRunning) return;
-        _dispatcher.Schedule(action, target, CurrentTick);
+        var networkId = _dispatcher.GetNetworkId<TAction>();
+        _scheduler.Schedule(action, networkId, target, CurrentTick);
     }
     
     public void ScheduleOnTick<TAction>(long tick, TAction action, Entity target) where TAction : struct, IAction
     {
-        _dispatcher.Schedule(action, target, tick);
+        var networkId = _dispatcher.GetNetworkId<TAction>();
+        _scheduler.Schedule(action, networkId, target, tick);
+    }
+
+    /// <summary>
+    /// Manually run a single tick. Useful for testing or manual driving.
+    /// </summary>
+    public void RunSingleTick()
+    {
+        Tick();
     }
 
     private void Tick()
     {
-        _dispatcher.DrainScheduledActions(CurrentTick, _state);
+        // 0. Check for Rollback
+        long dirtyTick = _scheduler.EarliestDirtyTick;
+        if (dirtyTick < CurrentTick)
+        {
+            // Rollback required!
+            long originalTick = CurrentTick;
+            long restoreTick = dirtyTick - 1;
+            
+            // Try to find snapshot
+            if (_history.Retrieve(restoreTick, _state))
+            {
+                Console.WriteLine($"[Rollback] Rolling back from {CurrentTick} to {restoreTick} (Input at {dirtyTick})");
+                
+                // Truncate the "False Future"
+                _history.DiscardFuture(restoreTick);
+                
+                CurrentTick = restoreTick;
+                
+                // RESIMULATION LOOP (Catch up to where we were)
+                while (CurrentTick < originalTick)
+                {
+                    _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
+                    
+                    // Note: We might want to suppress OnTick (Render/Audio) during resimulation
+                    // But for logic listeners (like the test logger), we keep it or handle it.
+                    // For this PoC, we'll invoke it but maybe listeners should check 'IsResimulating' flag if we added one.
+                    try { OnTick?.Invoke(); } catch {}
+                    
+                    CurrentTick++;
+                    _history.Store(CurrentTick, _state);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[Rollback] CRITICAL: Could not restore state for tick {restoreTick}. Oldest history: {_history.GetOldestTick()}");
+            }
+        }
+
+        // 1. Simulate (Normal Step)
+        _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
         
         try
         {
@@ -171,6 +224,18 @@ public class GameLoop
         catch (Exception ex)
         {
             Console.WriteLine($"[GameLoop] Error in OnTick listener: {ex.Message}");
+        }
+        
+        CurrentTick++;
+        
+        // 2. Save State to History
+        _history.Store(CurrentTick, _state);
+        
+        // 3. Prune Old Data
+        long oldestTick = _history.GetOldestTick();
+        if (oldestTick > 0)
+        {
+            _scheduler.PruneHistory(oldestTick);
         }
     }
 }

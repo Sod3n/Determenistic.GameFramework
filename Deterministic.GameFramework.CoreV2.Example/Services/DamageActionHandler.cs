@@ -13,7 +13,7 @@ public class DamageActionHandler : ActionService<DamageAction, HealthComponent>
         if (target.CurrentHealth.Value > 0) return;
         
         // Find parent using tree
-        if (ctx.State.HasComponent<HierarchyComponent>(ctx.ExecutingEntity))
+        if (ctx.State.HasComponent<HierarchyComponent>(ctx.Entity))
         {
             var tree = ctx.GetComponent<HierarchyComponent>();
             if (tree.ParentId != 0) // 0 means no parent in this simple PoC

@@ -2,7 +2,7 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public static class HierarchyExtensions
 {
-    public static void AddChild(this GlobalState state, Entity parent, Entity child)
+    public static void AddChild(this Entity parent, Entity child, GlobalState state)
     {
         ref var parentHierarchy = ref state.GetState<HierarchyComponent>(parent);
         ref var childHierarchy = ref state.GetState<HierarchyComponent>(child);
@@ -29,7 +29,7 @@ public static class HierarchyExtensions
         }
     }
 
-    public static void RemoveChild(this GlobalState state, Entity parent, Entity child)
+    public static void RemoveChild(this Entity parent, Entity child, GlobalState state)
     {
         ref var parentHierarchy = ref state.GetState<HierarchyComponent>(parent);
         ref var childHierarchy = ref state.GetState<HierarchyComponent>(child);

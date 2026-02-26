@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Deterministic.GameFramework.CoreV2;
 
-public struct List8<T> : IParam, IEnumerable<T> where T : struct
+public struct List8<T> : IParam, IEnumerable<T>, IEquatable<List8<T>> where T : struct, IEquatable<T>
 {
     public T Item0;
     public T Item1;
@@ -74,11 +74,6 @@ public struct List8<T> : IParam, IEnumerable<T> where T : struct
     public void Clear()
     {
         Count = 0;
-        // We don't strictly need to clear the values for correctness, 
-        // but for deterministic serialization of the whole struct, it might be safer to zero them out 
-        // if we serialize the whole struct bytes. 
-        // However, usually we only serialize valid data.
-        // For simplicity and perf, we just reset Count.
         Item0 = default;
         Item1 = default;
         Item2 = default;
@@ -98,4 +93,32 @@ public struct List8<T> : IParam, IEnumerable<T> where T : struct
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public bool Equals(List8<T> other)
+    {
+        if (Count != other.Count) return false;
+        
+        // Only compare elements up to Count
+        for (int i = 0; i < Count; i++)
+        {
+            if (!this[i].Equals(other[i])) return false;
+        }
+        return true;
+    }
+
+    public override bool Equals(object? obj) => obj is List8<T> other && Equals(other);
+    
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Count);
+        for (int i = 0; i < Count; i++)
+        {
+            hash.Add(this[i]);
+        }
+        return hash.ToHashCode();
+    }
+
+    public static bool operator ==(List8<T> a, List8<T> b) => a.Equals(b);
+    public static bool operator !=(List8<T> a, List8<T> b) => !a.Equals(b);
 }

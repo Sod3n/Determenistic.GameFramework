@@ -27,26 +27,17 @@ public struct FixedString32 : IParam, IEquatable<FixedString32>
 
     public void Set(string s)
     {
+        _part0 = _part1 = _part2 = _part3 = 0;
         if (string.IsNullOrEmpty(s))
         {
-            _part0 = _part1 = _part2 = _part3 = 0;
             return;
         }
 
-        var bytes = Encoding.UTF8.GetBytes(s);
-        int len = Math.Min(bytes.Length, MaxLength);
-        
-        // This is a slow way to pack, but safe without 'unsafe' blocks
-        // Ideally we would use Unsafe.As or similar
-        
         Span<byte> buffer = stackalloc byte[MaxLength];
-        bytes.AsSpan(0, len).CopyTo(buffer);
         
-        // Zero out the rest
-        if (len < MaxLength)
-        {
-            buffer.Slice(len).Clear();
-        }
+        // Use Encoder to convert without allocation and handle truncation gracefully
+        var encoder = Encoding.UTF8.GetEncoder();
+        encoder.Convert(s.AsSpan(), buffer, true, out int charsUsed, out int bytesUsed, out bool completed);
         
         // Pack into longs
         _part0 = BitConverter.ToInt64(buffer.Slice(0, 8));

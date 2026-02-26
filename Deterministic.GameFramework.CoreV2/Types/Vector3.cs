@@ -54,7 +54,30 @@ public struct Vector3 : IParam, IEquatable<Vector3>
         get
         {
             Float mag = Magnitude;
-            return mag > 0 ? this / mag : Zero;
+            return mag > (Float)0 ? this / mag : Zero;
         }
     }
+
+    public static Float Dot(Vector3 a, Vector3 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+    public static Vector3 Cross(Vector3 a, Vector3 b) => new Vector3(
+        a.Y * b.Z - a.Z * b.Y,
+        a.Z * b.X - a.X * b.Z,
+        a.X * b.Y - a.Y * b.X
+    );
+    
+    public static Float Distance(Vector3 a, Vector3 b) => (a - b).Magnitude;
+    public static Float DistanceSquared(Vector3 a, Vector3 b) => (a - b).SqrMagnitude;
+
+    public static Vector3 Lerp(Vector3 a, Vector3 b, Float t)
+    {
+        t = Float.Clamp(t, 0, 1);
+        return new Vector3(
+            Float.Lerp(a.X, b.X, t),
+            Float.Lerp(a.Y, b.Y, t),
+            Float.Lerp(a.Z, b.Z, t)
+        );
+    }
+
+    public static Vector3 Min(Vector3 a, Vector3 b) => new Vector3(Float.Min(a.X, b.X), Float.Min(a.Y, b.Y), Float.Min(a.Z, b.Z));
+    public static Vector3 Max(Vector3 a, Vector3 b) => new Vector3(Float.Max(a.X, b.X), Float.Max(a.Y, b.Y), Float.Max(a.Z, b.Z));
 }
