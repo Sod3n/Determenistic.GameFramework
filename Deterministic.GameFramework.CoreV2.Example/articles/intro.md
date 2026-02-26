@@ -27,6 +27,13 @@ You define your game state and actions, and the framework handles the rest.
 ### 4. Safety Analyzers
 The framework includes a Roslyn Analyzer that runs while you code. It will **flag an error** if you accidentally use a non-deterministic type (like `float` or a reference type) in your networked components, preventing desync bugs before they happen.
 
+## Platform Support
+
+### Unity Game Engine
+The framework targets **.NET Standard 2.1**, making it fully compatible with **Unity 2021.3** and newer.
+- **IL2CPP Friendly**: The core uses struct-based generics and avoids dynamic code generation that typically breaks IL2CPP.
+- **Performance**: High-performance math types fall back to `BigInteger` on platforms lacking `Int128` (like older .NET Runtimes), ensuring compatibility.
+
 ## Next Steps
 
 - **[Core Concepts](concepts/determinism.md)**: Learn about the basic building blocks like `Float` and `Entity`.

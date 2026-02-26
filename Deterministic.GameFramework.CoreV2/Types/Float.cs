@@ -1,4 +1,11 @@
 using System;
+using System.Numerics;
+
+#if NETSTANDARD2_1 || NETSTANDARD2_0
+using WideInt = System.Numerics.BigInteger;
+#else
+using WideInt = System.Int128;
+#endif
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -36,14 +43,14 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
     
     public static Float operator *(Float a, Float b)
     {
-        Int128 result = ((Int128)a.RawValue * b.RawValue) >> Shift;
+        WideInt result = ((WideInt)a.RawValue * b.RawValue) >> Shift;
         return FromRaw((long)result);
     }
     
     public static Float operator /(Float a, Float b)
     {
         if (b.RawValue == 0) throw new DivideByZeroException();
-        Int128 result = ((Int128)a.RawValue << Shift) / b.RawValue;
+        WideInt result = ((WideInt)a.RawValue << Shift) / b.RawValue;
         return FromRaw((long)result);
     }
 
@@ -68,7 +75,7 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
         if (val.RawValue <= 0) return FromRaw(0);
         
         // Calculate Sqrt(x * 2^64) to get result in Q32.32 (x^0.5 * 2^32)
-        Int128 v = (Int128)val.RawValue << Shift;
+        WideInt v = (WideInt)val.RawValue << Shift;
         return FromRaw((long)ISqrt(v));
     }
 
@@ -185,11 +192,11 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
         return result;
     }
 
-    private static Int128 ISqrt(Int128 n)
+    private static WideInt ISqrt(WideInt n)
     {
         if (n == 0) return 0;
-        Int128 x = n;
-        Int128 y = (x + 1) >> 1;
+        WideInt x = n;
+        WideInt y = (x + 1) >> 1;
         while (y < x)
         {
             x = y;
