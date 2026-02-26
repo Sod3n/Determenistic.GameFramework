@@ -38,7 +38,11 @@ public class ActionScheduler
         EnsureDataCapacity(structSize);
 
         // Copy struct to buffer
+#if NETSTANDARD2_1 || NETSTANDARD2_0
         MemoryMarshal.Write(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize), ref action);
+#else
+        MemoryMarshal.Write(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize), in action);
+#endif
 
         // Record metadata
         AddPendingAction(networkId, target.Id, executeTick, _actionDataHead, structSize);
