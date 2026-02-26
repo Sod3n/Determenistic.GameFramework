@@ -264,7 +264,9 @@ public class DesyncGameState1 : NetworkGameState
     }
 }
 
-public class ReactionA : Reaction, IAfterReaction<DesyncGameState1, TriggerReactionsAction>
+[NetworkId(-4)]
+public
+    class ReactionA : Reaction, IAfterReaction<DesyncGameState1, TriggerReactionsAction>
 {
     public ReactionA(DesyncGameState1 target) : base(target) { }
     
@@ -274,7 +276,9 @@ public class ReactionA : Reaction, IAfterReaction<DesyncGameState1, TriggerReact
     }
 }
 
-public class ReactionB : Reaction, IAfterReaction<DesyncGameState1, TriggerReactionsAction>
+[NetworkId(-3)]
+public
+    class ReactionB : Reaction, IAfterReaction<DesyncGameState1, TriggerReactionsAction>
 {
     public ReactionB(DesyncGameState1 target) : base(target) { }
     
@@ -323,7 +327,9 @@ public class DesyncGameState2 : NetworkGameState
     }
 }
 
-public class ConditionalReaction : Reaction, IAfterReaction<DesyncGameState2, ConditionalAction>
+[NetworkId(-1)]
+public
+    class ConditionalReaction : Reaction, IAfterReaction<DesyncGameState2, ConditionalAction>
 {
     public ConditionalReaction(DesyncGameState2 target) : base(target) { }
     
@@ -361,7 +367,9 @@ public class DesyncGameState3 : NetworkGameState
     }
 }
 
-public class ChildCountReaction : Reaction, IAfterReaction<DesyncGameState3, CreateDomainAction>
+[NetworkId(-2)]
+public
+    class ChildCountReaction : Reaction, IAfterReaction<DesyncGameState3, CreateDomainAction>
 {
     public ChildCountReaction(DesyncGameState3 target) : base(target) { }
     
@@ -424,7 +432,9 @@ public class DesyncGameState4 : NetworkGameState
     }
 }
 
-public class CounterReaction : Reaction, IAfterReaction<DesyncGameState4, TimeBasedAction>
+[NetworkId(-5)]
+public
+    class CounterReaction : Reaction, IAfterReaction<DesyncGameState4, TimeBasedAction>
 {
     public CounterReaction(DesyncGameState4 target) : base(target) { }
     

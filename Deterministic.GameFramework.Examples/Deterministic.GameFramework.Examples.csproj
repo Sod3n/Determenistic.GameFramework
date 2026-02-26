@@ -12,6 +12,7 @@
         <ProjectReference Include="..\Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj" />
         <ProjectReference Include="..\Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj" />
         <ProjectReference Include="..\Deterministic.GameFramework.Network\Deterministic.GameFramework.Network.csproj" />
+        <ProjectReference Include="..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>
@@ -20,17 +21,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Exclude MultiplayerHelloWorld since it has its own separate projects -->
         <Compile Remove="Examples\MultiplayerHelloWorld\**" />
         <EmbeddedResource Remove="Examples\MultiplayerHelloWorld\**" />
         <None Remove="Examples\MultiplayerHelloWorld\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Copy data files to output directory -->
         <None Update="Examples\Advanced\Data\*.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <!-- Import our custom MSBuild target -->
+    <Import Project="..\Deterministic.GameFramework.BuildTasks\build\Deterministic.GameFramework.targets" />
 
 </Project>

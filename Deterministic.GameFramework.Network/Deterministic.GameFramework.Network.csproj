@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj" />
+      <ProjectReference Include="..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

@@ -74,6 +74,7 @@ public class NetworkSyncManager : BranchDomain, IProcessor
         _pendingActionsByMatch[matchId].Add(action);
     }
 
+    [NetworkId(-1)]
     public class CollectNetworkActionsReaction(NetworkSyncManager manager, ServerDomain target) : Reaction(target), IAfterReaction<BranchDomain, INetworkAction>
     {
         
