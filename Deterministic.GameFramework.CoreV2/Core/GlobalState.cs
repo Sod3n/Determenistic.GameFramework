@@ -11,6 +11,10 @@ public class GlobalState
     internal Type[] _componentTypes = new Type[128];
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
     internal int _nextEntityId = 0;
+    
+    // Dirty tracking
+    internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
+    internal List<int> _dirtyEntities = new List<int>(64);
 
     public GlobalState()
     {
@@ -25,6 +29,7 @@ public class GlobalState
 
     public void AddComponent<T>(Entity entity, T component) where T : struct, IComponent
     {
+        MarkDirty(entity.Id);
         ref var storage = ref GetState<T>(entity);
         storage = component;
     }
@@ -33,6 +38,7 @@ public class GlobalState
     {
         if (entity.Id >= _entityMasks.Length) return;
         
+        MarkDirty(entity.Id);
         var typeId = InternalTypeId<T>.Value;
         
         // Unset mask
@@ -71,6 +77,7 @@ public class GlobalState
 
         // Mark component as present using bitmask (Fast!)
         _entityMasks[entity.Id].Set(typeId);
+        Console.WriteLine($"[GlobalState] Entity {entity.Id} Set Component {typeof(T).Name} (ID {typeId}). IsSet: {_entityMasks[entity.Id].IsSet(typeId)}");
 
         return ref specificArray[entity.Id];
     }
@@ -140,8 +147,31 @@ public class GlobalState
         {
             int newSize = Math.Max(_entityMasks.Length * 2, entityId + 1);
             Array.Resize(ref _entityMasks, newSize);
+            _dirtyEntitySet.Length = newSize;
         }
     }
+
+    private void MarkDirty(int entityId)
+    {
+        if (entityId < _dirtyEntitySet.Length && !_dirtyEntitySet[entityId])
+        {
+            _dirtyEntitySet[entityId] = true;
+            _dirtyEntities.Add(entityId);
+        }
+    }
+
+    public void ClearDirty()
+    {
+        // Fast clear
+        foreach (var id in _dirtyEntities)
+        {
+            if (id < _dirtyEntitySet.Length) 
+                _dirtyEntitySet[id] = false;
+        }
+        _dirtyEntities.Clear();
+    }
+
+    public IReadOnlyList<int> GetDirtyEntities() => _dirtyEntities;
 
     public void Execute<TAction>(TAction action, Entity entity, Dispatcher dispatcher) where TAction : struct, IAction 
     {

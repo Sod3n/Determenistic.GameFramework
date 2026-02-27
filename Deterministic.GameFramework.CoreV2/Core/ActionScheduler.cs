@@ -62,6 +62,13 @@ public class ActionScheduler
 
     public void ScheduleFromBytes(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
     {
+        // Deduplication: Check if identical action is already scheduled for this tick
+        // This handles Client-Side Prediction (Local action matches Server action)
+        if (IsDuplicate(networkId, targetEntityId, executeTick, data))
+        {
+            return;
+        }
+
         int structSize = data.Length;
         
         EnsureCapacity();
@@ -77,6 +84,28 @@ public class ActionScheduler
 
         // Track for Rollback
         if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
+    }
+
+    private bool IsDuplicate(int networkId, int targetEntityId, long tick, ReadOnlySpan<byte> data)
+    {
+        for (int i = 0; i < _pendingActionCount; i++)
+        {
+            ref var pending = ref _pendingActions[i];
+            
+            // Fast checks
+            if (pending.ExecuteTick != tick) continue;
+            if (pending.NetworkId != networkId) continue;
+            if (pending.TargetEntityId != targetEntityId) continue;
+            if (pending.DataLength != data.Length) continue;
+
+            // Deep check
+            var pendingSpan = new ReadOnlySpan<byte>(_actionDataBuffer, pending.DataOffset, pending.DataLength);
+            if (pendingSpan.SequenceEqual(data))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void ExecuteActions(long tick, GlobalState state, Dispatcher dispatcher)
@@ -154,6 +183,7 @@ public class ActionScheduler
         int keepIdx = 0;
         int lowestValidOffset = _actionDataBuffer.Length; // Start high
         bool anyKept = false;
+        long newMinTick = long.MaxValue;
 
         for (int i = 0; i < _pendingActionCount; i++)
         {
@@ -165,6 +195,12 @@ public class ActionScheduler
                 {
                     lowestValidOffset = pending.DataOffset;
                 }
+                
+                if (pending.ExecuteTick < newMinTick)
+                {
+                    newMinTick = pending.ExecuteTick;
+                }
+
                 anyKept = true;
                 keepIdx++;
             }
@@ -175,13 +211,15 @@ public class ActionScheduler
         if (!anyKept)
         {
             _actionDataHead = 0;
-            // Also reset dirty tick since we have no history
-            if (EarliestDirtyTick < minTick) EarliestDirtyTick = long.MaxValue;
+            EarliestDirtyTick = long.MaxValue;
             return;
         }
         
-        // Reset dirty tick if we pruned past it (meaning we handled it)
-        if (EarliestDirtyTick < minTick) EarliestDirtyTick = long.MaxValue;
+        // If we pruned past the earliest dirty tick, update it to the earliest remaining action
+        if (EarliestDirtyTick < minTick) 
+        {
+            EarliestDirtyTick = newMinTick;
+        }
 
         // Compact Buffer if needed (only if we have significant waste)
         // Optimization: Only compact if > 4KB waste to avoid frequent memmoves

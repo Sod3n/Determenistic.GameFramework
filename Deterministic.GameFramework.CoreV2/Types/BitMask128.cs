@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -6,10 +7,11 @@ namespace Deterministic.GameFramework.CoreV2;
 /// A 128-bit mask used to track component presence on entities efficiently.
 /// Replaces HashSets for O(1) checks.
 /// </summary>
+[StructLayout(LayoutKind.Sequential)]
 public struct BitMask128 : IEquatable<BitMask128>
 {
-    private ulong _part0; // Bits 0-63
-    private ulong _part1; // Bits 64-127
+    public ulong _part0; // Bits 0-63
+    public ulong _part1; // Bits 64-127
 
     public void Set(int bitIndex)
     {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -13,7 +12,12 @@ public class StateHistory
 
     private readonly Snapshot[] _buffer;
     private readonly int _capacity;
+    
+    // Points to the index of the OLDEST valid snapshot
     private int _head;
+    // Points to the index where the NEXT snapshot will be written
+    private int _tail;
+    // Current number of snapshots stored
     private int _count;
 
     public StateHistory(int capacity)
@@ -21,6 +25,7 @@ public class StateHistory
         _capacity = capacity;
         _buffer = new Snapshot[capacity];
         _head = 0;
+        _tail = 0;
         _count = 0;
     }
 
@@ -28,73 +33,88 @@ public class StateHistory
     {
         byte[] data = StateSerializer.Serialize(state);
         
-        // Overwrite or Add
-        int index = (_head + _count) % _capacity;
+        _buffer[_tail] = new Snapshot { Tick = tick, Data = data };
         
-        // If full, we overwrite the oldest (Head)
-        if (_count == _capacity)
-        {
-            _head = (_head + 1) % _capacity;
-            index = (_head + _count - 1) % _capacity; // Wait, if full, head moved, so we write to old head pos
-            // Actually, simplest ring buffer logic:
-            // Always write to (Head + Count) % Cap.
-            // If Count == Cap, move Head.
-        }
-
         if (_count < _capacity)
         {
-            _buffer[index] = new Snapshot { Tick = tick, Data = data };
             _count++;
         }
         else
         {
-            // Full, overwrite oldest
-             // Current Head is oldest. We want to overwrite Head? 
-             // No, we append to tail, but tail wraps to head.
-             // So we overwrite head, and move head forward.
-             int writePos = _head;
-             _buffer[writePos] = new Snapshot { Tick = tick, Data = data };
-             _head = (_head + 1) % _capacity;
+            // Buffer is full, we overwrote the head (oldest)
+            _head = (_head + 1) % _capacity;
         }
+        
+        _tail = (_tail + 1) % _capacity;
     }
 
     public bool Retrieve(long tick, GlobalState state)
     {
-        // Find snapshot with Tick == tick
+        if (_count == 0) return false;
+
+        // Optimization: check bounds first
+        long oldestTick = _buffer[_head].Tick;
+        // Calculate latest tick safely. If _tail is 0, latest is at _capacity - 1
+        int latestIdx = (_tail - 1 + _capacity) % _capacity;
+        long latestTick = _buffer[latestIdx].Tick;
+
+        if (tick < oldestTick || tick > latestTick)
+        {
+            return false;
+        }
+
+        // Linear search is fine for small buffers (60), but could use offset math if ticks are sequential
         for (int i = 0; i < _count; i++)
         {
             int idx = (_head + i) % _capacity;
             if (_buffer[idx].Tick == tick)
             {
+                // DEBUG: Check mask before restore
+                Console.WriteLine($"[StateHistory] Restoring Tick {tick}. Current Mask[0]: {state._entityMasks[0]._part0:X}");
+                
+                if (tick == 1)
+                {
+                     // Inspect data buffer at offset 10 (Start of Mask[0])
+                     byte b = _buffer[idx].Data[10];
+                     if (b != 0)
+                     {
+                         throw new Exception($"[StateHistory] Tick 1 Snapshot is Dirty! Byte 10: {b:X}");
+                     }
+                }
+
                 StateSerializer.Deserialize(state, _buffer[idx].Data);
+                
+                // DEBUG: Check mask after restore
+                Console.WriteLine($"[StateHistory] Restored. New Mask[0]: {state._entityMasks[0]._part0:X}");
+                
                 return true;
             }
         }
+        
         return false;
     }
 
     public void DiscardFuture(long tick)
     {
-        // We want to keep everything up to and including 'tick'.
-        // Everything after 'tick' is discarded.
+        // Discard everything NEWER than 'tick'
+        // Rewinding the 'tail'
         
-        for (int i = 0; i < _count; i++)
+        if (_count == 0) return;
+
+        // Iterate backwards from newest
+        while (_count > 0)
         {
-            int idx = (_head + i) % _capacity;
-            if (_buffer[idx].Tick == tick)
+            int latestIdx = (_tail - 1 + _capacity) % _capacity;
+            if (_buffer[latestIdx].Tick > tick)
             {
-                // We found the new 'latest' tick.
-                // The new count is i + 1.
-                _count = i + 1;
-                return;
+                // Discard this one
+                _tail = latestIdx; // Move tail back
+                _count--;
             }
-            if (_buffer[idx].Tick > tick)
+            else
             {
-                // We somehow skipped past it? (Shouldn't happen if sorted)
-                // If we found something OLDER than tick, we keep going.
-                // If we found something NEWER than tick, and we haven't found tick yet...
-                // It means 'tick' isn't in history.
-                // But typically we call DiscardFuture AFTER Retrieve(tick), so we know it exists.
+                // We found something <= tick. Stop discarding.
+                break;
             }
         }
     }
@@ -108,7 +128,7 @@ public class StateHistory
     public long GetLatestTick()
     {
         if (_count == 0) return -1;
-        int tail = (_head + _count - 1) % _capacity;
-        return _buffer[tail].Tick;
+        int latestIdx = (_tail - 1 + _capacity) % _capacity;
+        return _buffer[latestIdx].Tick;
     }
 }

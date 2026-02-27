@@ -7,4 +7,5 @@ namespace Deterministic.GameFramework.CoreV2.Example.Components;
 [NetworkId(107)]
 public struct RegionDamageReactionTag : IComponent
 {
+    public Party TargetParty;
 }

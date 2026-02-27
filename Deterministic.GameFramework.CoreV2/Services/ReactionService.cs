@@ -13,12 +13,21 @@ public abstract class ReactionService<TAction, TTarget>
     // If true, runs after the ActionService has processed
     public abstract bool AfterActionExecuted { get; }
     
-    internal IsAborted InternalReact(TAction args, ref TTarget target, Context ctx)
+    internal IsAborted InternalReact(ref TAction args, ref TTarget target, Context ctx)
     {
-        return React(args, ref target, ctx);
+        if (!ShouldReact(args, target, ctx))
+        {
+            return new IsAborted { Value = false };
+        }
+        return React(ref args, ref target, ctx);
+    }
+
+    protected virtual bool ShouldReact(TAction args, TTarget target, Context ctx)
+    {
+        return true;
     }
     
-    protected abstract IsAborted React(TAction args, ref TTarget target, Context ctx);
+    protected abstract IsAborted React(ref TAction args, ref TTarget target, Context ctx);
     
     public struct IsAborted
     {

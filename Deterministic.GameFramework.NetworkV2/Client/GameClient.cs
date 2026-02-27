@@ -1,0 +1,267 @@
+using System;
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.NetworkV2.Buffers;
+using Deterministic.GameFramework.NetworkV2.Interfaces;
+using Deterministic.GameFramework.NetworkV2.Packets;
+
+namespace Deterministic.GameFramework.NetworkV2.Client;
+
+public class GameClient : IDisposable, IAsyncDisposable
+{
+    private readonly HubConnection _hubConnection;
+    private readonly Dispatcher _dispatcher;
+    private readonly GlobalState _state;
+    private readonly ActionScheduler _scheduler;
+    private readonly GameLoop _gameLoop;
+    
+    private Guid _currentMatchId;
+    private readonly PacketBuffer _outgoingBuffer = new PacketBuffer();
+    private readonly TaskCompletionSource _syncTcs = new TaskCompletionSource();
+    
+    public event Action<string>? OnLog;
+    public event Action? OnConnected;
+    public event Action? OnDisconnected;
+
+    public int DefaultTickDelay { get; set; } = 5;
+    public bool DefaultPrediction { get; set; } = true;
+
+    public ReactiveSystem Reactive { get; }
+
+    public GameClient(string serverUrl, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
+    {
+        _state = state;
+        _dispatcher = dispatcher;
+        _scheduler = scheduler;
+        _gameLoop = gameLoop;
+        
+        Reactive = new ReactiveSystem();
+        Reactive.Bind(_gameLoop);
+        
+        // Hook into GameLoop to flush actions every tick
+        _gameLoop.OnTick += Flush;
+        
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(serverUrl)
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<byte[]>("OnTickSnapshot", OnTickSnapshot);
+        _hubConnection.On<byte[]>("OnFullStateReceived", OnFullStateReceived);
+        
+        _hubConnection.Closed += (arg) => 
+        {
+            OnDisconnected?.Invoke();
+            return Task.CompletedTask;
+        };
+        
+        _hubConnection.Reconnected += (arg) => 
+        {
+            OnConnected?.Invoke();
+            return Task.CompletedTask;
+        };
+    }
+
+    public async Task ConnectAsync(Guid matchId)
+    {
+        try
+        {
+            _currentMatchId = matchId;
+            await _hubConnection.StartAsync();
+            OnConnected?.Invoke();
+            
+            await _hubConnection.InvokeAsync("JoinMatch", matchId, (string?)null);
+            Log($"Connected to match {matchId}");
+            
+            // Request full state on connect
+            await RequestFullState();
+        }
+        catch (Exception ex)
+        {
+            Log($"Connection error: {ex.Message}");
+            throw;
+        }
+    }
+    
+    public async Task RequestFullState()
+    {
+         if (_hubConnection.State == HubConnectionState.Connected)
+         {
+             await _hubConnection.InvokeAsync("RequestFullState", _currentMatchId);
+         }
+    }
+
+    public Task WaitForSyncAsync()
+    {
+        return _syncTcs.Task;
+    }
+
+    public void Execute<TAction>(TAction action, int targetEntityId, int? tickDelay = null, bool? predict = null) where TAction : struct, IAction
+    {
+        int actualDelay = tickDelay ?? DefaultTickDelay;
+        bool actualPredict = predict ?? DefaultPrediction;
+
+        int networkId = _dispatcher.GetNetworkId<TAction>();
+        long executeTick = _gameLoop.CurrentTick + actualDelay;
+
+        // Serialize
+        int size = Marshal.SizeOf<TAction>();
+        byte[] data = new byte[size];
+        MemoryMarshal.Write(new Span<byte>(data), in action);
+
+        // Schedule Locally (Prediction)
+        if (actualPredict)
+        {
+            _scheduler.Schedule(action, networkId, new Entity(targetEntityId), executeTick);
+        }
+
+        // Send to Server
+        _ = SendAction(networkId, data, targetEntityId, executeTick);
+    }
+
+    public Task SendAction(int networkId, byte[] data, int targetEntityId, long tick)
+    {
+        // Buffer the action
+        lock (_outgoingBuffer)
+        {
+            int headerSize = Marshal.SizeOf<NetworkActionHeader>();
+            int totalSize = headerSize + data.Length;
+            
+            var span = _outgoingBuffer.GetSpan(totalSize);
+            var header = new NetworkActionHeader
+            {
+                NetworkId = networkId,
+                TargetEntityId = targetEntityId,
+                ExecuteTick = tick,
+                DataLength = data.Length
+            };
+            
+            MemoryMarshal.Write(span, in header);
+            data.CopyTo(span.Slice(headerSize));
+            
+            _outgoingBuffer.Advance(totalSize);
+        }
+        
+        // Note: Actual network send happens in Flush()
+        return Task.CompletedTask;
+    }
+    
+    private void Flush()
+    {
+        if (_hubConnection.State != HubConnectionState.Connected) return;
+        
+        byte[]? payload = null;
+        lock (_outgoingBuffer)
+        {
+            if (_outgoingBuffer.Length > 0)
+            {
+                payload = _outgoingBuffer.ToArray();
+                _outgoingBuffer.Reset();
+            }
+        }
+        
+        if (payload != null)
+        {
+            // Fire and forget send
+            _ = _hubConnection.InvokeAsync("SendBatch", _currentMatchId, payload);
+        }
+    }
+
+    private void OnTickSnapshot(byte[] packetData)
+    {
+        // Parse Header
+        var packetSpan = new ReadOnlySpan<byte>(packetData);
+        int headerSize = Marshal.SizeOf<TickSnapshotHeader>();
+        
+        if (packetSpan.Length < headerSize) return; // Invalid
+        
+        var header = MemoryMarshal.Read<TickSnapshotHeader>(packetSpan);
+        var payloadSpan = packetSpan.Slice(headerSize, header.PayloadLength);
+        
+        // 1. Process Actions from Binary Payload
+        int offset = 0;
+        int actionHeaderSize = Marshal.SizeOf<NetworkActionHeader>();
+        
+        while (offset + actionHeaderSize <= payloadSpan.Length)
+        {
+            var actionHeader = MemoryMarshal.Read<NetworkActionHeader>(payloadSpan.Slice(offset));
+            offset += actionHeaderSize;
+            
+            if (offset + actionHeader.DataLength > payloadSpan.Length) break; // Malformed
+            
+            var dataSpan = payloadSpan.Slice(offset, actionHeader.DataLength);
+            offset += actionHeader.DataLength;
+            
+            _scheduler.ScheduleFromBytes(actionHeader.NetworkId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
+        }
+        
+        // 2. Sync Tick (Basic)
+        long delta = header.ServerTick - _gameLoop.CurrentTick;
+        if (Math.Abs(delta) > 60) // 1 second drift
+        {
+            Log($"Tick Drift Large: {delta}. Server: {header.ServerTick}, Client: {_gameLoop.CurrentTick}");
+        }
+    }
+    
+    private void OnFullStateReceived(byte[] packetData)
+    {
+        try
+        {
+            // Parse Header
+            var packetSpan = new ReadOnlySpan<byte>(packetData);
+            int headerSize = Marshal.SizeOf<FullStateHeader>();
+            
+            if (packetSpan.Length < headerSize)
+            {
+                Log("Invalid packet: too small for header");
+                return;
+            }
+            
+            var header = MemoryMarshal.Read<FullStateHeader>(packetSpan);
+            var stateData = packetSpan.Slice(headerSize, header.StateDataLength).ToArray();
+            
+            Log($"Received Full State for Tick {header.Tick}. Size: {stateData.Length} bytes");
+            
+            Log("Deserializing state...");
+            StateSerializer.Deserialize(_state, stateData);
+            Log("State deserialized!");
+            
+            Log($"Setting tick to {header.Tick}...");
+            _gameLoop.ForceSetTick(header.Tick);
+            Log($"Tick set to {header.Tick}!");
+            
+            Log("Completing sync task...");
+            _syncTcs.TrySetResult();
+            Log("Sync task completed!");
+        }
+        catch (Exception ex)
+        {
+            Log($"FATAL ERROR in OnFullStateReceived: {ex.Message}");
+            Log($"StackTrace: {ex.StackTrace}");
+        }
+    }
+
+    private void Log(string message)
+    {
+        OnLog?.Invoke($"[GameClient] {message}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Reactive.Dispose();
+        _gameLoop.OnTick -= Flush;
+        if (_hubConnection != null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        Reactive.Dispose();
+        _ = DisposeAsync();
+    }
+}

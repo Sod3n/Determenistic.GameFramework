@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.CoreV2;
@@ -20,9 +21,11 @@ public static class StateSerializer
 
     public static byte[] Serialize(GlobalState state)
     {
+        int maskSize = Unsafe.SizeOf<BitMask128>();
+        
         // 1. Calculate total size
         // Header: Version(2) + NextEntityId (4) + EntityMasks Length (4) + EntityMasks Bytes
-        int totalSize = 2 + 4 + 4 + (state._entityMasks.Length * 16);
+        int totalSize = 2 + 4 + 4 + (state._entityMasks.Length * maskSize);
         
         // Components: Count (4)
         totalSize += 4;
@@ -106,12 +109,11 @@ public static class StateSerializer
 
         if (maskLength > MAX_ARRAY_SIZE) throw new Exception("EntityMask array too large. Possible corruption.");
 
-        if (state._entityMasks.Length != maskLength)
-        {
-            Array.Resize(ref state._entityMasks, maskLength);
-        }
+        // Force new array allocation to ensure 100% clean slate
+        state._entityMasks = new BitMask128[maskLength];
 
-        int maskByteLength = maskLength * 16;
+        int maskSize = Unsafe.SizeOf<BitMask128>();
+        int maskByteLength = maskLength * maskSize;
         var maskSpan = MemoryMarshal.AsBytes(new Span<BitMask128>(state._entityMasks));
         span.Slice(offset, maskByteLength).CopyTo(maskSpan);
         offset += maskByteLength;

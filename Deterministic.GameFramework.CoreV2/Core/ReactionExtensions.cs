@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -29,5 +30,32 @@ public static class ReactionExtensions
     public static void RemoveReaction<T>(this Entity entity, GlobalState state) where T : struct, IComponent
     {
         state.RemoveComponent<T>(entity);
+    }
+    
+    /// <summary>
+    /// Checks if the entity has a component of type T.
+    /// </summary>
+    public static bool HasComponent<T>(this Entity entity, GlobalState state) where T : struct, IComponent
+    {
+        return state.HasComponent<T>(entity);
+    }
+
+    /// <summary>
+    /// Checks if the entity has a component of type T using Context.
+    /// </summary>
+    public static bool HasComponent<T>(this Entity entity, Context ctx) where T : struct, IComponent
+    {
+        return ctx.State.HasComponent<T>(entity);
+    }
+
+    /// <summary>
+    /// Checks if the entity has a component of type T AND that component equals the expected value.
+    /// </summary>
+    public static bool HasComponent<T>(this Entity entity, T expectedValue, Context ctx) where T : struct, IComponent
+    {
+        if (!ctx.State.HasComponent<T>(entity)) return false;
+        
+        ref var current = ref ctx.State.GetState<T>(entity);
+        return EqualityComparer<T>.Default.Equals(current, expectedValue);
     }
 }

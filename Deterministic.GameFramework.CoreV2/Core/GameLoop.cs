@@ -24,6 +24,7 @@ public class GameLoop
     public float FixedDeltaTime => _fixedDeltaTime;
     public long CurrentTick { get; private set; }
     public int TickRate => _tickRate;
+    public bool IsResimulating { get; private set; }
     
     public event Action? OnTick;
 
@@ -66,7 +67,7 @@ public class GameLoop
         _isRunning = true;
         _fixedDeltaTime = 1f / _tickRate;
         _accumulator = -(TickDelay * _fixedDeltaTime);
-        CurrentTick = 0;
+        // CurrentTick = 0; // Don't reset if we want to start from a synced tick
         
         _stopwatch.Start();
         _lastFrameTicks = _stopwatch.ElapsedTicks;
@@ -174,6 +175,16 @@ public class GameLoop
         Tick();
     }
 
+    public void ForceSetTick(long tick)
+    {
+        CurrentTick = tick;
+        // Clear accumulator to avoid immediate catch-up ticks
+        _accumulator = 0;
+        // Reset history to avoid trying to rollback to invalid past
+        // Actually, we should probably clear history if we jump ticks significantly
+        // For now, let's just update the tick.
+    }
+
     private void Tick()
     {
         // 0. Check for Rollback
@@ -195,6 +206,7 @@ public class GameLoop
                 CurrentTick = restoreTick;
                 
                 // RESIMULATION LOOP (Catch up to where we were)
+                IsResimulating = true;
                 while (CurrentTick < originalTick)
                 {
                     _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
@@ -207,10 +219,11 @@ public class GameLoop
                     CurrentTick++;
                     _history.Store(CurrentTick, _state);
                 }
+                IsResimulating = false;
             }
             else
             {
-                Console.WriteLine($"[Rollback] CRITICAL: Could not restore state for tick {restoreTick}. Oldest history: {_history.GetOldestTick()}");
+                throw new Exception($"[Rollback] CRITICAL: Could not restore state for tick {restoreTick}. Oldest history: {_history.GetOldestTick()}, Latest: {_history.GetLatestTick()}");
             }
         }
 
@@ -237,5 +250,8 @@ public class GameLoop
         {
             _scheduler.PruneHistory(oldestTick);
         }
+        
+        // 4. Clear Dirty State
+        _state.ClearDirty();
     }
 }

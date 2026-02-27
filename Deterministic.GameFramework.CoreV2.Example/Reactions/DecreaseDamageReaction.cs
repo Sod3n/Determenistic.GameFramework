@@ -10,7 +10,7 @@ public class DecreaseDamageReaction : ReactionService<DamageAction, HealthCompon
     public override int Priority => PriorityDefault;
     public override bool AfterActionExecuted => true;
     
-    protected override IsAborted React(DamageAction args, ref HealthComponent target, Context context)
+    protected override IsAborted React(ref DamageAction args, ref HealthComponent target, Context context)
     {
         // Simple reaction: after taking damage, do something (PoC)
         return new IsAborted { Value = false };

@@ -68,7 +68,7 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
     public override int GetHashCode() => RawValue.GetHashCode();
     public int CompareTo(Float other) => RawValue.CompareTo(other.RawValue);
     
-    public override string ToString() => ((float)this).ToString("F5");
+    public override string ToString() => ((float)this).ToString("F5", System.Globalization.CultureInfo.InvariantCulture);
 
     public static Float Sqrt(Float val)
     {

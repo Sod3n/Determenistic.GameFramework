@@ -42,7 +42,9 @@ public static class PoCTest
         // Add RegionComponent to root
         state.AddComponent(rootNode, new RegionComponent { DamageCounter = 0 });
         // Add Reaction Tag to root to subscribe to the reaction using the new helper
-        rootNode.AddReaction<RegionDamageReactionTag>(state);
+        // Note: With hierarchy bubbling removed, this tag on rootNode will NOT trigger for actions on player.
+        // To test the reaction, we would need to add it to the player.
+        rootNode.AddReaction(state, new RegionDamageReactionTag { TargetParty = new Party { PartyId = 1 } });
         
         // Link them
         rootNode.AddChild(player, state);
@@ -50,6 +52,17 @@ public static class PoCTest
         // Initialize State
         ref var health = ref state.GetState<HealthComponent>(player);
         health.CurrentHealth = 100;
+        
+        // Add Party component to player for reaction validation
+        state.AddComponent(player, new Party { PartyId = 1 });
+        
+        // Add RegionComponent and Reaction Tag to PLAYER to demonstrate local flexible reaction
+        Console.WriteLine("DEBUG: Adding RegionComponent to Player...");
+        state.AddComponent(player, new RegionComponent { DamageCounter = 0 });
+        
+        Console.WriteLine("DEBUG: Adding RegionDamageReactionTag to Player...");
+        player.AddReaction(state, new RegionDamageReactionTag { TargetParty = new Party { PartyId = 1 } });
+        Console.WriteLine("DEBUG: Finished adding components.");
 
         Console.WriteLine($"Player initial health: {state.GetState<HealthComponent>(player).CurrentHealth}");
         Console.WriteLine($"Player parent ID: {state.GetState<HierarchyComponent>(player).ParentId}");
@@ -129,21 +142,20 @@ public static class PoCTest
             Console.WriteLine($"FAILURE: Expected 50, got {healthAfterRollback}. (Did it ignore the late packet?)");
         }
         
-        // 5b. Verify Hierarchy Reaction
-        var regionDamage = state.GetState<RegionComponent>(rootNode).DamageCounter;
-        Console.WriteLine($"Region Damage Counter: {regionDamage}");
-        // Expected: 
-        // Tick 0: 15
-        // Tick 3: 25
-        // Tick 5: 10 (Late)
-        // Total: 50
-        if (regionDamage == 50)
+        // 5b. Verify Local Reaction
+        var rootRegionDamage = state.GetState<RegionComponent>(rootNode).DamageCounter;
+        var playerRegionDamage = state.GetState<RegionComponent>(player).DamageCounter;
+        
+        Console.WriteLine($"Root Region Damage Counter: {rootRegionDamage} (Expected 0 - No Bubbling)");
+        Console.WriteLine($"Player Region Damage Counter: {playerRegionDamage} (Expected 50 - Local Reaction)");
+        
+        if (rootRegionDamage == 0 && playerRegionDamage == 50)
         {
-             Console.WriteLine("SUCCESS: Hierarchy Reaction Bubbling Works!");
+             Console.WriteLine("SUCCESS: Hierarchy Bubbling Removed AND Local Reaction Works!");
         }
         else
         {
-             Console.WriteLine($"FAILURE: Hierarchy Reaction Failed. Expected 50, got {regionDamage}");
+             Console.WriteLine($"FAILURE: Assertions failed. Root: {rootRegionDamage}, Player: {playerRegionDamage}");
         }
 
         // 6. Deterministic Math Verification

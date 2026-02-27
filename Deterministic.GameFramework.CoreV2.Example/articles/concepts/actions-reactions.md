@@ -107,55 +107,70 @@ var reactions = new List<ReactionService<HealAction, HealthComponent>>
 dispatcher.RegisterAction(healService, reactions);
 ```
 
-## 5. Hierarchy Reactions (Bubbling)
+## 5. Conditional Reactions & Tag Pattern
 
-The framework supports **Hierarchy Bubbling** for reactions. This means an action executed on a child entity can trigger reactions on its parent (and ancestors).
+Sometimes you want a reaction to run only under specific conditions, or you want to attach a reaction to an entity without adding data to it.
 
-This is useful for systems like:
-- **Region/Dungeon tracking**: A region tracks total damage taken by all monsters within it.
-- **Quest Objectives**: "Kill 10 skeletons" objective on a player updates when a skeleton child entity dies.
+### The Tag Pattern
 
-### Tag Component Pattern
+You can use a "Tag Component" as the `TTarget` for a reaction. This effectively "subscribes" the entity to the reaction.
 
-To attach a reaction to an ancestor entity without polluting it with unrelated data components, we use the **Tag Component Pattern**.
-
-1. **Define a Tag Component**: This component acts as a subscription marker.
+1. **Define a Tag**:
 ```csharp
 [NetworkId(107)]
-public struct RegionDamageReactionTag : IComponent { }
+public struct BurnEffectTag : IComponent 
+{
+    public int DamagePerTick;
+}
 ```
 
-2. **Define the Reaction**: Use the Tag as the `TTarget`.
+2. **Define the Reaction**:
 ```csharp
-public class RegionDamageReaction : ReactionService<DamageAction, RegionDamageReactionTag>
+public class BurnReaction : ReactionService<TickAction, BurnEffectTag>
 {
-    protected override bool React(DamageAction action, ref RegionDamageReactionTag tag, Context ctx)
+    protected override IsAborted React(TickAction action, ref BurnEffectTag tag, Context ctx)
     {
-        // ctx.Entity is the Ancestor (The Region)
-        ref var region = ref ctx.GetComponent<RegionComponent>();
-        region.TotalDamage += action.Amount;
-        return false;
+        // Apply burn damage
+        ref var health = ref ctx.GetComponent<HealthComponent>();
+        health.Current -= tag.DamagePerTick;
+        return new IsAborted { Value = false };
     }
 }
 ```
 
-3. **Setup the Hierarchy**:
+3. **Subscribe**:
 ```csharp
-// Parent (Region) has the Tag
-state.AddComponent(regionEntity, new RegionComponent());
-
-// Subscribe to reaction using helper
-regionEntity.AddReaction<RegionDamageReactionTag>(state);
-
-// Child (Player/Monster)
-regionEntity.AddChild(monsterEntity, state);
+// Attach the reaction to the entity
+entity.AddReaction(state, new BurnEffectTag { DamagePerTick = 5 });
 ```
 
-When `DamageAction` runs on `monsterEntity`, the dispatcher will:
-1. Run local reactions on `monsterEntity`.
-2. Bubble up to `regionEntity`.
-3. Find `RegionDamageReactionTag` on `regionEntity`.
-4. Execute `RegionDamageReaction` with `ctx.Entity` set to `regionEntity`.
+### Conditional Execution (`ShouldReact`)
+
+You can override `ShouldReact` to add custom filtering logic before the reaction runs. This is useful for complex conditions that depend on multiple components.
+
+```csharp
+public class CriticalHitReaction : ReactionService<DamageAction, HealthComponent>
+{
+    protected override bool ShouldReact(DamageAction action, ref HealthComponent health, Context ctx)
+    {
+        // Only run if the entity has a "CriticalWeakness" component
+        return ctx.Entity.HasComponent<CriticalWeakness>(ctx);
+    }
+
+    protected override IsAborted React(DamageAction action, ref HealthComponent health, Context ctx)
+    {
+        // Double the damage!
+        // Note: This is a Pre-Reaction (AfterActionExecuted = false)
+        // We are modifying the Action or State before the main handler? 
+        // Actually, React args are by value usually, unless ref?
+        // In this framework, Action is passed by value to React.
+        // So you can't modify the Action here. You would modify state.
+        
+        Console.WriteLine("Critical Hit Logic!");
+        return new IsAborted { Value = false };
+    }
+}
+```
 
 ## Summary
 
