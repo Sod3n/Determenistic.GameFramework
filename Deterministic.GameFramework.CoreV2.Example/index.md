@@ -1,18 +1,27 @@
 # Deterministic Game Framework V2
 
-Welcome to the documentation for **Deterministic Game Framework V2**.
+Framework for building deterministic multiplayer games with rollback networking support.
 
-This framework is designed to build **high-performance, deterministic multiplayer games** using a struct-based ECS (Entity Component System) architecture. It ensures that game logic runs exactly the same way on any machine, enabling features like **prediction, rollback networking, and replay systems**.
+## Quick Start
 
-## Key Features
+```bash
+cd Server/Framework/Deterministic.GameFramework.CoreV2.Example
+dotnet run
+```
 
-- **100% Deterministic Math**: Custom `Float`, `Vector2`, and `Vector3` types ensuring identical results across platforms.
-- **Struct-Based ECS**: Zero-allocation entity and component storage for maximum performance.
-- **Rollback Networking**: Built-in support for saving state, rolling back, and resimulating ticks.
-- **Source Generators**: Automatic code generation for networking boilerplate and type safety analysis.
+## Tutorials
 
-## Quick Links
+1. [Hello World](articles/getting-started/01-hello-world.md) - Components, Actions, and basic ECS
+2. [Reactions](articles/getting-started/02-reactions.md) - Event-driven logic and validation
+3. [Rollback Networking](articles/getting-started/03-rollback.md) - State snapshots and resimulation
 
-- [Introduction](articles/intro.md)
-- [Core Concepts](articles/concepts/determinism.md)
-- [API Reference](api/index.md)
+## Core Features
+
+- **Deterministic Math** - Fixed-point `Float`, `Vector2`, `Vector3` for identical results across platforms
+- **Struct-Based ECS** - Zero-allocation component storage
+- **Rollback Support** - Save, restore, and resimulate game state
+- **Safety Analyzers** - Compile-time checks for non-deterministic types
+
+## API Reference
+
+Browse the [API Reference](api/) for detailed documentation of all types.

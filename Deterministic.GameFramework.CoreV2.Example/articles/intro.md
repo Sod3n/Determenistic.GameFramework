@@ -1,40 +1,38 @@
 # Introduction
 
-**Deterministic.GameFramework.CoreV2** is a specialized framework for building multiplayer games that require **absolute determinism**. This capability allows you to implement advanced networking features like **Client-Side Prediction**, **Rollback Networking**, and **Replay Systems** with ease.
+Deterministic.GameFramework.CoreV2 is a framework for building multiplayer games with **deterministic simulation**. Same inputs always produce the same outputs, enabling rollback networking and replay systems.
 
-## Why Determinism Matters
+## Purpose
 
-In a multiplayer game, "determinism" means that if you give the game the same inputs in the same order, it will produce the **exact same state** on every machine, every time. 
+The framework provides:
+- **Deterministic game state** - Reproducible simulations across all clients
+- **ECS architecture** - Struct-based entities and components
+- **Action system** - Type-safe state mutations with validation
+- **Reaction system** - Event-driven responses to actions
+- **Rollback support** - Save, restore, and resimulate game state
 
-Without determinism, slight differences in floating-point math between CPUs (e.g., Intel vs. AMD, or even different compiler optimizations) can cause the game state to diverge. Player A might see a hit, while Player B sees a miss. This "desync" breaks the game.
+## Why Determinism?
 
-## Key Features
+In multiplayer games, determinism means identical inputs produce identical results on every machine. Without it, floating-point differences between CPUs cause desyncs where players see different game states.
 
-### 1. Safe, Deterministic Math
-The framework replaces standard C# `float` and `double` types with a custom `Float` struct (Fixed-Point Math). This ensures that calculations like `10 / 3` or `Sqrt(2)` yield bit-identical results on all platforms.
+The framework uses fixed-point math (`Float` struct) instead of standard `float` types, ensuring calculations like `10 / 3` or `Sqrt(2)` produce bit-identical results on all platforms.
 
-### 2. High-Performance ECS Architecture
-Game state is organized using an **Entity Component System (ECS)**. 
-- **Entities** are just lightweight IDs.
-- **Components** are data structs (e.g., `Position`, `Health`) attached to entities.
-- **GlobalState** manages all data in flat arrays, ensuring CPU cache efficiency and zero garbage collection overhead during gameplay.
+## Key Components
 
-### 3. Automatic Networking
-You define your game state and actions, and the framework handles the rest.
-- **Snapshots**: The entire game state can be serialized to a byte array instantly.
-- **Rollback**: The game can "rewind" to a previous tick, apply new inputs, and "fast-forward" back to the present. This is transparent to your game logic.
+- **GlobalState** - Manages all entities and components in flat arrays
+- **Entity** - Lightweight ID wrapper for game objects
+- **IComponent** - Data structs attached to entities (must have `[NetworkId]`)
+- **IAction** - Operations that modify state
+- **ActionService** - Stateless handlers that execute actions
+- **Reaction** - Hooks that respond to actions (Before, After)
+- **GameLoop** - Manages tick rate, scheduling, and rollback
 
-### 4. Safety Analyzers
-The framework includes a Roslyn Analyzer that runs while you code. It will **flag an error** if you accidentally use a non-deterministic type (like `float` or a reference type) in your networked components, preventing desync bugs before they happen.
+## Safety Features
 
-## Platform Support
+The framework includes Roslyn Analyzers that enforce determinism at compile-time:
+- **DGF200** - Flags non-deterministic types in components (like `float` or reference types)
+- **DGF100-102** - Enforces `[NetworkId]` attributes on networked types
 
-### Unity Game Engine
-The framework targets **.NET Standard 2.1**, making it fully compatible with **Unity 2021.3** and newer.
-- **IL2CPP Friendly**: The core uses struct-based generics and avoids dynamic code generation that typically breaks IL2CPP.
-- **Performance**: High-performance math types fall back to `BigInteger` on platforms lacking `Int128` (like older .NET Runtimes), ensuring compatibility.
+## Getting Started
 
-## Next Steps
-
-- **[Core Concepts](concepts/determinism.md)**: Learn about the basic building blocks like `Float` and `Entity`.
-- **[Getting Started](getting-started/quickstart.md)**: Build your first deterministic game loop.
+New to the framework? Start with the [Hello World tutorial](getting-started/01-hello-world.md) to build your first deterministic game in minutes.
