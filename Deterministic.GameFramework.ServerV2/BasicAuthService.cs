@@ -2,6 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Deterministic.GameFramework.NetworkV2.Server;
 
 namespace Deterministic.GameFramework.ServerV2;
 

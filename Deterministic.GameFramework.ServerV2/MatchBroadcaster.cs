@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 using Deterministic.GameFramework.NetworkV2.Buffers;
 using Deterministic.GameFramework.NetworkV2.Packets;
 using Deterministic.GameFramework.NetworkV2.Server;
@@ -15,15 +14,15 @@ namespace Deterministic.GameFramework.ServerV2;
 public class MatchBroadcaster : IDisposable
 {
     private readonly MatchManager _matchManager;
-    private readonly IHubContext<GameHub> _hubContext;
+    private readonly INetworkServer _networkServer;
     
     // Per-match byte buffer
     private readonly ConcurrentDictionary<Guid, PacketBuffer> _buffers = new();
 
-    public MatchBroadcaster(MatchManager matchManager, IHubContext<GameHub> hubContext)
+    public MatchBroadcaster(MatchManager matchManager, INetworkServer networkServer)
     {
         _matchManager = matchManager;
-        _hubContext = hubContext;
+        _networkServer = networkServer;
         
         _matchManager.OnMatchCreated += OnMatchCreated;
         _matchManager.OnMatchRemoved += OnMatchRemoved;
@@ -99,7 +98,7 @@ public class MatchBroadcaster : IDisposable
             payload.CopyTo(span.Slice(headerSize));
 
             // Broadcast raw bytes
-            _ = _hubContext.Clients.Group(match.Id.ToString()).SendAsync("OnTickSnapshot", packetData);
+            _ = _networkServer.BroadcastToGroupAsync(match.Id.ToString(), packetData, PacketType.TickSnapshot);
         }
     }
 
