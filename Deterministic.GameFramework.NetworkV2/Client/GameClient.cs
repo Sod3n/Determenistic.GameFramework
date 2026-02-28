@@ -8,6 +8,7 @@ using Deterministic.GameFramework.NetworkV2.Buffers;
 using Deterministic.GameFramework.NetworkV2.Interfaces;
 using Deterministic.GameFramework.NetworkV2.Packets;
 using Deterministic.GameFramework.Reactive;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Deterministic.GameFramework.NetworkV2.Client;
 

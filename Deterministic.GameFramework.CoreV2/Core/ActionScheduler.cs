@@ -5,6 +5,13 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public class ActionScheduler
 {
+    public enum ScheduleResult
+    {
+        Success,
+        Duplicate,
+        TooOld
+    }
+
     // Struct to hold pending action metadata
     private struct PendingAction
     {
@@ -29,6 +36,7 @@ public class ActionScheduler
     public event ActionScheduledHandler? OnActionScheduled;
 
     public long EarliestDirtyTick { get; private set; } = long.MaxValue;
+    public long MinAllowedTick { get; private set; } = 0;
 
     public void Schedule<TAction>(TAction action, int networkId, Entity target, long executeTick) where TAction : struct, IAction
     {
@@ -60,13 +68,18 @@ public class ActionScheduler
         if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
     }
 
-    public void ScheduleFromBytes(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
+    public ScheduleResult ScheduleFromBytes(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
     {
+        if (executeTick < MinAllowedTick)
+        {
+            return ScheduleResult.TooOld;
+        }
+
         // Deduplication: Check if identical action is already scheduled for this tick
         // This handles Client-Side Prediction (Local action matches Server action)
         if (IsDuplicate(networkId, targetEntityId, executeTick, data))
         {
-            return;
+            return ScheduleResult.Duplicate;
         }
 
         int structSize = data.Length;
@@ -91,6 +104,8 @@ public class ActionScheduler
 
         // Track for Rollback
         if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
+        
+        return ScheduleResult.Success;
     }
 
     private bool IsDuplicate(int networkId, int targetEntityId, long tick, ReadOnlySpan<byte> data)
@@ -187,6 +202,7 @@ public class ActionScheduler
 
     public void PruneHistory(long minTick)
     {
+        MinAllowedTick = minTick;
         int keepIdx = 0;
         int lowestValidOffset = _actionDataBuffer.Length; // Start high
         bool anyKept = false;

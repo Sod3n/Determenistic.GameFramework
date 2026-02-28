@@ -61,12 +61,15 @@ public class GameHub : Hub
         if (match == null) return;
 
         // Parse batch locally for server simulation
-        ProcessBatch(match, payload);
+        bool fullStateRequired = ProcessBatch(match, payload);
         
-        await Task.CompletedTask;
+        if (fullStateRequired)
+        {
+            await RequestFullState(matchId);
+        }
     }
 
-    private void ProcessBatch(Match match, byte[] payload)
+    private bool ProcessBatch(Match match, byte[] payload)
     {
         var span = new ReadOnlySpan<byte>(payload);
         int offset = 0;
@@ -83,13 +86,21 @@ public class GameHub : Hub
             offset += header.DataLength;
             
             // Schedule
-            match.Scheduler.ScheduleFromBytes(header.NetworkId, dataSpan, header.TargetEntityId, header.ExecuteTick);
+            var result = match.Scheduler.ScheduleFromBytes(header.NetworkId, dataSpan, header.TargetEntityId, header.ExecuteTick);
+
+            if (result == ActionScheduler.ScheduleResult.TooOld)
+            {
+                 Console.WriteLine($"[GameHub] Received action for tick {header.ExecuteTick} which is too old (Min: {match.Scheduler.MinAllowedTick}). Sending Full State.");
+                 return true;
+            }
 
 #if DEBUG
             var actionType = match.Dispatcher.GetActionType(header.NetworkId);
             Console.WriteLine($"[GameHub] Batch: Match {match.Id} | Action: {actionType?.Name ?? "Unknown"} ({header.NetworkId}) | Target: {header.TargetEntityId} | Tick: {header.ExecuteTick}");
 #endif
         }
+        
+        return false;
     }
 
     public async Task RequestFullState(Guid matchId)

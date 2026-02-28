@@ -168,5 +168,38 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(70);
         }
+
+        [Fact]
+        public void ScheduleFromBytes_ShouldReturnTooOld_WhenTickIsBelowMinAllowed()
+        {
+            var scheduler = new ActionScheduler();
+            scheduler.PruneHistory(10); // Sets MinAllowedTick to 10
+
+            var action = new DamageAction(15);
+            int size = Marshal.SizeOf<DamageAction>();
+            byte[] bytes = new byte[size];
+            MemoryMarshal.Write(bytes, in action);
+
+            var result = scheduler.ScheduleFromBytes(1, bytes, 1, 5);
+            
+            result.Should().Be(ActionScheduler.ScheduleResult.TooOld);
+            scheduler.EarliestDirtyTick.Should().Be(long.MaxValue); // Should not have dirtied anything
+        }
+
+        [Fact]
+        public void ScheduleFromBytes_ShouldReturnDuplicate_WhenSameActionScheduled()
+        {
+            var scheduler = new ActionScheduler();
+            
+            var action = new DamageAction(15);
+            int size = Marshal.SizeOf<DamageAction>();
+            byte[] bytes = new byte[size];
+            MemoryMarshal.Write(bytes, in action);
+
+            scheduler.ScheduleFromBytes(1, bytes, 1, 10);
+            var result = scheduler.ScheduleFromBytes(1, bytes, 1, 10);
+            
+            result.Should().Be(ActionScheduler.ScheduleResult.Duplicate);
+        }
     }
 }
