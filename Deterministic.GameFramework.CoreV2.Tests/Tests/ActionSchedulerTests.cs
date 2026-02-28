@@ -53,7 +53,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             var scheduler = new ActionScheduler();
             var entity = state.CreateEntity();
-            state.GetState<HealthComponent>(entity).CurrentHealth = 100;
+            state.GetComponent<HealthComponent>(entity).CurrentHealth = 100;
             
             var action = new DamageAction(10);
             scheduler.Schedule(action, 1, entity, 5);
@@ -78,9 +78,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var e2 = state.CreateEntity();
             var e3 = state.CreateEntity();
             
-            state.GetState<HealthComponent>(e1).CurrentHealth = 100;
-            state.GetState<HealthComponent>(e2).CurrentHealth = 100;
-            state.GetState<HealthComponent>(e3).CurrentHealth = 100;
+            state.GetComponent<HealthComponent>(e1).CurrentHealth = 100;
+            state.GetComponent<HealthComponent>(e2).CurrentHealth = 100;
+            state.GetComponent<HealthComponent>(e3).CurrentHealth = 100;
             
             scheduler.Schedule(new DamageAction(30), 1, e3, 10);
             scheduler.Schedule(new DamageAction(10), 1, e1, 10);
@@ -88,9 +88,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             scheduler.ExecuteActions(10, state, dispatcher);
             
-            state.GetState<HealthComponent>(e1).CurrentHealth.Value.Should().Be(90);
-            state.GetState<HealthComponent>(e2).CurrentHealth.Value.Should().Be(80);
-            state.GetState<HealthComponent>(e3).CurrentHealth.Value.Should().Be(70);
+            state.GetComponent<HealthComponent>(e1).CurrentHealth.Value.Should().Be(90);
+            state.GetComponent<HealthComponent>(e2).CurrentHealth.Value.Should().Be(80);
+            state.GetComponent<HealthComponent>(e3).CurrentHealth.Value.Should().Be(70);
         }
 
         [Fact]
@@ -155,18 +155,18 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             var scheduler = new ActionScheduler();
             var entity = state.CreateEntity();
-            state.GetState<HealthComponent>(entity).CurrentHealth = 100;
+            state.GetComponent<HealthComponent>(entity).CurrentHealth = 100;
             
             scheduler.Schedule(new DamageAction(10), 1, entity, 5);
             scheduler.Schedule(new DamageAction(20), 1, entity, 10);
             
             scheduler.ExecuteActions(5, state, dispatcher);
             
-            state.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(90);
+            state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(90);
             
             scheduler.ExecuteActions(10, state, dispatcher);
             
-            state.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(70);
+            state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(70);
         }
     }
 }

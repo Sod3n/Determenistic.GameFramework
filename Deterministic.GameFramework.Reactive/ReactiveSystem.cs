@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Deterministic.GameFramework.CoreV2;
+using R3;
 
-namespace Deterministic.GameFramework.CoreV2;
+namespace Deterministic.GameFramework.Reactive;
 
 public class ReactiveSystem : IDisposable
 {
@@ -9,20 +11,23 @@ public class ReactiveSystem : IDisposable
     private ObserverNode? _tail;
     
     private GameLoop? _boundLoop;
+    private GlobalState? _boundState;
     private bool _wasResimulating;
 
+    public GlobalState? BoundState => _boundState;
     public bool IsResimulating => _boundLoop?.IsResimulating ?? false;
 
-    public void Bind(GameLoop gameLoop)
+    public void Bind(GlobalState state)
     {
         if (_boundLoop != null)
         {
-            if (_boundLoop == gameLoop) return; // Already bound to this loop
+            if (_boundLoop == state.GameLoop) return; // Already bound to this loop
             Unbind(); // Unbind from previous loop
         }
 
-        _boundLoop = gameLoop;
-        gameLoop.OnTick += Tick;
+        _boundLoop = state.GameLoop;
+        _boundState = state;
+        state.GameLoop.OnTick += Tick;
     }
 
     public void Unbind()

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Deterministic.GameFramework.CoreV2;
 using Deterministic.GameFramework.CoreV2.Example.Components;
+using Deterministic.GameFramework.CoreV2.Extensions;
+using Deterministic.GameFramework.Reactive;
 using FluentAssertions;
 using Xunit;
 
@@ -67,7 +69,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
             reactive.Subscribe(
                 context: state,
-                selector: (s) => s.GetState<HealthComponent>(entity).CurrentHealth.Value,
+                selector: (s) => s.GetComponent<HealthComponent>(entity).CurrentHealth.Value,
                 callback: (s, health) =>
                 {
                     callbackCount++;
@@ -78,7 +80,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             callbackCount.Should().Be(1);
             lastHealth.Should().Be(100);
 
-            state.GetState<HealthComponent>(entity).CurrentHealth = 50;
+            state.GetComponent<HealthComponent>(entity).CurrentHealth = 50;
             reactive.Tick();
             callbackCount.Should().Be(2);
             lastHealth.Should().Be(50);
@@ -154,7 +156,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var gameLoop = new GameLoop(state, dispatcher, scheduler);
 
             var reactive = new ReactiveSystem();
-            reactive.Bind(gameLoop);
+            reactive.Bind(state);
 
             var callbackCount = 0;
             var value = 10;
@@ -177,7 +179,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var gameLoop = new GameLoop(state, dispatcher, scheduler);
 
             var reactive = new ReactiveSystem();
-            reactive.Bind(gameLoop);
+            reactive.Bind(state);
 
             var callbackCount = 0;
             var value = 10;
@@ -202,7 +204,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var gameLoop = new GameLoop(state, dispatcher, scheduler);
 
             var reactive = new ReactiveSystem();
-            reactive.Bind(gameLoop);
+            reactive.Bind(state);
 
             var callbackCount = 0;
             var value = 10;
@@ -252,26 +254,29 @@ namespace Deterministic.GameFramework.CoreV2.Tests
         {
             var state = new GlobalState();
             var entity = state.CreateEntity();
+            var ctx = new Context(state, entity);
             state.AddComponent(entity, new HealthComponent { CurrentHealth = 100 });
 
             var reactive = new ReactiveSystem();
             var values = new List<int>();
+                
+            var health = entity.GetComponent<HealthComponent>(ctx);
 
             reactive.Subscribe(
                 state,
-                s => s.GetState<HealthComponent>(entity).CurrentHealth.Value,
+                s => s.GetComponent<HealthComponent>(entity).CurrentHealth.Value,
                 (s, v) => values.Add(v));
-
+            
             reactive.Subscribe(
                 state,
-                s => s.GetState<HealthComponent>(entity).CurrentHealth.Value,
+                s => s.GetComponent<HealthComponent>(entity).CurrentHealth.Value,
                 (s, v) => values.Add(v * 2));
 
             reactive.Tick();
             values.Should().Equal(100, 200);
 
             values.Clear();
-            state.GetState<HealthComponent>(entity).CurrentHealth = 50;
+            state.GetComponent<HealthComponent>(entity).CurrentHealth = 50;
             reactive.Tick();
             values.Should().Equal(50, 100);
         }

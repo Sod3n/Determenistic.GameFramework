@@ -60,7 +60,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             state.AddComponent(entity, new HealthComponent { CurrentHealth = 50 });
             
-            state.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(50);
+            state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(50);
         }
 
         [Fact]
@@ -126,10 +126,10 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             var entity = new Entity(500);
             
-            ref var health = ref state.GetState<HealthComponent>(entity);
+            ref var health = ref state.GetComponent<HealthComponent>(entity);
             health.CurrentHealth = 75;
             
-            state.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(75);
+            state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(75);
         }
 
         [Fact]
@@ -168,9 +168,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             state.HasComponent<RegionComponent>(entity).Should().BeTrue();
             state.HasComponent<Party>(entity).Should().BeTrue();
             
-            state.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(100);
-            state.GetState<RegionComponent>(entity).DamageCounter.Should().Be(5);
-            state.GetState<Party>(entity).PartyId.Should().Be(1);
+            state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(100);
+            state.GetComponent<RegionComponent>(entity).DamageCounter.Should().Be(5);
+            state.GetComponent<Party>(entity).PartyId.Should().Be(1);
         }
     }
 }

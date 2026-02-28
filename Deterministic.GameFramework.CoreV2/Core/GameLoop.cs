@@ -36,6 +36,8 @@ public class GameLoop
         _dispatcher = dispatcher;
         _scheduler = scheduler;
         _history = new StateHistory(60); // 1 second of history @ 60hz
+        
+        _state.GameLoop = this;
     }
 
     public void SetTickRate(int tickRate)

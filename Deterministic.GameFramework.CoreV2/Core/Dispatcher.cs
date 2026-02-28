@@ -52,7 +52,7 @@ public class Dispatcher
 
         ReactionRunner<TAction> runner = (ref TAction action, GlobalState state, Entity entity, Context ctx) =>
         {
-            ref var target = ref state.GetState<TTarget>(entity);
+            ref var target = ref state.GetComponent<TTarget>(entity);
             var result = reaction.InternalReact(ref action, ref target, ctx);
             return result.Value;
         };
@@ -126,7 +126,7 @@ public class Dispatcher
         {
             var action = (TAction)actionObj;
             var ctx = new Context(state, entity);
-            ref var target = ref state.GetState<TTarget>(entity);
+            ref var target = ref state.GetComponent<TTarget>(entity);
 
             // 1. Local Pre-Reactions (Standard)
             if (RunPreReactions(ref action, ref target, ctx, preReactions)) return;
@@ -151,7 +151,7 @@ public class Dispatcher
             var action = MemoryMarshal.Read<TAction>(span);
             
             var ctx = new Context(state, entity);
-            ref var target = ref state.GetState<TTarget>(entity);
+            ref var target = ref state.GetComponent<TTarget>(entity);
 
             // 1. Local Pre-Reactions
             if (RunPreReactions(ref action, ref target, ctx, preReactions)) return;

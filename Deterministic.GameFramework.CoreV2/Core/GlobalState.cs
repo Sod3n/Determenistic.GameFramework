@@ -12,13 +12,14 @@ public class GlobalState
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
     internal int _nextEntityId = 0;
     
+    public int NextEntityId => _nextEntityId;
+    public BitMask128[] EntityMasks => _entityMasks;
+    
     // Dirty tracking
     internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
     internal List<int> _dirtyEntities = new List<int>(64);
 
-    public GlobalState()
-    {
-    }
+    public GameLoop GameLoop { get; internal set; }
 
     public Entity CreateEntity()
     {
@@ -30,7 +31,7 @@ public class GlobalState
     public void AddComponent<T>(Entity entity, T component) where T : struct, IComponent
     {
         MarkDirty(entity.Id);
-        ref var storage = ref GetState<T>(entity);
+        ref var storage = ref GetComponent<T>(entity);
         storage = component;
     }
 
@@ -60,7 +61,31 @@ public class GlobalState
         }
     }
 
-    public ref T GetState<T>(Entity entity) where T : struct, IComponent
+    public void DeleteEntity(Entity entity)
+    {
+        if (entity.Id >= _entityMasks.Length) return;
+
+        MarkDirty(entity.Id);
+
+        // Clear component data for all components this entity has
+        // This is important to release references if components hold any, 
+        // and to ensure deterministic clean state if the ID is reused (though currently it isn't).
+        for (int i = 0; i < 128; i++)
+        {
+            if (_entityMasks[entity.Id].IsSet(i))
+            {
+                if (i < _componentArrays.Length && _componentArrays[i] != null)
+                {
+                    Array.Clear(_componentArrays[i], entity.Id, 1);
+                }
+            }
+        }
+
+        // Clear the mask, effectively removing the entity from all queries
+        _entityMasks[entity.Id].Clear();
+    }
+
+    public ref T GetComponent<T>(Entity entity) where T : struct, IComponent
     {
         var typeId = InternalTypeId<T>.Value;
         
@@ -80,6 +105,12 @@ public class GlobalState
         Console.WriteLine($"[GlobalState] Entity {entity.Id} Set Component {typeof(T).Name} (ID {typeId}). IsSet: {_entityMasks[entity.Id].IsSet(typeId)}");
 
         return ref specificArray[entity.Id];
+    }
+    
+    public T? TryGetComponent<T>(Entity entity) where T : struct, IComponent
+    {
+        if (!HasComponent<T>(entity)) return null;
+        return GetComponent<T>(entity);
     }
     
     public bool HasComponent<T>(Entity entity) where T : struct, IComponent
@@ -193,7 +224,7 @@ public class GlobalState
     }
 }
 
-internal static class InternalTypeId<T> where T : struct, IComponent
+public static class InternalTypeId<T> where T : struct, IComponent
 {
     public static readonly int Value = GetId();
 

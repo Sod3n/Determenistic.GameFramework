@@ -4,6 +4,8 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public struct Entity : IParam, IEquatable<Entity>, IComparable<Entity>
 {
+    public static readonly Entity Null = new Entity(-1);
+    
     public int Id;
     
     public Entity(int id)
@@ -24,3 +26,4 @@ public struct Entity : IParam, IEquatable<Entity>, IComparable<Entity>
     public static bool operator ==(Entity a, Entity b) => a.Id == b.Id;
     public static bool operator !=(Entity a, Entity b) => a.Id != b.Id;
 }
+

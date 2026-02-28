@@ -16,13 +16,13 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var entity1 = state.CreateEntity();
             var entity2 = state.CreateEntity();
             
-            ref var health1 = ref state.GetState<HealthComponent>(entity1);
+            ref var health1 = ref state.GetComponent<HealthComponent>(entity1);
             health1.CurrentHealth = 100;
             
-            ref var health2 = ref state.GetState<HealthComponent>(entity2);
+            ref var health2 = ref state.GetComponent<HealthComponent>(entity2);
             health2.CurrentHealth = 50;
             
-            ref var region = ref state.GetState<RegionComponent>(entity1);
+            ref var region = ref state.GetComponent<RegionComponent>(entity1);
             region.DamageCounter = 25;
             
             byte[] serialized = StateSerializer.Serialize(state);
@@ -32,9 +32,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             newState.RegisterComponent<RegionComponent>();
             StateSerializer.Deserialize(newState, serialized);
             
-            newState.GetState<HealthComponent>(entity1).CurrentHealth.Value.Should().Be(100);
-            newState.GetState<HealthComponent>(entity2).CurrentHealth.Value.Should().Be(50);
-            newState.GetState<RegionComponent>(entity1).DamageCounter.Should().Be(25);
+            newState.GetComponent<HealthComponent>(entity1).CurrentHealth.Value.Should().Be(100);
+            newState.GetComponent<HealthComponent>(entity2).CurrentHealth.Value.Should().Be(50);
+            newState.GetComponent<RegionComponent>(entity1).DamageCounter.Should().Be(25);
         }
 
         [Fact]
@@ -48,8 +48,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
                 var e1 = state1.CreateEntity();
                 var e2 = state2.CreateEntity();
                 
-                ref var h1 = ref state1.GetState<HealthComponent>(e1);
-                ref var h2 = ref state2.GetState<HealthComponent>(e2);
+                ref var h1 = ref state1.GetComponent<HealthComponent>(e1);
+                ref var h2 = ref state2.GetComponent<HealthComponent>(e2);
                 
                 h1.CurrentHealth = i * 10;
                 h2.CurrentHealth = i * 10;
@@ -80,7 +80,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             for (int i = 0; i < 500; i++)
             {
                 var entity = state.CreateEntity();
-                ref var health = ref state.GetState<HealthComponent>(entity);
+                ref var health = ref state.GetComponent<HealthComponent>(entity);
                 health.CurrentHealth = i;
             }
             
@@ -93,7 +93,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             for (int i = 0; i < 500; i++)
             {
                 var entity = new Entity(i);
-                newState.GetState<HealthComponent>(entity).CurrentHealth.Value.Should().Be(i);
+                newState.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(i);
             }
         }
 
@@ -105,9 +105,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var entity1 = state.CreateEntity();
             var entity2 = state.CreateEntity();
             
-            state.GetState<HealthComponent>(entity1);
-            state.GetState<RegionComponent>(entity1);
-            state.GetState<HealthComponent>(entity2);
+            state.GetComponent<HealthComponent>(entity1);
+            state.GetComponent<RegionComponent>(entity1);
+            state.GetComponent<HealthComponent>(entity2);
             
             byte[] serialized = StateSerializer.Serialize(state);
             

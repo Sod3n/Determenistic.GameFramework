@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Deterministic.GameFramework.CoreV2;
 
-namespace Deterministic.GameFramework.CoreV2;
+namespace Deterministic.GameFramework.Reactive;
 
 // Pool for observers to avoid allocations
 internal static class ObserverPool<TObserver> where TObserver : new()
@@ -20,11 +21,11 @@ internal static class ObserverPool<TObserver> where TObserver : new()
     }
 }
 
-public class PollingObserver<TContext, TValue> : ObserverNode
+public class PollingObserver< TValue> : ObserverNode
 {
-    private TContext _context;
-    private Func<TContext, TValue> _selector;
-    private Action<TContext, TValue> _callback;
+    private GlobalState _context;
+    private Func<GlobalState, TValue> _selector;
+    private Action<GlobalState, TValue> _callback;
     private IEqualityComparer<TValue> _comparer;
     
     private TValue _previousValue;
@@ -40,7 +41,7 @@ public class PollingObserver<TContext, TValue> : ObserverNode
         _previousValue = default!;
     }
 
-    public void Initialize(TContext context, Func<TContext, TValue> selector, Action<TContext, TValue> callback, IEqualityComparer<TValue>? comparer)
+    public void Initialize(GlobalState context, Func<GlobalState, TValue> selector, Action<GlobalState, TValue> callback, IEqualityComparer<TValue>? comparer)
     {
         _context = context;
         _selector = selector;
@@ -72,7 +73,7 @@ public class PollingObserver<TContext, TValue> : ObserverNode
         _comparer = null!;
         _hasValue = false;
         
-        ObserverPool<PollingObserver<TContext, TValue>>.Return(this);
+        ObserverPool<PollingObserver<TValue>>.Return(this);
     }
 }
 

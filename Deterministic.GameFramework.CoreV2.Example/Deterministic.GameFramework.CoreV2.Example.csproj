@@ -2,7 +2,30 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Deterministic.GameFramework.CoreV2\Deterministic.GameFramework.CoreV2.csproj" />
+    <ProjectReference Include="..\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
     <ProjectReference Include="..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\Client.csproj" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Client.csproj.nuget.dgspec.json" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Client.csproj.nuget.g.props" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Client.csproj.nuget.g.targets" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Debug\net8.0\Client.AssemblyInfoInputs.cache" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Debug\net8.0\Client.assets.cache" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Debug\net8.0\Client.GeneratedMSBuildEditorConfig.editorconfig" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\project.assets.json" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\project.nuget.cache" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\project.packagespec.json" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\rider.project.restore.info" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Server\Server.csproj" />
+    <Content Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\bin\Debug\net8.0\" />
+    <Folder Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Debug\net8.0\refint\" />
+    <Folder Include="Deterministic.GameFramework.CoreV2.Example.Multiplayer\Client\obj\Debug\net8.0\ref\" />
   </ItemGroup>
 
   <PropertyGroup>

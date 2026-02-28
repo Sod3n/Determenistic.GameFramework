@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.Reactive;
 
-namespace Deterministic.GameFramework.CoreV2;
+namespace Deterministic.GameFramework.Reactive;
 
 public static class ReactiveExtensions
 {
@@ -9,11 +11,10 @@ public static class ReactiveExtensions
     /// Subscribes to changes in a value derived from a context.
     /// This overload is allocation-free if the selector and callback are static or instance methods (not closures).
     /// </summary>
-    public static IDisposable Subscribe<TContext, TValue>(this ReactiveSystem system, TContext context, Func<TContext, TValue> selector, Action<TContext, TValue> callback)
-        where TContext : class
+    public static IDisposable Subscribe<TValue>(this ReactiveSystem system, GlobalState context, Func<GlobalState, TValue> selector, Action<GlobalState, TValue> callback)
         where TValue : struct, IEquatable<TValue>
     {
-        var observer = ObserverPool<PollingObserver<TContext, TValue>>.Get();
+        var observer = ObserverPool<PollingObserver<TValue>>.Get();
         observer.Initialize(context, selector, callback, null);
         system.Register(observer);
         return observer;

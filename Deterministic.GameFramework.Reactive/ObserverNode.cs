@@ -1,6 +1,7 @@
 using System;
+using Deterministic.GameFramework.CoreV2;
 
-namespace Deterministic.GameFramework.CoreV2;
+namespace Deterministic.GameFramework.Reactive;
 
 public abstract class ObserverNode : IDisposable
 {

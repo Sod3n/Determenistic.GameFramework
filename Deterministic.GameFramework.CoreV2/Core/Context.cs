@@ -1,3 +1,5 @@
+using Deterministic.GameFramework.CoreV2.Extensions;
+
 namespace Deterministic.GameFramework.CoreV2;
 
 public struct Context
@@ -10,14 +12,18 @@ public struct Context
         State = state;
         Entity = entity;
     }
-
-    public ref T GetComponent<T>() where T : struct, IComponent
+    
+    public Entity CreateEntity<T>() where T : struct, IComponent
     {
-        return ref State.GetState<T>(Entity);
+        var entity = State.CreateEntity();
+        entity.AddComponent(new T(), this);
+        return entity;
     }
     
-    public ref T GetComponent<T>(Entity entity) where T : struct, IComponent
+    public void Schedule<TAction>(TAction action, Entity target) where TAction : struct, IAction
     {
-        return ref State.GetState<T>(entity);
+        State.GameLoop.ScheduleOnTick(State.GameLoop.CurrentTick + 1, action, target);
     }
+    
+    
 }

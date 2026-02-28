@@ -7,6 +7,7 @@ using Deterministic.GameFramework.CoreV2;
 using Deterministic.GameFramework.NetworkV2.Buffers;
 using Deterministic.GameFramework.NetworkV2.Interfaces;
 using Deterministic.GameFramework.NetworkV2.Packets;
+using Deterministic.GameFramework.Reactive;
 
 namespace Deterministic.GameFramework.NetworkV2.Client;
 
@@ -39,7 +40,10 @@ public class GameClient : IDisposable, IAsyncDisposable
         _gameLoop = gameLoop;
         
         Reactive = new ReactiveSystem();
-        Reactive.Bind(_gameLoop);
+        Reactive.Bind(state);
+        
+        // Auto-discover services and NetworkIds
+        ServiceLocator.Initialize(dispatcher);
         
         // Hook into GameLoop to flush actions every tick
         _gameLoop.OnTick += Flush;

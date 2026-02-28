@@ -1,6 +1,7 @@
 using System;
 using Deterministic.GameFramework.CoreV2;
 using Deterministic.GameFramework.CoreV2.Example.Components;
+using Deterministic.GameFramework.Reactive;
 using FluentAssertions;
 using Xunit;
 

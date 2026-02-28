@@ -55,7 +55,7 @@ public static class ReactionExtensions
     {
         if (!ctx.State.HasComponent<T>(entity)) return false;
         
-        ref var current = ref ctx.State.GetState<T>(entity);
+        ref var current = ref ctx.State.GetComponent<T>(entity);
         return EqualityComparer<T>.Default.Equals(current, expectedValue);
     }
 }

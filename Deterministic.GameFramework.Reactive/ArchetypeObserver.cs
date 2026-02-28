@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Deterministic.GameFramework.CoreV2;
 
-namespace Deterministic.GameFramework.CoreV2;
+namespace Deterministic.GameFramework.Reactive;
 
 internal class ArchetypeObserver : ObserverNode
 {
@@ -10,6 +11,7 @@ internal class ArchetypeObserver : ObserverNode
     private BitMask128 _queryMask;
     private Action<Entity> _onAdd;
     private Action<Entity> _onRemove;
+    private Func<Entity, bool>? _filter;
     
     // Optimized bitset using ulong[]
     private ulong[] _matchedEntities;
@@ -24,15 +26,16 @@ internal class ArchetypeObserver : ObserverNode
         _onRemove = default!;
     }
 
-    public void Initialize(GlobalState state, BitMask128 queryMask, Action<Entity> onAdd, Action<Entity> onRemove)
+    public void Initialize(GlobalState state, BitMask128 queryMask, Action<Entity> onAdd, Action<Entity> onRemove, Func<Entity, bool>? filter = null)
     {
         _state = state;
         _queryMask = queryMask;
         _onAdd = onAdd;
         _onRemove = onRemove;
+        _filter = filter;
 
         // Reset tracking
-        int requiredLength = _state._nextEntityId;
+        int requiredLength = _state.NextEntityId;
         EnsureCapacity(requiredLength);
         
         // Clear all bits
@@ -52,7 +55,7 @@ internal class ArchetypeObserver : ObserverNode
         var dirtyEntities = _state.GetDirtyEntities();
         if (dirtyEntities.Count == 0) return;
 
-        EnsureCapacity(_state._nextEntityId);
+        EnsureCapacity(_state.NextEntityId);
 
         foreach (var entityId in dirtyEntities)
         {
@@ -64,13 +67,13 @@ internal class ArchetypeObserver : ObserverNode
     {
         // On reset (e.g. after rollback), we can't trust dirty lists or incremental state.
         // We must re-scan everything to ensure our bitset matches the restored state.
-        EnsureCapacity(_state._nextEntityId);
+        EnsureCapacity(_state.NextEntityId);
         FullScan();
     }
 
     private void FullScan()
     {
-        int limit = _state._nextEntityId;
+        int limit = _state.NextEntityId;
         for (int i = 0; i < limit; i++)
         {
             ProcessEntity(i);
@@ -79,7 +82,12 @@ internal class ArchetypeObserver : ObserverNode
 
     private void ProcessEntity(int id)
     {
-        bool isMatch = _state._entityMasks[id].HasAll(_queryMask);
+        bool isMatch = _state.EntityMasks[id].HasAll(_queryMask);
+        
+        if (isMatch && _filter != null)
+        {
+            isMatch = _filter(new Entity(id));
+        }
         
         int wordIndex = id >> 6; // id / 64
         int bitIndex = id & 63;  // id % 64

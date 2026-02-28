@@ -11,4 +11,13 @@
     <ProjectReference Include="..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- Include Source Generator in the NuGet package -->
+  <ItemGroup>
+    <None Include="..\Deterministic.GameFramework.SourceGenerators\bin\$(Configuration)\netstandard2.0\Deterministic.GameFramework.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="Exists('..\Deterministic.GameFramework.SourceGenerators\bin\$(Configuration)\netstandard2.0\Deterministic.GameFramework.SourceGenerators.dll')" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
+
 </Project>

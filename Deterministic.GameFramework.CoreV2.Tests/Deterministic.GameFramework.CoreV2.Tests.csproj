@@ -24,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Deterministic.GameFramework.CoreV2\Deterministic.GameFramework.CoreV2.csproj" />
     <ProjectReference Include="..\Deterministic.GameFramework.CoreV2.Example\Deterministic.GameFramework.CoreV2.Example.csproj" />
+    <ProjectReference Include="..\Deterministic.GameFramework.CoreV2\Deterministic.GameFramework.CoreV2.csproj" />
+    <ProjectReference Include="..\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
   </ItemGroup>
 
 </Project>

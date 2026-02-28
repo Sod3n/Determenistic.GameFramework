@@ -50,9 +50,9 @@ namespace Deterministic.GameFramework.SourceGenerators
             sb.AppendLine("using System;");
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("");
-            sb.AppendLine($"namespace Deterministic.GameFramework.Generated.{assemblyName}");
+            sb.AppendLine($"namespace Deterministic.GameFramework.Generated");
             sb.AppendLine("{");
-            sb.AppendLine("    public static class NetworkIdRegistry");
+            sb.AppendLine("    public static partial class NetworkIdRegistry");
             sb.AppendLine("    {");
             sb.AppendLine("        public static readonly Dictionary<Type, int> TypeToId = new Dictionary<Type, int>()");
             sb.AppendLine("        {");

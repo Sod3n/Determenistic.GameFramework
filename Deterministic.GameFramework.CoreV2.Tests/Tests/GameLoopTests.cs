@@ -36,7 +36,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             _dispatcher.RegisterAction<DamageAction, HealthComponent>(damageHandler, reactions);
 
             var player = new Entity(2);
-            ref var health = ref _state.GetState<HealthComponent>(player);
+            ref var health = ref _state.GetComponent<HealthComponent>(player);
             health.CurrentHealth = 100;
 
             // Act
@@ -47,7 +47,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             _gameLoop.RunSingleTick();
 
             // Assert
-            var healthAfter = _state.GetState<HealthComponent>(player).CurrentHealth;
+            var healthAfter = _state.GetComponent<HealthComponent>(player).CurrentHealth;
             healthAfter.Value.Should().Be(85); // 100 - 15
         }
 
@@ -60,7 +60,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             _dispatcher.RegisterAction<DamageAction, HealthComponent>(damageHandler, reactions);
 
             var player = new Entity(2);
-            ref var health = ref _state.GetState<HealthComponent>(player);
+            ref var health = ref _state.GetComponent<HealthComponent>(player);
             health.CurrentHealth = 100;
 
             // Act
@@ -86,7 +86,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
             // Assert
             // At end of loop, CurrentTick is 4. Tick 3 actions have executed.
-            var healthAfter = _state.GetState<HealthComponent>(player).CurrentHealth;
+            var healthAfter = _state.GetComponent<HealthComponent>(player).CurrentHealth;
             healthAfter.Value.Should().Be(75); // 100 - 25
         }
 
@@ -99,7 +99,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             _dispatcher.RegisterAction<DamageAction, HealthComponent>(damageHandler, reactions);
 
             var player = new Entity(2);
-            ref var health = ref _state.GetState<HealthComponent>(player);
+            ref var health = ref _state.GetComponent<HealthComponent>(player);
             health.CurrentHealth = 100;
 
             // Schedule initial actions to build state history
@@ -114,7 +114,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
             // Verify state at Tick 10 before rollback
             // 100 - 15 (Tick 1) - 25 (Tick 3) = 60
-            _state.GetState<HealthComponent>(player).CurrentHealth.Value.Should().Be(60);
+            _state.GetComponent<HealthComponent>(player).CurrentHealth.Value.Should().Be(60);
 
             // Act: Inject LATE packet for Tick 5
             var lateDamage = new DamageAction(10);
@@ -136,7 +136,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             // Tick 5: -10 (Late) -> 50
             // Result should be 50
             
-            var finalHealth = _state.GetState<HealthComponent>(player).CurrentHealth;
+            var finalHealth = _state.GetComponent<HealthComponent>(player).CurrentHealth;
             finalHealth.Value.Should().Be(50);
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Deterministic.GameFramework.CoreV2;
 using Deterministic.GameFramework.CoreV2.Example.Components;
+using Deterministic.GameFramework.Reactive;
 using FluentAssertions;
 using Xunit;
 
@@ -136,7 +137,11 @@ namespace Deterministic.GameFramework.CoreV2.Tests
                 state,
                 onAdd: (_) => addedCount++,
                 onRemove: (_) => removedCount++);
-
+                
+            // var cards = reactive.ObservableCollection<CardComponent, OwnerComponent>();
+            // var playerCards = cards.Where<OwnerComponent>(o => o.Owner == player);
+            // playerCards.Subscribe(onAdd: (_) => addedCount++, onRemove: (_) => removedCount++).AddTo(Disposables);
+            
             // Add
             state.AddComponent(e1, new HealthComponent());
             reactive.Tick();
@@ -178,6 +183,87 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             reactive.Tick();
             
             addedCount.Should().Be(1); // Should not increase
+        }
+
+        [Fact]
+        public void ObserveArchetype_FluentApi_ShouldFilterCorrectly()
+        {
+            var state = new GlobalState();
+            state.RegisterComponent<HealthComponent>();
+            
+            // Fix: Initialize GameLoop as ReactiveSystem.Bind requires it
+            var scheduler = new ActionScheduler();
+            var dispatcher = new Dispatcher();
+            var gameLoop = new GameLoop(state, dispatcher, scheduler);
+            
+            var reactive = new ReactiveSystem();
+            reactive.Bind(state); // Bind state for fluent API
+
+            var addedCount = 0;
+            var removedCount = 0;
+            var lastAdded = -1;
+
+            // Fluent API usage
+            reactive.ObservableCollection<HealthComponent>()
+                .Where<HealthComponent>(h => h.CurrentHealth > 50)
+                .Subscribe(
+                    onAdd: (e) => { addedCount++; lastAdded = e.Id; },
+                    onRemove: (e) => { removedCount++; }
+                );
+
+            // 1. Add entity with Health 100 (Should Match)
+            var e1 = state.CreateEntity();
+            state.AddComponent(e1, new HealthComponent { CurrentHealth = 100 });
+            reactive.Tick();
+
+            addedCount.Should().Be(1);
+            lastAdded.Should().Be(e1.Id);
+
+            // 2. Add entity with Health 10 (Should NOT Match)
+            var e2 = state.CreateEntity();
+            state.AddComponent(e2, new HealthComponent { CurrentHealth = 10 });
+            reactive.Tick();
+
+            addedCount.Should().Be(1); // No change
+
+            // 3. Update e2 to Health 60 (Should Match NOW)
+            // Note: GlobalState requires MarkDirty for updates to be detected if we just modify ref
+            ref var h2 = ref state.GetComponent<HealthComponent>(e2);
+            h2.CurrentHealth = 60;
+            // Manually mark dirty because we modified data in place and ReactiveSystem relies on dirty set
+            // In a real scenario, systems should use state.MarkDirty(e2.Id) if they modify data that affects queries
+            // Or use a wrapper that does it. 
+            // However, ArchetypeObserver logic currently relies on GlobalState.GetDirtyEntities().
+            // Let's ensure GlobalState marks it dirty or we do it manually.
+            // GlobalState.GetComponent calls EnsureCapacity but doesn't necessarily mark dirty for *modification*
+            // But AddComponent DOES mark dirty.
+            // Let's force dirty for test purposes since we are modifying via ref.
+            // Wait, GlobalState.GetComponent DOES mark dirty in the snippet I read earlier?
+            // "MarkDirty(entity.Id); _entityMasks[entity.Id].Set(typeId);" inside GetComponent?
+            // Let's check GlobalState again.
+            // If it does, then modifying ref is enough IF we call GetComponent again.
+            // If we held the ref from before, we need to mark dirty.
+            // Here we call state.GetComponent again.
+            
+            // Re-read GlobalState.GetComponent... 
+            // It calls EnsureTypedCapacity, EnsureEntityCapacity. 
+            // It sets the mask bit.
+            // It does NOT call MarkDirty explicitly in the snippet I saw (lines 88-100+). 
+            // AddComponent calls MarkDirty.
+            
+            // So for this test to work with data modification, we might need to manually trigger dirty
+            // or use AddComponent to overwrite.
+            state.AddComponent(e2, new HealthComponent { CurrentHealth = 60 }); 
+            reactive.Tick();
+
+            addedCount.Should().Be(2);
+            lastAdded.Should().Be(e2.Id);
+
+            // 4. Update e1 to Health 0 (Should Unmatch)
+            state.AddComponent(e1, new HealthComponent { CurrentHealth = 0 });
+            reactive.Tick();
+
+            removedCount.Should().Be(1);
         }
     }
 }
