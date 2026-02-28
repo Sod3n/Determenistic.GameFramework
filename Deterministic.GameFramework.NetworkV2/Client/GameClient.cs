@@ -14,7 +14,8 @@ namespace Deterministic.GameFramework.NetworkV2.Client;
 
 public class GameClient : IDisposable, IAsyncDisposable
 {
-    private readonly HubConnection _hubConnection;
+    private readonly INetworkClient _networkClient;
+    private readonly string _connectionString;
     private readonly Dispatcher _dispatcher;
     private readonly GlobalState _state;
     private readonly ActionScheduler _scheduler;
@@ -33,12 +34,14 @@ public class GameClient : IDisposable, IAsyncDisposable
 
     public ReactiveSystem Reactive { get; }
 
-    public GameClient(string serverUrl, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
+    public GameClient(INetworkClient networkClient, string connectionString, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
     {
         _state = state;
         _dispatcher = dispatcher;
         _scheduler = scheduler;
         _gameLoop = gameLoop;
+        _networkClient = networkClient;
+        _connectionString = connectionString;
         
         Reactive = new ReactiveSystem();
         Reactive.Bind(state);
@@ -49,54 +52,55 @@ public class GameClient : IDisposable, IAsyncDisposable
         // Hook into GameLoop to flush actions every tick
         _gameLoop.OnTick += Flush;
         
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(serverUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        _hubConnection.On<byte[]>("OnTickSnapshot", OnTickSnapshot);
-        _hubConnection.On<byte[]>("OnFullStateReceived", OnFullStateReceived);
+        _networkClient.OnTickSnapshotReceived += OnTickSnapshot;
+        _networkClient.OnFullStateReceived += OnFullStateReceived;
         
-        _hubConnection.Closed += (arg) => 
-        {
-            OnDisconnected?.Invoke();
-            return Task.CompletedTask;
-        };
-        
-        _hubConnection.Reconnected += (arg) => 
-        {
-            OnConnected?.Invoke();
-            return Task.CompletedTask;
-        };
+        _networkClient.OnDisconnected += () => OnDisconnected?.Invoke();
+        _networkClient.OnConnected += () => OnConnected?.Invoke();
     }
 
     public async Task ConnectAsync(Guid matchId)
     {
+        Console.WriteLine($"[GameClient] Connecting to match {matchId} with connection string '{_connectionString}'");
         try
         {
+            if (_networkClient == null)
+            {
+                 Console.WriteLine("[GameClient] FATAL: _networkClient is null!");
+                 throw new NullReferenceException("_networkClient is null");
+            }
+
             _currentMatchId = matchId;
-            await _hubConnection.StartAsync();
-            OnConnected?.Invoke();
+            Console.WriteLine("[GameClient] Calling _networkClient.ConnectAsync...");
+            await _networkClient.ConnectAsync(_connectionString); 
+            Console.WriteLine("[GameClient] _networkClient.ConnectAsync returned.");
             
-            await _hubConnection.InvokeAsync("JoinMatch", matchId, (string?)null);
+            // Note: SignalR adapter might fire OnConnected immediately if already started, 
+            // but LiteNetLib needs explicit connect. 
+            // The INetworkClient.ConnectAsync should handle the transport connection.
+            
+            // Wait a bit for connection if needed or rely on event? 
+            // For now assume ConnectAsync establishes link.
+            
+            Console.WriteLine("[GameClient] Joining match...");
+            await _networkClient.JoinMatchAsync(matchId, null);
             Log($"Connected to match {matchId}");
             
             // Request full state on connect
+            Console.WriteLine("[GameClient] Requesting full state...");
             await RequestFullState();
         }
         catch (Exception ex)
         {
             Log($"Connection error: {ex.Message}");
+            Console.WriteLine($"[GameClient] Stack Trace: {ex.StackTrace}");
             throw;
         }
     }
     
     public async Task RequestFullState()
     {
-         if (_hubConnection.State == HubConnectionState.Connected)
-         {
-             await _hubConnection.InvokeAsync("RequestFullState", _currentMatchId);
-         }
+         await _networkClient.RequestFullStateAsync(_currentMatchId);
     }
 
     public Task WaitForSyncAsync()
@@ -161,8 +165,6 @@ public class GameClient : IDisposable, IAsyncDisposable
     
     private void Flush()
     {
-        if (_hubConnection.State != HubConnectionState.Connected) return;
-        
         byte[]? payload = null;
         lock (_outgoingBuffer)
         {
@@ -175,20 +177,7 @@ public class GameClient : IDisposable, IAsyncDisposable
         
         if (payload != null)
         {
-            // Send with error logging
-            _ = SendBatchAsync(payload);
-        }
-    }
-
-    private async Task SendBatchAsync(byte[] payload)
-    {
-        try
-        {
-            await _hubConnection.InvokeAsync("SendBatch", payload);
-        }
-        catch (Exception ex)
-        {
-            Log($"Failed to send batch ({payload.Length} bytes): {ex.Message}");
+            _networkClient.SendBatch(payload);
         }
     }
 
@@ -257,33 +246,30 @@ public class GameClient : IDisposable, IAsyncDisposable
             
             Log("Completing sync task...");
             _syncTcs.TrySetResult();
-            Log("Sync task completed!");
         }
         catch (Exception ex)
         {
-            Log($"FATAL ERROR in OnFullStateReceived: {ex.Message}");
-            Log($"StackTrace: {ex.StackTrace}");
+            Log($"Error processing Full State: {ex}");
+            _syncTcs.TrySetException(ex);
         }
     }
 
-    private void Log(string message)
+    private void Log(string msg)
     {
-        OnLog?.Invoke($"[GameClient] {message}");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        Reactive.Dispose();
-        _gameLoop.OnTick -= Flush;
-        if (_hubConnection != null)
-        {
-            await _hubConnection.DisposeAsync();
-        }
+        OnLog?.Invoke($"[GameClient] {msg}");
     }
 
     public void Dispose()
     {
-        Reactive.Dispose();
+        _gameLoop.OnTick -= Flush;
         _ = DisposeAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_networkClient != null)
+        {
+            await _networkClient.DisposeAsync();
+        }
     }
 }
