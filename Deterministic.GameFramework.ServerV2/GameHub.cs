@@ -32,6 +32,8 @@ public class GameHub : Hub
                 await Clients.Caller.SendAsync("Error", "Match not found");
                 return;
             }
+            
+            Context.Items["matchId"] = matchId.ToString();
 
             // Authenticate player using injected service
             var playerId = await _authService.AuthenticateAsync(Context.ConnectionId, authToken);
@@ -40,9 +42,9 @@ public class GameHub : Hub
             match.AddPlayer(playerId);
             Console.WriteLine($"[GameHub] Added player {playerId} to match {matchId}");
             
-            await Groups.AddToGroupAsync(Context.ConnectionId, matchId.ToString());
-            await Clients.Caller.SendAsync("JoinedMatch", matchId);
-            Console.WriteLine($"[GameHub] JoinMatch successful for player {playerId}");
+            var groupName = matchId.ToString();
+            Console.WriteLine($"[GameHub] Adding connection {Context.ConnectionId} to SignalR Group: '{groupName}'");
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         }
         catch (Exception ex)
         {
@@ -52,12 +54,20 @@ public class GameHub : Hub
         }
     }
 
-    public Task SendBatch(Guid matchId, byte[] payload)
+    public async Task SendBatch(byte[] payload)
     {
+        var matchId = Guid.Parse(Context.Items["matchId"].ToString());
         var match = _matchManager.GetMatch(matchId);
-        if (match == null) return Task.CompletedTask;
+        if (match == null) return;
 
-        // Parse batch
+        // Parse batch locally for server simulation
+        ProcessBatch(match, payload);
+        
+        await Task.CompletedTask;
+    }
+
+    private void ProcessBatch(Match match, byte[] payload)
+    {
         var span = new ReadOnlySpan<byte>(payload);
         int offset = 0;
         int headerSize = Marshal.SizeOf<NetworkActionHeader>();
@@ -74,9 +84,12 @@ public class GameHub : Hub
             
             // Schedule
             match.Scheduler.ScheduleFromBytes(header.NetworkId, dataSpan, header.TargetEntityId, header.ExecuteTick);
+
+#if DEBUG
+            var actionType = match.Dispatcher.GetActionType(header.NetworkId);
+            Console.WriteLine($"[GameHub] Batch: Match {match.Id} | Action: {actionType?.Name ?? "Unknown"} ({header.NetworkId}) | Target: {header.TargetEntityId} | Tick: {header.ExecuteTick}");
+#endif
         }
-        
-        return Task.CompletedTask;
     }
 
     public async Task RequestFullState(Guid matchId)

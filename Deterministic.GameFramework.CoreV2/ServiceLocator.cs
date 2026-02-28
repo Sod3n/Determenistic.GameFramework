@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -13,10 +14,134 @@ public static class ServiceLocator
 
     /// <summary>
     /// Scans all loaded assemblies for types with [NetworkId] and registers services to the Dispatcher.
+    /// Also proactively loads referenced assemblies and scans the base directory to ensure game logic is found.
     /// </summary>
     public static void Initialize(Dispatcher dispatcher)
     {
-        Initialize(dispatcher, AppDomain.CurrentDomain.GetAssemblies());
+        var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)));
+        
+        // 1. Eager load referenced assemblies
+        var entryAssembly = Assembly.GetEntryAssembly();
+        if (entryAssembly != null && !IsIgnoredAssembly(entryAssembly))
+        {
+            assemblies.Add(entryAssembly);
+            LoadReferencedAssemblies(entryAssembly, assemblies);
+        }
+
+        // 2. Scan directory for DLLs (Plugins / Shared libraries not yet loaded)
+        try 
+        {
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var dlls = Directory.GetFiles(baseDir, "*.dll", SearchOption.TopDirectoryOnly);
+            
+            Console.WriteLine($"[ServiceLocator] Scanning base directory: {baseDir}");
+            foreach (var dllPath in dlls)
+            {
+                try 
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(dllPath);
+                    if (IsIgnoredName(fileName)) 
+                    {
+                        // Console.WriteLine($"[ServiceLocator] Ignored by name: {fileName}");
+                        continue;
+                    }
+
+                    // Avoid re-loading if already in memory (by simple name check)
+                    if (assemblies.Any(a => a.GetName().Name == fileName)) 
+                    {
+                        Console.WriteLine($"[ServiceLocator] Already loaded: {fileName}");
+                        continue;
+                    }
+
+                    Console.WriteLine($"[ServiceLocator] Loading external assembly: {fileName}");
+                    var loadedAssembly = Assembly.LoadFrom(dllPath);
+                    
+                    if (!IsIgnoredAssembly(loadedAssembly))
+                    {
+                        if (assemblies.Add(loadedAssembly))
+                        {
+                            Console.WriteLine($"[ServiceLocator] Successfully added: {loadedAssembly.FullName}");
+                            LoadReferencedAssemblies(loadedAssembly, assemblies);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[ServiceLocator] Ignored after load: {fileName}");
+                    }
+                }
+                catch (Exception ex)
+                { 
+                    Console.WriteLine($"[ServiceLocator] Failed to load {dllPath}: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ServiceLocator] Warning: Failed to scan directory assemblies: {ex.Message}");
+        }
+
+        Console.WriteLine($"[ServiceLocator] Final assembly count: {assemblies.Count}");
+        Initialize(dispatcher, assemblies);
+    }
+
+    private static bool IsIgnoredName(string name)
+    {
+        return name != null && (name.StartsWith("System") || name.StartsWith("Microsoft") || name.StartsWith("mscorlib") || name.StartsWith("netstandard"));
+    }
+
+    private static bool IsIgnoredAssembly(Assembly assembly)
+    {
+        try
+        {
+            if (assembly.IsDynamic) return true;
+            return IsIgnoredName(assembly.GetName().Name);
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private static void LoadReferencedAssemblies(Assembly assembly, HashSet<Assembly> loadedAssemblies)
+    {
+        AssemblyName[] references;
+        try
+        {
+            references = assembly.GetReferencedAssemblies();
+        }
+        catch
+        {
+            return; // Can't get references
+        }
+
+        foreach (var refName in references)
+        {
+            // Optimization: Skip system/microsoft assemblies
+            if (refName.Name != null && (refName.Name.StartsWith("System") || refName.Name.StartsWith("Microsoft") || refName.Name.StartsWith("mscorlib") || refName.Name.StartsWith("netstandard")))
+                continue;
+
+            try
+            {
+                // Check if already loaded by name
+                if (loadedAssemblies.Any(a => a.GetName().Name == refName.Name)) 
+                    continue;
+
+                var loadedAssembly = Assembly.Load(refName);
+                
+                if (!IsIgnoredAssembly(loadedAssembly))
+                {
+                    if (loadedAssemblies.Add(loadedAssembly))
+                    {
+                        // Recurse into user/game assemblies
+                        LoadReferencedAssemblies(loadedAssembly, loadedAssemblies);
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore load errors (optional dependencies, etc.)
+            }
+        }
     }
 
     /// <summary>

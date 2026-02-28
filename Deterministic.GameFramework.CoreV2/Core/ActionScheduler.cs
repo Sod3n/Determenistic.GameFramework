@@ -80,6 +80,13 @@ public class ActionScheduler
         // Record metadata
         AddPendingAction(networkId, targetEntityId, executeTick, _actionDataHead, structSize);
 
+        // Notify listeners (Network Layer for Broadcasting)
+        if (OnActionScheduled != null)
+        {
+            var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, structSize);
+            OnActionScheduled.Invoke(networkId, span, targetEntityId, executeTick);
+        }
+
         _actionDataHead += structSize;
 
         // Track for Rollback

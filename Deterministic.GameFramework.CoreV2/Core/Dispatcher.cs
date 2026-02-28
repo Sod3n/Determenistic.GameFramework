@@ -13,6 +13,7 @@ public class Dispatcher
     
     // Map Action Struct Type -> Service Network ID
     internal readonly Dictionary<Type, int> _actionTypeToNetworkId = new();
+    internal readonly Dictionary<int, Type> _networkIdToType = new();
 
     // Map Action Struct Type -> List of Additional Local Reactions (different TTarget)
     // Stored as object, cast to List<AdditionalReactionEntry<TAction>> at runtime
@@ -107,6 +108,7 @@ public class Dispatcher
             throw new Exception($"Action Type {typeof(TAction).Name} is already registered to ID {_actionTypeToNetworkId[typeof(TAction)]}. Cannot register multiple services for the same Action struct in this implementation.");
         }
         _actionTypeToNetworkId[typeof(TAction)] = networkId;
+        _networkIdToType[networkId] = typeof(TAction);
 
         var sortedReactions = reactions.OrderByDescending(r => r.Priority).ToList();
         var preReactions = sortedReactions.Where(r => !r.AfterActionExecuted).ToList();
@@ -200,6 +202,13 @@ public class Dispatcher
             }
         }
         return false;
+    }
+
+    public Type? GetActionType(int networkId)
+    {
+        return _byteActionRunners.ContainsKey(networkId) && _networkIdToType.TryGetValue(networkId, out var type) 
+            ? type 
+            : null;
     }
 
     public void Execute<TAction>(TAction action, GlobalState state, Entity entity) where TAction : struct, IAction

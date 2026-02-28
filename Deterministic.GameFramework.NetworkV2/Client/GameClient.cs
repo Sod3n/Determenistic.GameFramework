@@ -170,7 +170,7 @@ public class GameClient : IDisposable, IAsyncDisposable
         if (payload != null)
         {
             // Fire and forget send
-            _ = _hubConnection.InvokeAsync("SendBatch", _currentMatchId, payload);
+            _ = _hubConnection.InvokeAsync("SendBatch", payload);
         }
     }
 
