@@ -38,9 +38,23 @@ public class ActionScheduler
     public long EarliestDirtyTick { get; private set; } = long.MaxValue;
     public long MinAllowedTick { get; private set; } = 0;
 
-    public void Schedule<TAction>(TAction action, int networkId, Entity target, long executeTick) where TAction : struct, IAction
+    public ScheduleResult Schedule<TAction>(TAction action, int networkId, Entity target, long executeTick) where TAction : struct, IAction
     {
         int structSize = Marshal.SizeOf<TAction>();
+
+        // Create ReadOnlySpan<byte> for deduplication check
+#if NETSTANDARD2_1 || NETSTANDARD2_0
+        var actionSpan = MemoryMarshal.CreateReadOnlySpan(ref action, 1);
+#else
+        var actionSpan = MemoryMarshal.CreateReadOnlySpan(in action, 1);
+#endif
+        var byteSpan = MemoryMarshal.AsBytes(actionSpan);
+
+        // Deduplication
+        if (IsDuplicate(networkId, target.Id, executeTick, byteSpan))
+        {
+            return ScheduleResult.Duplicate;
+        }
         
         EnsureCapacity();
         EnsureDataCapacity(structSize);
@@ -66,6 +80,8 @@ public class ActionScheduler
         
         // Track for Rollback
         if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
+
+        return ScheduleResult.Success;
     }
 
     public ScheduleResult ScheduleFromBytes(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)

@@ -120,7 +120,12 @@ public class GameClient : IDisposable, IAsyncDisposable
         // Schedule Locally (Prediction)
         if (actualPredict)
         {
-            _scheduler.Schedule(action, networkId, new Entity(targetEntityId), executeTick);
+            var result = _scheduler.Schedule(action, networkId, new Entity(targetEntityId), executeTick);
+            if (result == ActionScheduler.ScheduleResult.Duplicate)
+            {
+                Log($"[Prediction] Duplicate action {typeof(TAction).Name} ignored.");
+                return;
+            }
         }
 
         // Send to Server
@@ -170,8 +175,20 @@ public class GameClient : IDisposable, IAsyncDisposable
         
         if (payload != null)
         {
-            // Fire and forget send
-            _ = _hubConnection.InvokeAsync("SendBatch", payload);
+            // Send with error logging
+            _ = SendBatchAsync(payload);
+        }
+    }
+
+    private async Task SendBatchAsync(byte[] payload)
+    {
+        try
+        {
+            await _hubConnection.InvokeAsync("SendBatch", payload);
+        }
+        catch (Exception ex)
+        {
+            Log($"Failed to send batch ({payload.Length} bytes): {ex.Message}");
         }
     }
 
