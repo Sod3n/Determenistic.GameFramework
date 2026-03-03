@@ -87,15 +87,29 @@ namespace Deterministic.GameFramework.SourceGenerators
             if (type.TypeKind == TypeKind.Array)
                 return false;
 
-            // Check specific allowed types by name
+            // Check for IParam implementation
+            if (type.AllInterfaces.Any(i => i.Name == "IParam"))
+            {
+                return true;
+            }
+
+            // Check specific allowed types by name or full path
             string name = type.Name;
+            string fullName = type.ToDisplayString();
+            
+            // Robust check for Guid (System or Framework)
+            if (name == "Guid" || fullName.Contains("Guid") || fullName == "System.Guid")
+            {
+                return true;
+            }
+
             if (name == "Float" || 
                 name == "Int" || 
                 name == "Vector2" || 
                 name == "Vector3" || 
                 name == "Entity" || 
                 name == "Ref" || 
-                name == "FixedString32" ||
+                name == "FixedString32" || 
                 name == "BitMask128")
             {
                 return true;

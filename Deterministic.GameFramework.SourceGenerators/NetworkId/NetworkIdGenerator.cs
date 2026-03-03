@@ -60,7 +60,7 @@ namespace Deterministic.GameFramework.SourceGenerators
         {
             if (types.IsDefaultOrEmpty) return;
 
-            var typeIdMap = new Dictionary<string, int>();
+            var typeIdMap = new Dictionary<string, string>(); // TypeName -> GuidString
 
             foreach (var typeDeclaration in types.Distinct())
             {
@@ -74,9 +74,10 @@ namespace Deterministic.GameFramework.SourceGenerators
 
                     if (networkIdAttr != null && networkIdAttr.ConstructorArguments.Length > 0)
                     {
-                        if (networkIdAttr.ConstructorArguments[0].Value is int id)
+                        var arg = networkIdAttr.ConstructorArguments[0];
+                        if (arg.Value is string guidStr)
                         {
-                            typeIdMap[typeSymbol.ToDisplayString()] = id;
+                            typeIdMap[typeSymbol.ToDisplayString()] = guidStr;
                         }
                     }
                 }
@@ -101,34 +102,36 @@ namespace Deterministic.GameFramework.SourceGenerators
             sb.AppendLine("        public static void RegisterAll()");
             sb.AppendLine("        {");
             sb.AppendLine("            Console.WriteLine($\"[NetworkIdRegistry] Registering {IdToType.Count} types from {typeof(NetworkIdRegistry).Assembly.GetName().Name}...\");");
-            sb.AppendLine("            foreach (var kvp in IdToType)");
-            sb.AppendLine("            {");
-            sb.AppendLine("                ComponentTypeRegistry.GetOrRegister(kvp.Key, kvp.Value);");
-            sb.AppendLine("            }");
+            
+            // Sort by Type Name for deterministic registration order
+            foreach (var kvp in typeIdMap.OrderBy(x => x.Key))
+            {
+                sb.AppendLine($"            ComponentTypeRegistry.GetOrRegister(Deterministic.GameFramework.CoreV2.Guid.Parse(\"{kvp.Value}\"), typeof({kvp.Key}));");
+            }
             sb.AppendLine("        }");
             sb.AppendLine("");
-            sb.AppendLine("        public static readonly Dictionary<Type, int> TypeToId = new Dictionary<Type, int>()");
+            sb.AppendLine("        public static readonly Dictionary<Type, Deterministic.GameFramework.CoreV2.Guid> TypeToId = new Dictionary<Type, Deterministic.GameFramework.CoreV2.Guid>()");
             sb.AppendLine("        {");
 
-            foreach (var kvp in typeIdMap)
+            foreach (var kvp in typeIdMap.OrderBy(x => x.Key))
             {
-                sb.AppendLine($"            {{ typeof({kvp.Key}), {kvp.Value} }},");
+                sb.AppendLine($"            {{ typeof({kvp.Key}), Deterministic.GameFramework.CoreV2.Guid.Parse(\"{kvp.Value}\") }},");
             }
 
             sb.AppendLine("        };");
             sb.AppendLine("");
-            sb.AppendLine("        public static readonly Dictionary<int, Type> IdToType = new Dictionary<int, Type>()");
+            sb.AppendLine("        public static readonly Dictionary<Deterministic.GameFramework.CoreV2.Guid, Type> IdToType = new Dictionary<Deterministic.GameFramework.CoreV2.Guid, Type>()");
             sb.AppendLine("        {");
 
-            foreach (var kvp in typeIdMap)
+            foreach (var kvp in typeIdMap.OrderBy(x => x.Key))
             {
-                sb.AppendLine($"            {{ {kvp.Value}, typeof({kvp.Key}) }},");
+                sb.AppendLine($"            {{ Deterministic.GameFramework.CoreV2.Guid.Parse(\"{kvp.Value}\"), typeof({kvp.Key}) }},");
             }
 
             sb.AppendLine("        };");
             sb.AppendLine("");
-            sb.AppendLine("        public static int GetId<T>() => TypeToId[typeof(T)];");
-            sb.AppendLine("        public static Type GetType(int id) => IdToType[id];");
+            sb.AppendLine("        public static Deterministic.GameFramework.CoreV2.Guid GetId<T>() => TypeToId[typeof(T)];");
+            sb.AppendLine("        public static Type GetType(Deterministic.GameFramework.CoreV2.Guid id) => IdToType[id];");
             sb.AppendLine("    }");
             sb.AppendLine("}");
 

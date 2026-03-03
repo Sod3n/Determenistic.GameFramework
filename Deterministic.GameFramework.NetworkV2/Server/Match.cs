@@ -10,19 +10,19 @@ namespace Deterministic.GameFramework.NetworkV2.Server;
 /// </summary>
 public class Match : IDisposable
 {
-    public Guid Id { get; }
+    public System.Guid Id { get; }
     public GlobalState State { get; }
     public GameLoop Loop { get; }
     public Dispatcher Dispatcher { get; }
     public ActionScheduler Scheduler { get; }
     
-    private readonly List<Guid> _players = new();
-    public IReadOnlyList<Guid> Players => _players;
+    private readonly List<System.Guid> _players = new();
+    public IReadOnlyList<System.Guid> Players => _players;
 
-    public event Action<Guid>? OnPlayerJoined;
-    public event Action<Guid>? OnPlayerLeft;
+    public event Action<System.Guid>? OnPlayerJoined;
+    public event Action<System.Guid>? OnPlayerLeft;
 
-    public Match(Guid id, GlobalState state, GameLoop loop, Dispatcher dispatcher, ActionScheduler scheduler)
+    public Match(System.Guid id, GlobalState state, GameLoop loop, Dispatcher dispatcher, ActionScheduler scheduler)
     {
         Id = id;
         State = state;
@@ -31,7 +31,7 @@ public class Match : IDisposable
         Scheduler = scheduler;
     }
 
-    public void AddPlayer(Guid playerId)
+    public void AddPlayer(System.Guid playerId)
     {
         if (!_players.Contains(playerId))
         {
@@ -40,7 +40,7 @@ public class Match : IDisposable
         }
     }
 
-    public void RemovePlayer(Guid playerId)
+    public void RemovePlayer(System.Guid playerId)
     {
         if (_players.Remove(playerId))
         {

@@ -32,8 +32,8 @@ public class MatchBroadcaster : IDisposable
     {
         _buffers[match.Id] = new PacketBuffer();
         
-        match.Scheduler.OnActionScheduled += (networkId, data, targetId, tick) => 
-            OnActionScheduled(match.Id, networkId, data, targetId, tick);
+        match.Scheduler.OnActionScheduled += (denseId, data, targetId, tick) => 
+            OnActionScheduled(match.Id, denseId, data, targetId, tick);
             
         match.Loop.OnTick += () => OnMatchTick(match);
     }
@@ -43,7 +43,7 @@ public class MatchBroadcaster : IDisposable
         _buffers.TryRemove(match.Id, out _);
     }
 
-    private void OnActionScheduled(Guid matchId, int networkId, ReadOnlySpan<byte> data, int targetId, long tick)
+    private void OnActionScheduled(Guid matchId, int denseId, ReadOnlySpan<byte> data, int targetId, long tick)
     {
         if (_buffers.TryGetValue(matchId, out var buffer))
         {
@@ -57,7 +57,7 @@ public class MatchBroadcaster : IDisposable
                 
                 var header = new NetworkActionHeader
                 {
-                    NetworkId = networkId,
+                    DenseId = denseId,
                     TargetEntityId = targetId,
                     ExecuteTick = tick,
                     DataLength = data.Length

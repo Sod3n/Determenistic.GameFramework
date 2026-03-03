@@ -12,9 +12,9 @@ public class Dispatcher
     private readonly Dictionary<int, Action<object, GlobalState, Entity>> _actionRunners = new();
     private readonly Dictionary<int, Action<byte[], int, GlobalState, Entity>> _byteActionRunners = new();
     
-    // Map Action Struct Type -> Service Network ID
-    internal readonly Dictionary<Type, int> _actionTypeToNetworkId = new();
-    internal readonly Dictionary<int, Type> _networkIdToType = new();
+    // Map Action Struct Type -> Service Dense ID
+    internal readonly Dictionary<Type, int> _actionTypeToDenseId = new();
+    internal readonly Dictionary<int, Type> _denseIdToType = new();
 
     // Map Action Struct Type -> List of Additional Local Reactions (different TTarget)
     // Stored as object, cast to List<AdditionalReactionEntry<TAction>> at runtime
@@ -30,9 +30,9 @@ public class Dispatcher
 
     private delegate bool ReactionRunner<TAction>(ref TAction action, GlobalState state, Entity entity, Context ctx);
 
-    private readonly Func<Type, int>? _serviceIdLookup;
+    private readonly Func<Type, Guid>? _serviceIdLookup;
 
-    public Dispatcher(Func<Type, int>? serviceIdLookup = null)
+    public Dispatcher(Func<Type, Guid>? serviceIdLookup = null)
     {
         _serviceIdLookup = serviceIdLookup;
     }
@@ -80,7 +80,7 @@ public class Dispatcher
         // ... (Registration logic remains same) ...
         // Resolve NetworkId from the Service class attribute
         var serviceType = actionService.GetType();
-        int networkId;
+        Guid networkId;
 
         if (_serviceIdLookup != null)
         {
@@ -103,13 +103,16 @@ public class Dispatcher
             networkId = networkIdAttr.Id;
         }
 
-        // Map the Action Type to this Network ID
-        if (_actionTypeToNetworkId.ContainsKey(typeof(TAction)))
+        // Resolve to DenseId for runtime efficiency
+        int denseId = ComponentTypeRegistry.GetOrRegister(networkId, typeof(TAction));
+
+        // Map the Action Type to this Dense ID
+        if (_actionTypeToDenseId.ContainsKey(typeof(TAction)))
         {
-            throw new Exception($"Action Type {typeof(TAction).Name} is already registered to ID {_actionTypeToNetworkId[typeof(TAction)]}. Cannot register multiple services for the same Action struct in this implementation.");
+            throw new Exception($"Action Type {typeof(TAction).Name} is already registered to ID {_actionTypeToDenseId[typeof(TAction)]}. Cannot register multiple services for the same Action struct in this implementation.");
         }
-        _actionTypeToNetworkId[typeof(TAction)] = networkId;
-        _networkIdToType[networkId] = typeof(TAction);
+        _actionTypeToDenseId[typeof(TAction)] = denseId;
+        _denseIdToType[denseId] = typeof(TAction);
 
         var sortedReactions = reactions.OrderByDescending(r => r.Priority).ToList();
         var preReactions = sortedReactions.Where(r => !r.AfterActionExecuted).ToList();
@@ -128,7 +131,7 @@ public class Dispatcher
         Action<object, GlobalState, Entity> runner = (actionObj, state, entity) =>
         {
             var action = (TAction)actionObj;
-            Console.WriteLine($"[Dispatcher] Executing {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
+            // Console.WriteLine($"[Dispatcher] Executing {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -154,7 +157,7 @@ public class Dispatcher
             var span = new ReadOnlySpan<byte>(buffer, offset, Marshal.SizeOf<TAction>());
             var action = MemoryMarshal.Read<TAction>(span);
             
-            Console.WriteLine($"[Dispatcher] Executing (Byte) {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
+            // Console.WriteLine($"[Dispatcher] Executing (Byte) {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -174,8 +177,8 @@ public class Dispatcher
             RunAdditionalReactions(ref action, state, entity, ctx, additionalReactions, false, true);
         };
 
-        _actionRunners[networkId] = runner;
-        _byteActionRunners[networkId] = byteRunner;
+        _actionRunners[denseId] = runner;
+        _byteActionRunners[denseId] = byteRunner;
     }
 
     private bool RunAdditionalReactions<TAction>(ref TAction action, GlobalState state, Entity entity, Context ctx, List<AdditionalReactionEntry<TAction>> reactions, bool canAbort, bool runAfterAction)
@@ -207,44 +210,44 @@ public class Dispatcher
         return false;
     }
 
-    public Type? GetActionType(int networkId)
+    public Type? GetActionType(int denseId)
     {
-        return _byteActionRunners.ContainsKey(networkId) && _networkIdToType.TryGetValue(networkId, out var type) 
+        return _byteActionRunners.ContainsKey(denseId) && _denseIdToType.TryGetValue(denseId, out var type) 
             ? type 
             : null;
     }
 
     public void Execute<TAction>(TAction action, GlobalState state, Entity entity) where TAction : struct, IAction
     {
-        if (!_actionTypeToNetworkId.TryGetValue(typeof(TAction), out int networkId))
+        if (!_actionTypeToDenseId.TryGetValue(typeof(TAction), out int denseId))
         {
              throw new Exception($"No registered service found for action {typeof(TAction).Name}");
         }
 
-        if (_actionRunners.TryGetValue(networkId, out var runner))
+        if (_actionRunners.TryGetValue(denseId, out var runner))
         {
             runner(action, state, entity);
         }
         else
         {
-            throw new Exception($"No runner registered for ID {networkId}");
+            throw new Exception($"No runner registered for ID {denseId}");
         }
     }
 
-    public void ExecuteByteAction(int networkId, byte[] buffer, int offset, GlobalState state, Entity entity)
+    public void ExecuteByteAction(int denseId, byte[] buffer, int offset, GlobalState state, Entity entity)
     {
-        if (_byteActionRunners.TryGetValue(networkId, out var byteRunner))
+        if (_byteActionRunners.TryGetValue(denseId, out var byteRunner))
         {
             byteRunner(buffer, offset, state, entity);
         }
         // If not found? 
     }
 
-    public int GetNetworkId<TAction>()
+    public int GetDenseId<TAction>()
     {
-         if (_actionTypeToNetworkId.TryGetValue(typeof(TAction), out int networkId))
+         if (_actionTypeToDenseId.TryGetValue(typeof(TAction), out int denseId))
          {
-             return networkId;
+             return denseId;
          }
          throw new Exception($"Action {typeof(TAction).Name} is not registered.");
     }

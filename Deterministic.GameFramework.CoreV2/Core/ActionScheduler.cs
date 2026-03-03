@@ -15,7 +15,7 @@ public class ActionScheduler
     // Struct to hold pending action metadata
     private struct PendingAction
     {
-        public int NetworkId;
+        public int DenseId;
         public int TargetEntityId;
         public long ExecuteTick;
         public int DataOffset;
@@ -33,14 +33,14 @@ public class ActionScheduler
     /// <summary>
     /// Delegate for the OnActionScheduled event.
     /// </summary>
-    public delegate void ActionScheduledHandler(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick);
+    public delegate void ActionScheduledHandler(int denseId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick);
 
     public event ActionScheduledHandler? OnActionScheduled;
 
     public long EarliestDirtyTick { get; private set; } = long.MaxValue;
     public long MinAllowedTick { get; private set; } = 0;
 
-    public ScheduleResult Schedule<TAction>(TAction action, int networkId, Entity target, long executeTick) where TAction : struct, IAction
+    public ScheduleResult Schedule<TAction>(TAction action, int denseId, Entity target, long executeTick) where TAction : struct, IAction
     {
         int structSize = Marshal.SizeOf<TAction>();
 
@@ -55,7 +55,7 @@ public class ActionScheduler
         lock (_lock)
         {
             // Deduplication
-            if (IsDuplicate(networkId, target.Id, executeTick, byteSpan))
+            if (IsDuplicate(denseId, target.Id, executeTick, byteSpan))
             {
                 return ScheduleResult.Duplicate;
             }
@@ -71,13 +71,13 @@ public class ActionScheduler
     #endif
 
             // Record metadata
-            AddPendingAction(networkId, target.Id, executeTick, _actionDataHead, structSize);
+            AddPendingAction(denseId, target.Id, executeTick, _actionDataHead, structSize);
 
             // Notify listeners (Network Layer)
             if (OnActionScheduled != null)
             {
                 var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, structSize);
-                OnActionScheduled.Invoke(networkId, span, target.Id, executeTick);
+                OnActionScheduled.Invoke(denseId, span, target.Id, executeTick);
             }
 
             _actionDataHead += structSize;
@@ -89,7 +89,7 @@ public class ActionScheduler
         return ScheduleResult.Success;
     }
 
-    public ScheduleResult ScheduleFromBytes(int networkId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
+    public ScheduleResult ScheduleFromBytes(int denseId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
     {
         if (executeTick < MinAllowedTick)
         {
@@ -100,7 +100,7 @@ public class ActionScheduler
         {
             // Deduplication: Check if identical action is already scheduled for this tick
             // This handles Client-Side Prediction (Local action matches Server action)
-            if (IsDuplicate(networkId, targetEntityId, executeTick, data))
+            if (IsDuplicate(denseId, targetEntityId, executeTick, data))
             {
                 return ScheduleResult.Duplicate;
             }
@@ -114,13 +114,13 @@ public class ActionScheduler
             data.CopyTo(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize));
 
             // Record metadata
-            AddPendingAction(networkId, targetEntityId, executeTick, _actionDataHead, structSize);
+            AddPendingAction(denseId, targetEntityId, executeTick, _actionDataHead, structSize);
 
             // Notify listeners (Network Layer for Broadcasting)
             if (OnActionScheduled != null)
             {
                 var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, structSize);
-                OnActionScheduled.Invoke(networkId, span, targetEntityId, executeTick);
+                OnActionScheduled.Invoke(denseId, span, targetEntityId, executeTick);
             }
 
             _actionDataHead += structSize;
@@ -132,7 +132,7 @@ public class ActionScheduler
         return ScheduleResult.Success;
     }
 
-    private bool IsDuplicate(int networkId, int targetEntityId, long tick, ReadOnlySpan<byte> data)
+    private bool IsDuplicate(int denseId, int targetEntityId, long tick, ReadOnlySpan<byte> data)
     {
         for (int i = 0; i < _pendingActionCount; i++)
         {
@@ -140,7 +140,7 @@ public class ActionScheduler
             
             // Fast checks
             if (pending.ExecuteTick != tick) continue;
-            if (pending.NetworkId != networkId) continue;
+            if (pending.DenseId != denseId) continue;
             if (pending.TargetEntityId != targetEntityId) continue;
             if (pending.DataLength != data.Length) continue;
 
@@ -190,7 +190,7 @@ public class ActionScheduler
                     
                     actionsToExecute[dst++] = new ExecutableAction
                     {
-                        NetworkId = pending.NetworkId,
+                        DenseId = pending.DenseId,
                         TargetEntityId = pending.TargetEntityId,
                         Data = data
                     };
@@ -201,7 +201,7 @@ public class ActionScheduler
         // 2. Sort (Insertion Sort for determinism - or Array.Sort with stable key)
         Array.Sort(actionsToExecute, (a, b) => 
         {
-            int netIdCompare = a.NetworkId.CompareTo(b.NetworkId);
+            int netIdCompare = a.DenseId.CompareTo(b.DenseId);
             if (netIdCompare != 0) return netIdCompare;
             return a.TargetEntityId.CompareTo(b.TargetEntityId);
         });
@@ -210,13 +210,13 @@ public class ActionScheduler
         for (int i = 0; i < actionsToExecute.Length; i++)
         {
             var action = actionsToExecute[i];
-            dispatcher.ExecuteByteAction(action.NetworkId, action.Data, 0, state, new Entity(action.TargetEntityId));
+            dispatcher.ExecuteByteAction(action.DenseId, action.Data, 0, state, new Entity(action.TargetEntityId));
         }
     }
     
     private struct ExecutableAction
     {
-        public int NetworkId;
+        public int DenseId;
         public int TargetEntityId;
         public byte[] Data;
     }
@@ -299,11 +299,11 @@ public class ActionScheduler
         }
     }
 
-    private void AddPendingAction(int networkId, int targetId, long tick, int offset, int length)
+    private void AddPendingAction(int denseId, int targetId, long tick, int offset, int length)
     {
         _pendingActions[_pendingActionCount++] = new PendingAction
         {
-            NetworkId = networkId,
+            DenseId = denseId,
             TargetEntityId = targetId,
             ExecuteTick = tick,
             DataOffset = offset,

@@ -21,7 +21,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
     private readonly ActionScheduler _scheduler;
     private readonly GameLoop _gameLoop;
     
-    private Guid _currentMatchId;
+    private System.Guid _currentMatchId;
     private readonly PacketBuffer _outgoingBuffer = new PacketBuffer();
     private readonly TaskCompletionSource _syncTcs = new TaskCompletionSource();
     private bool _isWaitingForFullState = false;
@@ -36,7 +36,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
     public ReactiveSystem Reactive { get; }
     public GlobalState State => _state;
     
-    public Guid PlayerId { get; private set; }
+    public System.Guid PlayerId { get; private set; }
 
     public GameClient(INetworkClient networkClient, string connectionString, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
     {
@@ -78,7 +78,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         _ = RequestFullState();
     }
 
-    public async Task ConnectAsync(Guid matchId)
+    public async Task ConnectAsync(System.Guid matchId)
     {
         Console.WriteLine($"[GameClient] Connecting to match {matchId} with connection string '{_connectionString}'");
         try
@@ -132,7 +132,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         int actualDelay = tickDelay ?? DefaultTickDelay;
         bool actualPredict = predict ?? DefaultPrediction;
 
-        int networkId = _dispatcher.GetNetworkId<TAction>();
+        int denseId = _dispatcher.GetDenseId<TAction>();
         long executeTick = _gameLoop.CurrentTick + actualDelay;
 
         // Serialize
@@ -143,7 +143,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         // Schedule Locally (Prediction)
         if (actualPredict)
         {
-            var result = _scheduler.Schedule(action, networkId, new Entity(targetEntityId), executeTick);
+            var result = _scheduler.Schedule(action, denseId, new Entity(targetEntityId), executeTick);
             if (result == ActionScheduler.ScheduleResult.Duplicate)
             {
                 Log($"[Prediction] Duplicate action {typeof(TAction).Name} ignored.");
@@ -152,7 +152,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         }
 
         // Send to Server
-        _ = SendAction(networkId, data, targetEntityId, executeTick);
+        _ = SendAction(denseId, data, targetEntityId, executeTick);
     }
 
     public void Dispatch<TAction>(TAction action, Entity target) where TAction : struct, IAction
@@ -160,7 +160,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         Execute(action, target.Id);
     }
 
-    public Task SendAction(int networkId, byte[] data, int targetEntityId, long tick)
+    public Task SendAction(int denseId, byte[] data, int targetEntityId, long tick)
     {
         // Buffer the action
         lock (_outgoingBuffer)
@@ -171,7 +171,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             var span = _outgoingBuffer.GetSpan(totalSize);
             var header = new NetworkActionHeader
             {
-                NetworkId = networkId,
+                DenseId = denseId,
                 TargetEntityId = targetEntityId,
                 ExecuteTick = tick,
                 DataLength = data.Length
@@ -230,7 +230,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             var dataSpan = payloadSpan.Slice(offset, actionHeader.DataLength);
             offset += actionHeader.DataLength;
             
-            _scheduler.ScheduleFromBytes(actionHeader.NetworkId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
+            _scheduler.ScheduleFromBytes(actionHeader.DenseId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
         }
         
         // 2. Sync Tick (Basic)

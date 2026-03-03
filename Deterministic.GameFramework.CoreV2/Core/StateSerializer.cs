@@ -64,14 +64,8 @@ public static class StateSerializer
         {
             var array = state._componentArrays[denseId];
             
-            // Translate DenseId -> NetworkId for the wire
-            if (!ComponentTypeRegistry.TryGetNetworkId(denseId, out int networkId))
-            {
-                throw new Exception($"Component DenseId {denseId} has no registered NetworkId. Cannot serialize.");
-            }
-
-            // Write NetworkId
-            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), networkId);
+            // Write DenseId directly (Handshake ensures consistency)
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), denseId);
             offset += 4;
 
             // Array Length (Capacity)
@@ -135,7 +129,7 @@ public static class StateSerializer
 
         for (int i = 0; i < componentCount; i++)
         {
-            int networkId = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            int denseId = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
             offset += 4;
 
             int arrayLength = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
@@ -144,10 +138,7 @@ public static class StateSerializer
             int presenceByteCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
             offset += 4;
 
-            if (arrayLength > MAX_ARRAY_SIZE) throw new Exception($"Component Array for NetworkId {networkId} too large ({arrayLength}). Possible corruption.");
-
-            // Resolve NetworkId -> DenseId (Local)
-            int denseId = ComponentTypeRegistry.GetOrRegister(networkId);
+            if (arrayLength > MAX_ARRAY_SIZE) throw new Exception($"Component Array for DenseId {denseId} too large ({arrayLength}). Possible corruption.");
 
             // Read Presence Mask and Apply to EntityMasks
             var presenceSpan = span.Slice(offset, presenceByteCount);
@@ -176,7 +167,9 @@ public static class StateSerializer
                 }
                 else
                 {
-                     throw new Exception($"Cannot deserialize Component NetworkId {networkId} (DenseId {denseId}): Type is unknown.");
+                     // This can happen if we have data for a component that isn't registered locally yet.
+                     // But since we are using DenseId, it implies strict synchronization.
+                     throw new Exception($"Cannot deserialize Component DenseId {denseId}: Type is unknown. Ensure ComponentTypeRegistry is synced.");
                 }
             }
 

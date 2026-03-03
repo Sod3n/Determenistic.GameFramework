@@ -6,7 +6,7 @@ namespace Deterministic.GameFramework.CoreV2;
 /// A deterministic Random Number Generator (RNG) component using the Xoshiro128** algorithm.
 /// This struct is blittable and can be stored directly in the GlobalState.
 /// </summary>
-[NetworkId(900)]
+[NetworkId("00000000-0000-0000-0000-000000000384")]
 public struct DeterministicRandom : IComponent, IEquatable<DeterministicRandom>
 {
     // 128-bit state

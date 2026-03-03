@@ -21,7 +21,7 @@ public class GamePacketProcessor
         _serviceProvider = serviceProvider;
     }
 
-    public async Task JoinMatchAsync(Guid matchId, string? authToken, INetworkPeer peer, IAuthService authService)
+    public async Task JoinMatchAsync(System.Guid matchId, string? authToken, INetworkPeer peer, IAuthService authService)
     {
         Console.WriteLine($"[GamePacketProcessor] JoinMatch requested for match {matchId} by {peer.Id}");
         var match = _matchManager.GetMatch(matchId);
@@ -51,7 +51,7 @@ public class GamePacketProcessor
         Console.WriteLine($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
     }
 
-    public async Task ProcessBatchAsync(Guid matchId, byte[] payload, INetworkPeer peer)
+    public async Task ProcessBatchAsync(System.Guid matchId, byte[] payload, INetworkPeer peer)
     {
         var match = _matchManager.GetMatch(matchId);
         if (match == null) return;
@@ -82,7 +82,7 @@ public class GamePacketProcessor
             offset += header.DataLength;
             
             // Schedule
-            var result = match.Scheduler.ScheduleFromBytes(header.NetworkId, dataSpan, header.TargetEntityId, header.ExecuteTick);
+            var result = match.Scheduler.ScheduleFromBytes(header.DenseId, dataSpan, header.TargetEntityId, header.ExecuteTick);
 
             if (result == ActionScheduler.ScheduleResult.TooOld)
             {
@@ -92,7 +92,7 @@ public class GamePacketProcessor
         return fullStateRequired;
     }
 
-    public async Task RequestFullStateAsync(Guid matchId, INetworkPeer peer)
+    public async Task RequestFullStateAsync(System.Guid matchId, INetworkPeer peer)
     {
         var match = _matchManager.GetMatch(matchId);
         if (match == null) return;

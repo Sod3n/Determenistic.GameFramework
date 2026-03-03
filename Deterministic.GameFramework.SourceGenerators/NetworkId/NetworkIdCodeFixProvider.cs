@@ -47,10 +47,11 @@ namespace Deterministic.GameFramework.SourceGenerators
             
             var compilation = semanticModel.Compilation;
 
-            string typeName = typeDecl.Identifier.Text;
-            int generatedId = System.Math.Abs(typeName.GetHashCode());
+            // Generate a random GUID for the NetworkId
+            var generatedId = System.Guid.NewGuid();
+            var guidString = generatedId.ToString();
 
-            var attributeString = $"[Deterministic.GameFramework.CoreV2.NetworkId({generatedId})]\n";
+            // Create the attribute: [Deterministic.GameFramework.CoreV2.NetworkId("guid-string")]
             var parsedAttributeList = SyntaxFactory.AttributeList(
                 SyntaxFactory.SingletonSeparatedList(
                     SyntaxFactory.Attribute(
@@ -60,8 +61,8 @@ namespace Deterministic.GameFramework.SourceGenerators
                             SyntaxFactory.SingletonSeparatedList(
                                 SyntaxFactory.AttributeArgument(
                                     SyntaxFactory.LiteralExpression(
-                                        SyntaxKind.NumericLiteralExpression,
-                                        SyntaxFactory.Literal(generatedId))))))))
+                                        SyntaxKind.StringLiteralExpression,
+                                        SyntaxFactory.Literal(guidString))))))))
                 .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed);
 
             var newTypeDecl = typeDecl.AddAttributeLists(parsedAttributeList);

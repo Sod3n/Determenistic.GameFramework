@@ -5,7 +5,7 @@ namespace Deterministic.GameFramework.NetworkV2.Packets;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct NetworkActionHeader
 {
-    public int NetworkId;
+    public int DenseId;
     public int TargetEntityId;
     public long ExecuteTick;
     public int DataLength;

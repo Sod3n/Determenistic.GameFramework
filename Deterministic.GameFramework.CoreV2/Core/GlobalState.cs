@@ -314,17 +314,80 @@ public static class ComponentTypeRegistry
 {
     private static int _nextDenseId = 0;
     // Map NetworkId (stable) -> DenseId (runtime index)
-    public static readonly Dictionary<int, int> NetworkIdToDenseId = new();
+    public static readonly Dictionary<Guid, int> NetworkIdToDenseId = new();
     // Map DenseId -> NetworkId
-    public static readonly Dictionary<int, int> DenseIdToNetworkId = new();
+    public static readonly Dictionary<int, Guid> DenseIdToNetworkId = new();
     // Map DenseId -> Type
     public static readonly Dictionary<int, Type> DenseIdToType = new();
     
     // Delegate to resolve Type from NetworkId (e.g. from Generated Registry)
-    public static Func<int, Type?> TypeResolver { get; set; } = DefaultTypeResolver;
+    public static Func<Guid, Type?> TypeResolver { get; set; } = DefaultTypeResolver;
 
     private static bool _isInitialized = false;
     private static readonly object _initLock = new();
+
+    // Export mappings for handshake (NetworkId -> DenseId)
+    public static Dictionary<Guid, int> ExportMappings()
+    {
+        InitializeIfNeeded();
+        lock (NetworkIdToDenseId)
+        {
+            return new Dictionary<Guid, int>(NetworkIdToDenseId);
+        }
+    }
+
+    // Import mappings from handshake
+    public static void ImportMappings(Dictionary<Guid, int> mappings)
+    {
+        InitializeIfNeeded();
+        lock (NetworkIdToDenseId)
+        {
+            foreach (var kvp in mappings)
+            {
+                var networkId = kvp.Key;
+                var denseId = kvp.Value;
+
+                if (NetworkIdToDenseId.TryGetValue(networkId, out int existingDenseId))
+                {
+                    if (existingDenseId != denseId)
+                    {
+                        // Collision or mismatch!
+                        // In a real scenario, we might need to remap or error.
+                        // For now, we trust the authoritative source (usually server) 
+                        // and might need to adjust our local denseId if we already allocated one.
+                        // But ComponentTypeRegistry is usually static/global. 
+                        // Remapping DenseIds at runtime is hard if arrays are already allocated.
+                        // Ideally, ImportMappings happens BEFORE any components are created.
+                        Console.WriteLine($"[ComponentTypeRegistry] Warning: NetworkId {networkId} already mapped to {existingDenseId}, but import requests {denseId}. Keeping existing.");
+                    }
+                    continue;
+                }
+
+                // If denseId is already taken by another NetworkId?
+                if (DenseIdToNetworkId.ContainsKey(denseId))
+                {
+                    // Shift local denseId? Or error?
+                    Console.WriteLine($"[ComponentTypeRegistry] Warning: DenseId {denseId} already used. Cannot import mapping for {networkId}.");
+                    continue;
+                }
+
+                NetworkIdToDenseId[networkId] = denseId;
+                DenseIdToNetworkId[denseId] = networkId;
+                
+                // We don't necessarily know the Type here if it hasn't been registered yet.
+                // But usually we register types locally first, which assigns random denseIds.
+                // This Import should ideally set the denseIds to match the server.
+                // Implementation detail: If we call GetOrRegister later, it checks NetworkIdToDenseId first.
+                // So if we pre-populate this, it works.
+                
+                // Update _nextDenseId to avoid collisions
+                if (denseId >= _nextDenseId)
+                {
+                    _nextDenseId = denseId + 1;
+                }
+            }
+        }
+    }
 
     private static void InitializeIfNeeded()
     {
@@ -336,10 +399,7 @@ public static class ComponentTypeRegistry
 
             var domainId = AppDomain.CurrentDomain.Id;
             var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            var typeHandle = typeof(ComponentTypeRegistry).TypeHandle.Value;
             
-            // Console.WriteLine($"[ComponentTypeRegistry] Initializing... Domain: {domainId}, Thread: {threadId}, TypeHandle: {typeHandle}");
-
             // Use the same logic as ServiceLocator to find assemblies
             var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
             
@@ -350,26 +410,21 @@ public static class ComponentTypeRegistry
                 LoadReferencedAssemblies(entryAssembly, assemblies);
             }
 
-            // Also scan directory for DLLs (Plugins / Shared libraries not yet loaded) - logic adapted from ServiceLocator
+            // Also scan directory for DLLs
             try 
             {
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 var dlls = Directory.GetFiles(baseDir, "*.dll", SearchOption.TopDirectoryOnly);
                 
-                // Console.WriteLine($"[ComponentTypeRegistry] Scanning base directory: {baseDir}");
                 foreach (var dllPath in dlls)
                 {
                     try 
                     {
                         var fileName = Path.GetFileNameWithoutExtension(dllPath);
                         if (IsIgnoredName(fileName)) continue;
-
-                        // Avoid re-loading if already in memory (by simple name check)
                         if (assemblies.Any(a => a.GetName().Name == fileName)) continue;
 
-                        // Console.WriteLine($"[ComponentTypeRegistry] Loading external assembly: {fileName}");
                         var loadedAssembly = Assembly.LoadFrom(dllPath);
-                        
                         if (!IsIgnoredAssembly(loadedAssembly))
                         {
                             if (assemblies.Add(loadedAssembly))
@@ -404,7 +459,6 @@ public static class ComponentTypeRegistry
                     var registerMethod = registryType.GetMethod("RegisterAll", BindingFlags.Public | BindingFlags.Static);
                     if (registerMethod != null)
                     {
-                        // Console.WriteLine($"[ComponentTypeRegistry] Invoking RegisterAll in {assemblyName}");
                         try
                         {
                             registerMethod.Invoke(null, null);
@@ -461,7 +515,7 @@ public static class ComponentTypeRegistry
         }
     }
 
-    private static Type? DefaultTypeResolver(int networkId)
+    private static Type? DefaultTypeResolver(Guid networkId)
     {
         InitializeIfNeeded();
         
@@ -475,7 +529,7 @@ public static class ComponentTypeRegistry
         return null;
     }
 
-    public static int GetOrRegister(int networkId, Type type)
+    public static int GetOrRegister(Guid networkId, Type type)
     {
         InitializeIfNeeded();
         lock (NetworkIdToDenseId)
@@ -492,7 +546,7 @@ public static class ComponentTypeRegistry
         }
     }
     
-    public static int GetOrRegister(int networkId)
+    public static int GetOrRegister(Guid networkId)
     {
         InitializeIfNeeded();
 
@@ -520,14 +574,14 @@ public static class ComponentTypeRegistry
             {
                 Console.WriteLine($"[ComponentTypeRegistry] ERROR: Could not resolve NetworkId {networkId}. Current Mappings: {string.Join(", ", NetworkIdToDenseId.Select(kv => $"{kv.Key}->{kv.Value} ({DenseIdToType[kv.Value].Name})"))}");
             }
-            throw new Exception($"TypeResolver returned null for NetworkId {networkId}. Ensure the component has [NetworkId({networkId})] and its assembly is loaded.");
+            throw new Exception($"TypeResolver returned null for NetworkId {networkId}. Ensure the component has [NetworkId(\"{networkId}\")] and its assembly is loaded.");
         }
 
         // 3. Register under lock (handling race)
         return GetOrRegister(networkId, type);
     }
     
-    public static bool TryGetDenseId(int networkId, out int denseId)
+    public static bool TryGetDenseId(Guid networkId, out int denseId)
     {
         lock (NetworkIdToDenseId)
         {
@@ -535,7 +589,7 @@ public static class ComponentTypeRegistry
         }
     }
 
-    public static bool TryGetNetworkId(int denseId, out int networkId)
+    public static bool TryGetNetworkId(int denseId, out Guid networkId)
     {
         lock (NetworkIdToDenseId)
         {
@@ -546,10 +600,10 @@ public static class ComponentTypeRegistry
 
 public static class InternalTypeId<T> where T : struct, IComponent
 {
-    public static readonly int NetworkId = GetNetworkId();
+    public static readonly Guid NetworkId = GetNetworkId();
     public static readonly int Value = ComponentTypeRegistry.GetOrRegister(NetworkId, typeof(T));
 
-    private static int GetNetworkId()
+    private static Guid GetNetworkId()
     {
         // Slow reflection path, but only runs ONCE per type per application lifetime.
         // This is acceptable for initialization.

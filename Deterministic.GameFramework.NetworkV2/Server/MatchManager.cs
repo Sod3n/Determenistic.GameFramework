@@ -7,12 +7,12 @@ namespace Deterministic.GameFramework.NetworkV2.Server;
 
 public interface IMatchFactory
 {
-    Match CreateMatch(Guid matchId);
+    Match CreateMatch(System.Guid matchId);
 }
 
 public class MatchManager
 {
-    private readonly ConcurrentDictionary<Guid, Match> _matches = new();
+    private readonly ConcurrentDictionary<System.Guid, Match> _matches = new();
     private readonly IMatchFactory _factory;
 
     public event Action<Match>? OnMatchCreated;
@@ -23,7 +23,7 @@ public class MatchManager
         _factory = factory;
     }
 
-    public Match CreateMatch(Guid matchId)
+    public Match CreateMatch(System.Guid matchId)
     {
         if (_matches.ContainsKey(matchId))
         {
@@ -46,13 +46,13 @@ public class MatchManager
         return match;
     }
 
-    public Match? GetMatch(Guid matchId)
+    public Match? GetMatch(System.Guid matchId)
     {
         _matches.TryGetValue(matchId, out var match);
         return match;
     }
 
-    public bool RemoveMatch(Guid matchId)
+    public bool RemoveMatch(System.Guid matchId)
     {
         if (_matches.TryRemove(matchId, out var match))
         {

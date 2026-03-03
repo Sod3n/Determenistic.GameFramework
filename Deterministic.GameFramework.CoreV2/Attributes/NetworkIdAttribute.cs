@@ -5,10 +5,10 @@ namespace Deterministic.GameFramework.CoreV2;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
 public sealed class NetworkIdAttribute : Attribute
 {
-    public int Id { get; }
+    public Guid Id { get; }
 
-    public NetworkIdAttribute(int id)
+    public NetworkIdAttribute(string id)
     {
-        Id = id;
+        Id = Guid.Parse(id);
     }
 }

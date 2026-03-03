@@ -9,8 +9,8 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public static class ServiceLocator
 {
-    public static readonly Dictionary<Type, int> TypeToId = new Dictionary<Type, int>();
-    public static readonly Dictionary<int, Type> IdToType = new Dictionary<int, Type>();
+    public static readonly Dictionary<Type, Guid> TypeToId = new Dictionary<Type, Guid>();
+    public static readonly Dictionary<Guid, Type> IdToType = new Dictionary<Guid, Type>();
 
     /// <summary>
     /// Scans all loaded assemblies for types with [NetworkId] and registers services to the Dispatcher.

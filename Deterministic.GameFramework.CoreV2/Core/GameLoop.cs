@@ -172,14 +172,14 @@ public class GameLoop
 
     public void Schedule<TAction>(TAction action, Entity target) where TAction : struct, IAction
     {
-        var networkId = _dispatcher.GetNetworkId<TAction>();
-        _scheduler.Schedule(action, networkId, target, CurrentTick);
+        var denseId = _dispatcher.GetDenseId<TAction>();
+        _scheduler.Schedule(action, denseId, target, CurrentTick);
     }
     
     public void ScheduleOnTick<TAction>(long tick, TAction action, Entity target) where TAction : struct, IAction
     {
-        var networkId = _dispatcher.GetNetworkId<TAction>();
-        _scheduler.Schedule(action, networkId, target, tick);
+        var denseId = _dispatcher.GetDenseId<TAction>();
+        _scheduler.Schedule(action, denseId, target, tick);
     }
 
     /// <summary>
