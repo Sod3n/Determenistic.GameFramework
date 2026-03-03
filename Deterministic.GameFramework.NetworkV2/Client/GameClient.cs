@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Deterministic.GameFramework.NetworkV2.Client;
 
-public class GameClient : IDisposable, IAsyncDisposable
+public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 {
     private readonly INetworkClient _networkClient;
     private readonly string _connectionString;
@@ -66,6 +66,8 @@ public class GameClient : IDisposable, IAsyncDisposable
         _networkClient.OnDisconnected += () => OnDisconnected?.Invoke();
         _networkClient.OnConnected += () => OnConnected?.Invoke();
     }
+
+    public Context CreateContext(Entity entity) => new Context(_state, entity, this);
 
     private void OnRollbackFailed()
     {
@@ -151,6 +153,11 @@ public class GameClient : IDisposable, IAsyncDisposable
 
         // Send to Server
         _ = SendAction(networkId, data, targetEntityId, executeTick);
+    }
+
+    public void Dispatch<TAction>(TAction action, Entity target) where TAction : struct, IAction
+    {
+        Execute(action, target.Id);
     }
 
     public Task SendAction(int networkId, byte[] data, int targetEntityId, long tick)

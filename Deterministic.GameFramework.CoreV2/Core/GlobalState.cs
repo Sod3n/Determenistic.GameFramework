@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Deterministic.GameFramework.CoreV2;
 
-public class GlobalState
+public class GlobalState : IActionDispatcher
 {
     internal Array[] _componentArrays = new Array[128];
     internal int[] _componentElementSizes = new int[128];
@@ -23,6 +23,11 @@ public class GlobalState
     internal List<int> _dirtyEntities = new List<int>(64);
 
     public GameLoop GameLoop { get; internal set; }
+
+    public void Dispatch<TAction>(TAction action, Entity target) where TAction : struct, IAction
+    {
+        GameLoop.ScheduleOnTick(GameLoop.CurrentTick + 1, action, target);
+    }
 
     public GlobalState()
     {
@@ -140,8 +145,7 @@ public class GlobalState
             }
         }
     }
-    
-    // Example of a fast filter query using BitMasks
+
     public IEnumerable<Entity> Filter<T1, T2>() 
         where T1 : struct, IComponent 
         where T2 : struct, IComponent
@@ -155,6 +159,59 @@ public class GlobalState
             if (_entityMasks[i].HasAll(mask))
             {
                 yield return new Entity(i);
+            }
+        }
+    }
+
+    public delegate void ComponentAction<T1, T2>(ref T1 c1, ref T2 c2);
+    public delegate void ComponentActionEntity<T1, T2>(Entity e, ref T1 c1, ref T2 c2);
+
+    public void ForEach<T1, T2>(ComponentAction<T1, T2> action)
+        where T1 : struct, IComponent
+        where T2 : struct, IComponent
+    {
+        var mask = new BitMask128();
+        var t1Id = InternalTypeId<T1>.Value;
+        var t2Id = InternalTypeId<T2>.Value;
+        mask.Set(t1Id);
+        mask.Set(t2Id);
+
+        EnsureTypedCapacity<T1>(t1Id);
+        EnsureTypedCapacity<T2>(t2Id);
+
+        var t1Array = (T1[])_componentArrays[t1Id];
+        var t2Array = (T2[])_componentArrays[t2Id];
+
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].HasAll(mask))
+            {
+                action(ref t1Array[i], ref t2Array[i]);
+            }
+        }
+    }
+
+    public void ForEach<T1, T2>(ComponentActionEntity<T1, T2> action)
+        where T1 : struct, IComponent
+        where T2 : struct, IComponent
+    {
+        var mask = new BitMask128();
+        var t1Id = InternalTypeId<T1>.Value;
+        var t2Id = InternalTypeId<T2>.Value;
+        mask.Set(t1Id);
+        mask.Set(t2Id);
+
+        EnsureTypedCapacity<T1>(t1Id);
+        EnsureTypedCapacity<T2>(t2Id);
+
+        var t1Array = (T1[])_componentArrays[t1Id];
+        var t2Array = (T2[])_componentArrays[t2Id];
+
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].HasAll(mask))
+            {
+                action(new Entity(i), ref t1Array[i], ref t2Array[i]);
             }
         }
     }

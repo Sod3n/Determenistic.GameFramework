@@ -23,6 +23,11 @@ public struct Entity : IParam, IEquatable<Entity>, IComparable<Entity>
     
     public override string ToString() => $"Entity({Id})";
 
+    public void Deconstruct(out int id)
+    {
+        id = Id;
+    }
+
     public static bool operator ==(Entity a, Entity b) => a.Id == b.Id;
     public static bool operator !=(Entity a, Entity b) => a.Id != b.Id;
 }
