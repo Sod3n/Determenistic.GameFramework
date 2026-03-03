@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Reflection;
+using System.Linq;
+using System.IO;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -20,6 +23,12 @@ public class GlobalState
     internal List<int> _dirtyEntities = new List<int>(64);
 
     public GameLoop GameLoop { get; internal set; }
+
+    public GlobalState()
+    {
+        var worldEntity = CreateEntity();
+        AddComponent(worldEntity, new World());
+    }
 
     public Entity CreateEntity()
     {
@@ -102,8 +111,6 @@ public class GlobalState
 
         // Mark component as present using bitmask (Fast!)
         _entityMasks[entity.Id].Set(typeId);
-        Console.WriteLine($"[GlobalState] Entity {entity.Id} Set Component {typeof(T).Name} (ID {typeId}). IsSet: {_entityMasks[entity.Id].IsSet(typeId)}");
-
         return ref specificArray[entity.Id];
     }
     
@@ -119,6 +126,19 @@ public class GlobalState
         
         var typeId = InternalTypeId<T>.Value;
         return _entityMasks[entity.Id].IsSet(typeId);
+    }
+
+    public IEnumerable<Entity> Filter<T>() where T : struct, IComponent
+    {
+        var typeId = InternalTypeId<T>.Value;
+        
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].IsSet(typeId))
+            {
+                yield return new Entity(i);
+            }
+        }
     }
     
     // Example of a fast filter query using BitMasks
@@ -154,9 +174,18 @@ public class GlobalState
 
     internal void EnsureTypedCapacityInternal(int typeId)
     {
-         if (typeId >= _componentArrays.Length)
+        if (typeId >= _componentArrays.Length)
         {
             ExpandTypeCapacity(typeId);
+        }
+
+        if (_componentTypes[typeId] == null)
+        {
+            if (ComponentTypeRegistry.DenseIdToType.TryGetValue(typeId, out var type))
+            {
+                _componentTypes[typeId] = type;
+                _componentElementSizes[typeId] = Marshal.SizeOf(type);
+            }
         }
     }
 
@@ -167,7 +196,7 @@ public class GlobalState
         if (_componentArrays[typeId] == null)
         {
             _componentArrays[typeId] = new T[256];
-            _componentElementSizes[typeId] = System.Runtime.InteropServices.Marshal.SizeOf<T>();
+            _componentElementSizes[typeId] = Marshal.SizeOf<T>();
             _componentTypes[typeId] = typeof(T);
         }
     }
@@ -224,11 +253,246 @@ public class GlobalState
     }
 }
 
+public static class ComponentTypeRegistry
+{
+    private static int _nextDenseId = 0;
+    // Map NetworkId (stable) -> DenseId (runtime index)
+    public static readonly Dictionary<int, int> NetworkIdToDenseId = new();
+    // Map DenseId -> NetworkId
+    public static readonly Dictionary<int, int> DenseIdToNetworkId = new();
+    // Map DenseId -> Type
+    public static readonly Dictionary<int, Type> DenseIdToType = new();
+    
+    // Delegate to resolve Type from NetworkId (e.g. from Generated Registry)
+    public static Func<int, Type?> TypeResolver { get; set; } = DefaultTypeResolver;
+
+    private static bool _isInitialized = false;
+    private static readonly object _initLock = new();
+
+    private static void InitializeIfNeeded()
+    {
+        if (_isInitialized) return;
+        lock (_initLock)
+        {
+            if (_isInitialized) return;
+            _isInitialized = true; // Set early to prevent recursion during RegisterAll calls
+
+            var domainId = AppDomain.CurrentDomain.Id;
+            var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            var typeHandle = typeof(ComponentTypeRegistry).TypeHandle.Value;
+            
+            // Console.WriteLine($"[ComponentTypeRegistry] Initializing... Domain: {domainId}, Thread: {threadId}, TypeHandle: {typeHandle}");
+
+            // Use the same logic as ServiceLocator to find assemblies
+            var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
+            
+            // Try to find the entry assembly and its references
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null)
+            {
+                LoadReferencedAssemblies(entryAssembly, assemblies);
+            }
+
+            // Also scan directory for DLLs (Plugins / Shared libraries not yet loaded) - logic adapted from ServiceLocator
+            try 
+            {
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                var dlls = Directory.GetFiles(baseDir, "*.dll", SearchOption.TopDirectoryOnly);
+                
+                // Console.WriteLine($"[ComponentTypeRegistry] Scanning base directory: {baseDir}");
+                foreach (var dllPath in dlls)
+                {
+                    try 
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(dllPath);
+                        if (IsIgnoredName(fileName)) continue;
+
+                        // Avoid re-loading if already in memory (by simple name check)
+                        if (assemblies.Any(a => a.GetName().Name == fileName)) continue;
+
+                        // Console.WriteLine($"[ComponentTypeRegistry] Loading external assembly: {fileName}");
+                        var loadedAssembly = Assembly.LoadFrom(dllPath);
+                        
+                        if (!IsIgnoredAssembly(loadedAssembly))
+                        {
+                            if (assemblies.Add(loadedAssembly))
+                            {
+                                LoadReferencedAssemblies(loadedAssembly, assemblies);
+                            }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ComponentTypeRegistry] Warning: Failed to scan directory assemblies: {ex.Message}");
+            }
+
+            var processedAssemblies = new HashSet<string>();
+
+            // Scan all found assemblies for the generated RegisterAll method
+            foreach (var assembly in assemblies)
+            {
+                if (IsIgnoredAssembly(assembly)) continue;
+                
+                var assemblyName = assembly.GetName().Name;
+                if (assemblyName != null && processedAssemblies.Contains(assemblyName)) continue;
+                if (assemblyName != null) processedAssemblies.Add(assemblyName);
+
+                // Look for the generated registry
+                var registryType = assembly.GetType("Deterministic.GameFramework.Generated.NetworkIdRegistry");
+                if (registryType != null)
+                {
+                    var registerMethod = registryType.GetMethod("RegisterAll", BindingFlags.Public | BindingFlags.Static);
+                    if (registerMethod != null)
+                    {
+                        // Console.WriteLine($"[ComponentTypeRegistry] Invoking RegisterAll in {assemblyName}");
+                        try
+                        {
+                            registerMethod.Invoke(null, null);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[ComponentTypeRegistry] Failed to invoke RegisterAll in {assemblyName}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void LoadReferencedAssemblies(Assembly assembly, HashSet<Assembly> loadedAssemblies)
+    {
+        try
+        {
+            foreach (var refName in assembly.GetReferencedAssemblies())
+            {
+                if (IsIgnoredName(refName.Name)) continue;
+                if (loadedAssemblies.Any(a => a.GetName().Name == refName.Name)) continue;
+
+                try
+                {
+                    var loaded = Assembly.Load(refName);
+                    if (loadedAssemblies.Add(loaded))
+                    {
+                        LoadReferencedAssemblies(loaded, loadedAssemblies);
+                    }
+                }
+                catch { }
+            }
+        }
+        catch { }
+    }
+
+    private static bool IsIgnoredName(string? name)
+    {
+        if (string.IsNullOrEmpty(name)) return true;
+        return name.StartsWith("System") || name.StartsWith("Microsoft") || name.StartsWith("mscorlib") || name.StartsWith("netstandard");
+    }
+
+    private static bool IsIgnoredAssembly(Assembly assembly)
+    {
+        try
+        {
+            if (assembly.IsDynamic) return true;
+            return IsIgnoredName(assembly.GetName().Name);
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private static Type? DefaultTypeResolver(int networkId)
+    {
+        InitializeIfNeeded();
+        
+        lock (NetworkIdToDenseId)
+        {
+            if (NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
+            {
+                return DenseIdToType[denseId];
+            }
+        }
+        return null;
+    }
+
+    public static int GetOrRegister(int networkId, Type type)
+    {
+        InitializeIfNeeded();
+        lock (NetworkIdToDenseId)
+        {
+            if (!NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
+            {
+                denseId = _nextDenseId++;
+                NetworkIdToDenseId[networkId] = denseId;
+                DenseIdToNetworkId[denseId] = networkId;
+                DenseIdToType[denseId] = type;
+                Console.WriteLine($"[ComponentTypeRegistry] Mapping NetworkId {networkId} -> DenseId {denseId} ({type.FullName})");
+            }
+            return denseId;
+        }
+    }
+    
+    public static int GetOrRegister(int networkId)
+    {
+        InitializeIfNeeded();
+
+        // 1. Quick check under lock
+        lock (NetworkIdToDenseId)
+        {
+            if (NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
+            {
+                return denseId;
+            }
+        }
+
+        Console.WriteLine($"[ComponentTypeRegistry] Requesting unknown NetworkId {networkId}. Attempting resolution...");
+
+        // 2. Resolve type outside of lock to avoid deadlock
+        if (TypeResolver == null)
+        {
+            throw new Exception($"Unknown NetworkId {networkId} and no TypeResolver configured.");
+        }
+
+        var type = TypeResolver(networkId);
+        if (type == null)
+        {
+            lock (NetworkIdToDenseId)
+            {
+                Console.WriteLine($"[ComponentTypeRegistry] ERROR: Could not resolve NetworkId {networkId}. Current Mappings: {string.Join(", ", NetworkIdToDenseId.Select(kv => $"{kv.Key}->{kv.Value} ({DenseIdToType[kv.Value].Name})"))}");
+            }
+            throw new Exception($"TypeResolver returned null for NetworkId {networkId}. Ensure the component has [NetworkId({networkId})] and its assembly is loaded.");
+        }
+
+        // 3. Register under lock (handling race)
+        return GetOrRegister(networkId, type);
+    }
+    
+    public static bool TryGetDenseId(int networkId, out int denseId)
+    {
+        lock (NetworkIdToDenseId)
+        {
+            return NetworkIdToDenseId.TryGetValue(networkId, out denseId);
+        }
+    }
+
+    public static bool TryGetNetworkId(int denseId, out int networkId)
+    {
+        lock (NetworkIdToDenseId)
+        {
+            return DenseIdToNetworkId.TryGetValue(denseId, out networkId);
+        }
+    }
+}
+
 public static class InternalTypeId<T> where T : struct, IComponent
 {
-    public static readonly int Value = GetId();
+    public static readonly int NetworkId = GetNetworkId();
+    public static readonly int Value = ComponentTypeRegistry.GetOrRegister(NetworkId, typeof(T));
 
-    private static int GetId()
+    private static int GetNetworkId()
     {
         // Slow reflection path, but only runs ONCE per type per application lifetime.
         // This is acceptable for initialization.

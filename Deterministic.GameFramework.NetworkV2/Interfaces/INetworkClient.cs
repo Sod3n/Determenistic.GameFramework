@@ -16,7 +16,7 @@ public interface INetworkClient : IAsyncDisposable
     Task ConnectAsync(string address);
     
     // Game Specific Methods - Service Interface pattern
-    Task JoinMatchAsync(Guid matchId, string? token = null);
+    Task<Guid> JoinMatchAsync(Guid matchId, string? token = null);
     Task RequestFullStateAsync(Guid matchId);
     void SendBatch(byte[] data);
     

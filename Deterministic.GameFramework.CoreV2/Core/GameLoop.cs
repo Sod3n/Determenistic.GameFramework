@@ -9,6 +9,7 @@ public class GameLoop
     private readonly GlobalState _state;
     private readonly Dispatcher _dispatcher;
     private readonly ActionScheduler _scheduler;
+    private readonly SystemRunner _systemRunner;
 
     private bool _isRunning;
     private readonly Stopwatch _stopwatch = new();
@@ -27,6 +28,7 @@ public class GameLoop
     public bool IsResimulating { get; private set; }
     
     public event Action? OnTick;
+    public event Action? OnRollbackFailed;
 
     private readonly StateHistory _history;
 
@@ -35,9 +37,20 @@ public class GameLoop
         _state = state;
         _dispatcher = dispatcher;
         _scheduler = scheduler;
-        _history = new StateHistory(60); // 1 second of history @ 60hz
+        _systemRunner = new SystemRunner();
+        _history = new StateHistory(300); // 5 seconds of history @ 60hz (increased from 60)
         
         _state.GameLoop = this;
+    }
+
+    public void RegisterSystem(ISystem system)
+    {
+        _systemRunner.RegisterSystem(system);
+    }
+
+    public void RegisterSystems(IEnumerable<ISystem> systems)
+    {
+        _systemRunner.RegisterSystems(systems);
     }
 
     public void SetTickRate(int tickRate)
@@ -211,6 +224,8 @@ public class GameLoop
                 IsResimulating = true;
                 while (CurrentTick < originalTick)
                 {
+                    _systemRunner.Update(_state);
+                    
                     _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
                     
                     // Note: We might want to suppress OnTick (Render/Audio) during resimulation
@@ -225,11 +240,16 @@ public class GameLoop
             }
             else
             {
-                throw new Exception($"[Rollback] CRITICAL: Could not restore state for tick {restoreTick}. Oldest history: {_history.GetOldestTick()}, Latest: {_history.GetLatestTick()}");
+                Console.WriteLine($"[Rollback] Failed to restore state for tick {restoreTick}. History range: {_history.GetOldestTick()}-{_history.GetLatestTick()}. Requesting sync.");
+                OnRollbackFailed?.Invoke();
+                return; // Abort tick, wait for sync
             }
         }
 
         // 1. Simulate (Normal Step)
+        // 1.5 Run Systems
+        _systemRunner.Update(_state);
+
         _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
         
         try

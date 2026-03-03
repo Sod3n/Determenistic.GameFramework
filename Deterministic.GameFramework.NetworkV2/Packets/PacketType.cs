@@ -9,5 +9,6 @@ public enum PacketType : byte
     
     // Server -> Client
     TickSnapshot = 10,
-    FullState = 11
+    FullState = 11,
+    MatchJoined = 12
 }

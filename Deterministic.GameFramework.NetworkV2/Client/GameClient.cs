@@ -24,6 +24,7 @@ public class GameClient : IDisposable, IAsyncDisposable
     private Guid _currentMatchId;
     private readonly PacketBuffer _outgoingBuffer = new PacketBuffer();
     private readonly TaskCompletionSource _syncTcs = new TaskCompletionSource();
+    private bool _isWaitingForFullState = false;
     
     public event Action<string>? OnLog;
     public event Action? OnConnected;
@@ -33,6 +34,9 @@ public class GameClient : IDisposable, IAsyncDisposable
     public bool DefaultPrediction { get; set; } = true;
 
     public ReactiveSystem Reactive { get; }
+    public GlobalState State => _state;
+    
+    public Guid PlayerId { get; private set; }
 
     public GameClient(INetworkClient networkClient, string connectionString, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
     {
@@ -43,20 +47,33 @@ public class GameClient : IDisposable, IAsyncDisposable
         _networkClient = networkClient;
         _connectionString = connectionString;
         
-        Reactive = new ReactiveSystem();
+        Reactive = ReactiveSystem.Instance;
+        // Since ReactiveSystem is a singleton, ensure we start with a clean slate
+        Reactive.Dispose(); 
         Reactive.Bind(state);
         
         // Auto-discover services and NetworkIds
         ServiceLocator.Initialize(dispatcher);
+        ServiceLocator.Initialize(gameLoop);
         
-        // Hook into GameLoop to flush actions every tick
+        // Hook into GameLoop
         _gameLoop.OnTick += Flush;
+        _gameLoop.OnRollbackFailed += OnRollbackFailed;
         
         _networkClient.OnTickSnapshotReceived += OnTickSnapshot;
         _networkClient.OnFullStateReceived += OnFullStateReceived;
         
         _networkClient.OnDisconnected += () => OnDisconnected?.Invoke();
         _networkClient.OnConnected += () => OnConnected?.Invoke();
+    }
+
+    private void OnRollbackFailed()
+    {
+        if (_isWaitingForFullState) return;
+        
+        Log("Rollback failed due to missing history. Requesting full state sync...");
+        _isWaitingForFullState = true;
+        _ = RequestFullState();
     }
 
     public async Task ConnectAsync(Guid matchId)
@@ -83,8 +100,8 @@ public class GameClient : IDisposable, IAsyncDisposable
             // For now assume ConnectAsync establishes link.
             
             Console.WriteLine("[GameClient] Joining match...");
-            await _networkClient.JoinMatchAsync(matchId, null);
-            Log($"Connected to match {matchId}");
+            PlayerId = await _networkClient.JoinMatchAsync(matchId, null);
+            Log($"Connected to match {matchId}. Assigned PlayerId: {PlayerId}");
             
             // Request full state on connect
             Console.WriteLine("[GameClient] Requesting full state...");
@@ -244,13 +261,20 @@ public class GameClient : IDisposable, IAsyncDisposable
             _gameLoop.ForceSetTick(header.Tick);
             Log($"Tick set to {header.Tick}!");
             
+            // Critical: Prune scheduler history to match new authoritative state
+            // This resets EarliestDirtyTick and prevents immediate rollback attempts to the past
+            _scheduler.PruneHistory(header.Tick);
+            
             Log("Completing sync task...");
             _syncTcs.TrySetResult();
+            
+            _isWaitingForFullState = false;
         }
         catch (Exception ex)
         {
             Log($"Error processing Full State: {ex}");
             _syncTcs.TrySetException(ex);
+            _isWaitingForFullState = false;
         }
     }
 
@@ -261,6 +285,7 @@ public class GameClient : IDisposable, IAsyncDisposable
 
     public void Dispose()
     {
+        Reactive.Dispose();
         _gameLoop.OnTick -= Flush;
         _ = DisposeAsync();
     }

@@ -7,6 +7,8 @@ namespace Deterministic.GameFramework.Reactive;
 
 public class ReactiveSystem : IDisposable
 {
+    public static ReactiveSystem Instance { get; } = new();
+
     private ObserverNode? _head;
     private ObserverNode? _tail;
     

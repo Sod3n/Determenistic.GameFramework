@@ -41,6 +41,13 @@ public class GamePacketProcessor
         // Add to Network Group
         await NetworkServer.JoinGroupAsync(peer, matchId.ToString());
         
+        // Send MatchJoined confirmation with PlayerId
+        var packet = new MatchJoinedPacket { PlayerId = playerId };
+        var packetData = new byte[16];
+        packet.PlayerId.TryWriteBytes(packetData);
+        
+        await peer.SendAsync(packetData, PacketType.MatchJoined);
+        
         Console.WriteLine($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
     }
 

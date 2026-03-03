@@ -24,3 +24,9 @@ public struct FullStateHeader
     public long Tick;
     public int StateDataLength;
 }
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct MatchJoinedPacket
+{
+    public Guid PlayerId;
+}

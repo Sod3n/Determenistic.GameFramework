@@ -14,6 +14,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
     private readonly NetManager _netManager;
     private NetPeer? _peer;
     private TaskCompletionSource<bool>? _connectTcs;
+    private TaskCompletionSource<Guid>? _joinMatchTcs;
     
     public event Action<byte[]>? OnTickSnapshotReceived;
     public event Action<byte[]>? OnFullStateReceived;
@@ -88,9 +89,11 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         return _connectTcs.Task;
     }
 
-    public Task JoinMatchAsync(Guid matchId, string? token = null)
+    public Task<Guid> JoinMatchAsync(Guid matchId, string? token = null)
     {
-        if (_peer == null || !IsConnected) return Task.CompletedTask;
+        if (_peer == null || !IsConnected) return Task.FromException<Guid>(new InvalidOperationException("Not connected"));
+
+        _joinMatchTcs = new TaskCompletionSource<Guid>();
 
         var writer = new NetDataWriter();
         writer.Put((byte)PacketType.JoinMatch);
@@ -98,7 +101,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         writer.Put(token ?? string.Empty);
         
         _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableOrdered);
-        return Task.CompletedTask;
+        return _joinMatchTcs.Task;
     }
 
     public Task RequestFullStateAsync(Guid matchId)
@@ -145,6 +148,10 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         {
             _connectTcs.TrySetException(new Exception($"Connection failed: {disconnectInfo.Reason}"));
         }
+        if (_joinMatchTcs != null && !_joinMatchTcs.Task.IsCompleted)
+        {
+            _joinMatchTcs.TrySetException(new Exception($"Disconnected while joining match: {disconnectInfo.Reason}"));
+        }
         OnDisconnected?.Invoke();
     }
 
@@ -178,6 +185,14 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
                 {
                     byte[] data = reader.GetRemainingBytes();
                     OnFullStateReceived?.Invoke(data);
+                    break;
+                }
+                case PacketType.MatchJoined:
+                {
+                    byte[] guidBytes = new byte[16];
+                    reader.GetBytes(guidBytes, 16);
+                    var playerId = new Guid(guidBytes);
+                    _joinMatchTcs?.TrySetResult(playerId);
                     break;
                 }
             }

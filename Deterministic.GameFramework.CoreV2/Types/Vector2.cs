@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -41,9 +42,12 @@ public struct Vector2 : IParam, IEquatable<Vector2>
 
     public override string ToString() => $"({X}, {Y})";
     
+    [JsonIgnore]
     public Float Magnitude => Float.Sqrt(X * X + Y * Y);
+    [JsonIgnore]
     public Float SqrMagnitude => X * X + Y * Y;
     
+    [JsonIgnore]
     public Vector2 Normalized
     {
         get

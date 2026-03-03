@@ -9,7 +9,7 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public static class StateSerializer
 {
-    private const ushort CONST_VERSION = 1;
+    private const ushort CONST_VERSION = 2; // Bumped version for new format
     private const int MAX_ARRAY_SIZE = 1_000_000; // Sanity check
 
     // Delegates for fast, type-safe array access without GCHandle
@@ -21,23 +21,24 @@ public static class StateSerializer
 
     public static byte[] Serialize(GlobalState state)
     {
-        int maskSize = Unsafe.SizeOf<BitMask128>();
-        
         // 1. Calculate total size
-        // Header: Version(2) + NextEntityId (4) + EntityMasks Length (4) + EntityMasks Bytes
-        int totalSize = 2 + 4 + 4 + (state._entityMasks.Length * maskSize);
+        // Header: Version(2) + NextEntityId (4) + EntityCapacity (4)
+        int totalSize = 2 + 4 + 4;
         
         // Components: Count (4)
         totalSize += 4;
         
+        int entityCapacity = state._entityMasks.Length;
+        int presenceByteCount = (entityCapacity + 7) / 8;
+
         var activeComponents = new List<int>();
         for (int i = 0; i < state._componentArrays.Length; i++)
         {
             if (state._componentArrays[i] != null)
             {
                 activeComponents.Add(i);
-                // ID (4) + Length (4) + Bytes
-                totalSize += 4 + 4 + (state._componentArrays[i].Length * state._componentElementSizes[i]);
+                // ID (4) + Array Length (4) + Presence Length (4) + Presence Bytes + Data Bytes
+                totalSize += 4 + 4 + 4 + presenceByteCount + (state._componentArrays[i].Length * state._componentElementSizes[i]);
             }
         }
 
@@ -52,32 +53,47 @@ public static class StateSerializer
         BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), state._nextEntityId);
         offset += 4;
 
-        BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), state._entityMasks.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), entityCapacity);
         offset += 4;
-
-        var masksSpan = MemoryMarshal.AsBytes(new ReadOnlySpan<BitMask128>(state._entityMasks));
-        masksSpan.CopyTo(span.Slice(offset));
-        offset += masksSpan.Length;
 
         // 3. Write Components
         BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), activeComponents.Count);
         offset += 4;
 
-        foreach (var typeId in activeComponents)
+        foreach (var denseId in activeComponents)
         {
-            var array = state._componentArrays[typeId];
-            int elementSize = state._componentElementSizes[typeId];
+            var array = state._componentArrays[denseId];
             
-            // TypeID (NetworkId)
-            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), typeId);
+            // Translate DenseId -> NetworkId for the wire
+            if (!ComponentTypeRegistry.TryGetNetworkId(denseId, out int networkId))
+            {
+                throw new Exception($"Component DenseId {denseId} has no registered NetworkId. Cannot serialize.");
+            }
+
+            // Write NetworkId
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), networkId);
             offset += 4;
 
             // Array Length (Capacity)
             BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), array.Length);
             offset += 4;
 
+            // Write Presence Mask
+            // We need to know which entities actually HAVE this component enabled in their mask
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), presenceByteCount);
+            offset += 4;
+
+            for (int e = 0; e < entityCapacity; e++)
+            {
+                if (state._entityMasks[e].IsSet(denseId))
+                {
+                    buffer[offset + (e / 8)] |= (byte)(1 << (e % 8));
+                }
+            }
+            offset += presenceByteCount;
+
             // Data
-            var serializer = GetSerializer(typeId, state._componentTypes[typeId]);
+            var serializer = GetSerializer(denseId, state._componentTypes[denseId]);
             int writtenBytes = serializer(array, span.Slice(offset));
             
             offset += writtenBytes;
@@ -104,19 +120,14 @@ public static class StateSerializer
         state._nextEntityId = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
         offset += 4;
 
-        int maskLength = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+        int entityCapacity = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
         offset += 4;
 
-        if (maskLength > MAX_ARRAY_SIZE) throw new Exception("EntityMask array too large. Possible corruption.");
+        if (entityCapacity > MAX_ARRAY_SIZE) throw new Exception("EntityMask array too large. Possible corruption.");
 
         // Force new array allocation to ensure 100% clean slate
-        state._entityMasks = new BitMask128[maskLength];
-
-        int maskSize = Unsafe.SizeOf<BitMask128>();
-        int maskByteLength = maskLength * maskSize;
-        var maskSpan = MemoryMarshal.AsBytes(new Span<BitMask128>(state._entityMasks));
-        span.Slice(offset, maskByteLength).CopyTo(maskSpan);
-        offset += maskByteLength;
+        state._entityMasks = new BitMask128[entityCapacity];
+        // Note: No need to read raw masks anymore, we rebuild them from components
 
         // 3. Read Components
         int componentCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
@@ -124,45 +135,62 @@ public static class StateSerializer
 
         for (int i = 0; i < componentCount; i++)
         {
-            int typeId = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            int networkId = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
             offset += 4;
 
             int arrayLength = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
             offset += 4;
+            
+            int presenceByteCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            offset += 4;
 
-            if (arrayLength > MAX_ARRAY_SIZE) throw new Exception($"Component Array {typeId} too large ({arrayLength}). Possible corruption.");
+            if (arrayLength > MAX_ARRAY_SIZE) throw new Exception($"Component Array for NetworkId {networkId} too large ({arrayLength}). Possible corruption.");
+
+            // Resolve NetworkId -> DenseId (Local)
+            int denseId = ComponentTypeRegistry.GetOrRegister(networkId);
+
+            // Read Presence Mask and Apply to EntityMasks
+            var presenceSpan = span.Slice(offset, presenceByteCount);
+            for (int e = 0; e < entityCapacity; e++)
+            {
+                if ((presenceSpan[e / 8] & (1 << (e % 8))) != 0)
+                {
+                    state._entityMasks[e].Set(denseId);
+                }
+            }
+            offset += presenceByteCount;
 
             // Ensure we have the array info
-            state.EnsureTypedCapacityInternal(typeId);
+            state.EnsureTypedCapacityInternal(denseId);
 
             // Restore Array
-            Type type = state._componentTypes[typeId];
+            Type type = state._componentTypes[denseId];
             if (type == null)
             {
                 // Fallback: If we have an existing array, use its type.
-                if (state._componentArrays[typeId] != null)
+                if (state._componentArrays[denseId] != null)
                 {
-                    type = state._componentArrays[typeId].GetType().GetElementType()!;
-                    state._componentTypes[typeId] = type;
-                    state._componentElementSizes[typeId] = Marshal.SizeOf(type);
+                    type = state._componentArrays[denseId].GetType().GetElementType()!;
+                    state._componentTypes[denseId] = type;
+                    state._componentElementSizes[denseId] = Marshal.SizeOf(type);
                 }
                 else
                 {
-                     throw new Exception($"Cannot deserialize Component ID {typeId}: Type is unknown. Ensure all components are registered or accessed at least once before deserialization.");
+                     throw new Exception($"Cannot deserialize Component NetworkId {networkId} (DenseId {denseId}): Type is unknown.");
                 }
             }
 
-            int elementSize = state._componentElementSizes[typeId];
+            int elementSize = state._componentElementSizes[denseId];
             int dataByteLength = arrayLength * elementSize;
 
-            if (state._componentArrays[typeId] == null || state._componentArrays[typeId].Length != arrayLength)
+            if (state._componentArrays[denseId] == null || state._componentArrays[denseId].Length != arrayLength)
             {
-                state._componentArrays[typeId] = Array.CreateInstance(type, arrayLength);
+                state._componentArrays[denseId] = Array.CreateInstance(type, arrayLength);
             }
 
             // Copy back
-            var deserializer = GetDeserializer(typeId, type);
-            deserializer(state._componentArrays[typeId], span.Slice(offset, dataByteLength));
+            var deserializer = GetDeserializer(denseId, type);
+            deserializer(state._componentArrays[denseId], span.Slice(offset, dataByteLength));
             
             offset += dataByteLength;
         }

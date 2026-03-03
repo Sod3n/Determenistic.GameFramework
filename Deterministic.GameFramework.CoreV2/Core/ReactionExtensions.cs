@@ -5,6 +5,7 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public static class ReactionExtensions
 {
+    
     /// <summary>
     /// Syntactic sugar for adding a Reaction Tag component to an entity.
     /// Usage: entity.AddReaction<MyReactionTag>(state);

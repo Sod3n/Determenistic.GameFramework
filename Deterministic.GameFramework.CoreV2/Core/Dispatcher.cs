@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -127,6 +128,7 @@ public class Dispatcher
         Action<object, GlobalState, Entity> runner = (actionObj, state, entity) =>
         {
             var action = (TAction)actionObj;
+            Console.WriteLine($"[Dispatcher] Executing {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -152,6 +154,7 @@ public class Dispatcher
             var span = new ReadOnlySpan<byte>(buffer, offset, Marshal.SizeOf<TAction>());
             var action = MemoryMarshal.Read<TAction>(span);
             
+            Console.WriteLine($"[Dispatcher] Executing (Byte) {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -177,7 +180,7 @@ public class Dispatcher
 
     private bool RunAdditionalReactions<TAction>(ref TAction action, GlobalState state, Entity entity, Context ctx, List<AdditionalReactionEntry<TAction>> reactions, bool canAbort, bool runAfterAction)
     {
-        Console.WriteLine($"[Dispatcher] RunAdditionalReactions for {typeof(TAction).Name}. Count: {reactions.Count}, Entity: {entity.Id}");
+        // Console.WriteLine($"[Dispatcher] RunAdditionalReactions for {typeof(TAction).Name}:{JsonSerializer.Serialize(action)}. Count: {reactions.Count}, Entity: {entity.Id}");
         foreach (var reaction in reactions)
         {
             // Filter: Only run if the phase matches
@@ -185,7 +188,7 @@ public class Dispatcher
 
             // Check if current entity has the component for this reaction
             bool hasComponent = state._entityMasks.Length > entity.Id && state._entityMasks[entity.Id].IsSet(reaction.ComponentId);
-            Console.WriteLine($"[Dispatcher] Checking reaction for ComponentId {reaction.ComponentId}. HasComponent: {hasComponent}");
+            // Console.WriteLine($"[Dispatcher] Checking reaction for ComponentId {reaction.ComponentId}. HasComponent: {hasComponent}");
             
             if (hasComponent)
             {

@@ -182,6 +182,49 @@ public static class ServiceLocator
         RegisterServices(dispatcher, types);
     }
 
+    public static void Initialize(GameLoop loop)
+    {
+        var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)));
+        
+        // 1. Eager load referenced assemblies
+        var entryAssembly = Assembly.GetEntryAssembly();
+        if (entryAssembly != null && !IsIgnoredAssembly(entryAssembly))
+        {
+            assemblies.Add(entryAssembly);
+            LoadReferencedAssemblies(entryAssembly, assemblies);
+        }
+
+        Initialize(loop, assemblies);
+    }
+
+    public static void Initialize(GameLoop loop, IEnumerable<Assembly> assemblies)
+    {
+        var types = assemblies.SelectMany(a => a.GetTypes()).ToArray();
+        RegisterSystems(loop, types);
+    }
+
+    private static void RegisterSystems(GameLoop loop, IEnumerable<Type> types)
+    {
+        var systems = new List<ISystem>();
+        foreach (var type in types)
+        {
+            if (typeof(ISystem).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+            {
+                try
+                {
+                    var system = (ISystem)Activator.CreateInstance(type)!;
+                    systems.Add(system);
+                    Console.WriteLine($"[ServiceLocator] Found System: {type.Name}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ServiceLocator] Failed to instantiate system {type.Name}: {ex.Message}");
+                }
+            }
+        }
+        loop.RegisterSystems(systems);
+    }
+
     private static void RegisterServices(Dispatcher dispatcher, IEnumerable<Type> types)
     {
         // Find all ReactionServices

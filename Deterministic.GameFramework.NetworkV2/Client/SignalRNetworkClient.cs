@@ -9,6 +9,7 @@ public class SignalRNetworkClient : INetworkClient
 {
     private readonly HubConnection _hubConnection;
     private bool _isConnected;
+    private TaskCompletionSource<Guid>? _joinMatchTcs;
 
     public event Action<byte[]>? OnTickSnapshotReceived;
     public event Action<byte[]>? OnFullStateReceived;
@@ -26,6 +27,14 @@ public class SignalRNetworkClient : INetworkClient
 
         _hubConnection.On<byte[]>("OnTickSnapshot", data => OnTickSnapshotReceived?.Invoke(data));
         _hubConnection.On<byte[]>("OnFullStateReceived", data => OnFullStateReceived?.Invoke(data));
+        _hubConnection.On<byte[]>("OnMatchJoined", data => 
+        {
+            if (data.Length >= 16)
+            {
+                var guid = new Guid(data.AsSpan(0, 16));
+                _joinMatchTcs?.TrySetResult(guid);
+            }
+        });
         
         _hubConnection.Closed += (arg) => 
         {
@@ -53,10 +62,19 @@ public class SignalRNetworkClient : INetworkClient
         OnConnected?.Invoke();
     }
     
-    public async Task JoinMatchAsync(Guid matchId, string? token = null)
+    public Task<Guid> JoinMatchAsync(Guid matchId, string? token = null)
     {
-        if (!_isConnected) throw new InvalidOperationException("Not connected");
-        await _hubConnection.InvokeAsync("JoinMatch", matchId, token);
+        if (!_isConnected) return Task.FromException<Guid>(new InvalidOperationException("Not connected"));
+        
+        _joinMatchTcs = new TaskCompletionSource<Guid>();
+        // We still await the Invoke, but we return the TCS task for the result
+        // Use fire-and-forget for the invoke to avoid blocking on it if it doesn't return the value directly
+        // But InvokeAsync waits for server method completion.
+        
+        var invokeTask = _hubConnection.InvokeAsync("JoinMatch", matchId, token);
+        
+        // Return the TCS task which completes when "OnMatchJoined" is received
+        return _joinMatchTcs.Task;
     }
 
     public async Task RequestFullStateAsync(Guid matchId)

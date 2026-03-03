@@ -55,7 +55,11 @@ internal class ArchetypeObserver : ObserverNode
         var dirtyEntities = _state.GetDirtyEntities();
         if (dirtyEntities.Count == 0) return;
 
-        EnsureCapacity(_state.NextEntityId);
+        // Ensure capacity if new entities were added
+        if (_state.NextEntityId > _capacity)
+        {
+             EnsureCapacity(_state.NextEntityId);
+        }
 
         foreach (var entityId in dirtyEntities)
         {
@@ -100,11 +104,13 @@ internal class ArchetypeObserver : ObserverNode
             if (isMatch)
             {
                 _matchedEntities[wordIndex] |= bitMask;
+                // Console.WriteLine($"[ArchetypeObserver] Entity {id} Added! (Mask Match)");
                 _onAdd?.Invoke(new Entity(id));
             }
             else
             {
                 _matchedEntities[wordIndex] &= ~bitMask;
+                // Console.WriteLine($"[ArchetypeObserver] Entity {id} Removed!");
                 _onRemove?.Invoke(new Entity(id));
             }
         }

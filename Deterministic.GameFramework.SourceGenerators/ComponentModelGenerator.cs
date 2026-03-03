@@ -163,7 +163,6 @@ public class ComponentModelGenerator : IIncrementalGenerator
         sb.AppendLine("{");
         sb.AppendLine("    public static partial class ComponentExtensions");
         sb.AppendLine("    {");
-        sb.AppendLine("        public static global::Deterministic.GameFramework.Reactive.ReactiveSystem ReactiveSystem { get; set; }");
         sb.AppendLine("");
 
         foreach (var comp in components)
@@ -175,7 +174,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
             
             sb.AppendLine($"        public static {modelName} AsModel(this {structFullName} component, global::Deterministic.GameFramework.CoreV2.Context context)");
             sb.AppendLine("        {");
-            sb.AppendLine($"            return new {modelName}(ReactiveSystem, context);");
+            sb.AppendLine($"            return new {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem.Instance, context);");
             sb.AppendLine("        }");
         }
 
