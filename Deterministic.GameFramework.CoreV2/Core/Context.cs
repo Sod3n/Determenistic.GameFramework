@@ -2,7 +2,7 @@ using Deterministic.GameFramework.CoreV2.Extensions;
 
 namespace Deterministic.GameFramework.CoreV2;
 
-public struct Context : IActionDispatcher
+public readonly struct Context
 {
     public GlobalState State { get; }
     public Entity Entity { get; }

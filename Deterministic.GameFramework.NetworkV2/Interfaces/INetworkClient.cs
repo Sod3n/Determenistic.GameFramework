@@ -23,6 +23,8 @@ public interface INetworkClient : IAsyncDisposable
     // Events
     event Action<byte[]> OnTickSnapshotReceived;
     event Action<byte[]> OnFullStateReceived;
+    event Action<byte[]> OnComponentMappingReceived;
+    event Action<byte[]> OnStateHashReceived;
     
     event Action OnConnected;
     event Action OnDisconnected;

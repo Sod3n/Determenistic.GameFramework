@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Reflection;
@@ -19,7 +20,42 @@ public static class StateSerializer
     private static SerializeComponentDelegate?[] _serializers = new SerializeComponentDelegate?[128];
     private static DeserializeComponentDelegate?[] _deserializers = new DeserializeComponentDelegate?[128];
 
+    public readonly struct PooledBuffer : IDisposable
+    {
+        public readonly byte[] Array;
+        public readonly int Length;
+
+        public PooledBuffer(byte[] array, int length)
+        {
+            Array = array;
+            Length = length;
+        }
+
+        public void Dispose()
+        {
+            ArrayPool<byte>.Shared.Return(Array);
+        }
+        
+        public Span<byte> Span => new Span<byte>(Array, 0, Length);
+    }
+
+    public static PooledBuffer SerializePooled(GlobalState state)
+    {
+        int totalSize = CalculateSize(state, out int entityCapacity, out int presenceByteCount, out var activeComponents);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(totalSize);
+        SerializeInternal(state, buffer, totalSize, entityCapacity, presenceByteCount, activeComponents);
+        return new PooledBuffer(buffer, totalSize);
+    }
+
     public static byte[] Serialize(GlobalState state)
+    {
+        int totalSize = CalculateSize(state, out int entityCapacity, out int presenceByteCount, out var activeComponents);
+        byte[] buffer = new byte[totalSize];
+        SerializeInternal(state, buffer, totalSize, entityCapacity, presenceByteCount, activeComponents);
+        return buffer;
+    }
+
+    private static int CalculateSize(GlobalState state, out int entityCapacity, out int presenceByteCount, out int activeComponentCount)
     {
         // 1. Calculate total size
         // Header: Version(2) + NextEntityId (4) + EntityCapacity (4)
@@ -28,22 +64,34 @@ public static class StateSerializer
         // Components: Count (4)
         totalSize += 4;
         
-        int entityCapacity = state._entityMasks.Length;
-        int presenceByteCount = (entityCapacity + 7) / 8;
+        // External State: Count (4)
+        totalSize += 4;
+        foreach (var kvp in state.ExternalState)
+        {
+            // Key Length (4) + Key Bytes + Value Length (4) + Value Bytes
+            totalSize += 4 + System.Text.Encoding.UTF8.GetByteCount(kvp.Key);
+            totalSize += 4 + kvp.Value.Length;
+        }
+        
+        entityCapacity = state._entityMasks.Length;
+        presenceByteCount = (entityCapacity + 7) / 8;
+        activeComponentCount = 0;
 
-        var activeComponents = new List<int>();
         for (int i = 0; i < state._componentArrays.Length; i++)
         {
             if (state._componentArrays[i] != null)
             {
-                activeComponents.Add(i);
+                activeComponentCount++;
                 // ID (4) + Array Length (4) + Presence Length (4) + Presence Bytes + Data Bytes
                 totalSize += 4 + 4 + 4 + presenceByteCount + (state._componentArrays[i].Length * state._componentElementSizes[i]);
             }
         }
+        return totalSize;
+    }
 
-        byte[] buffer = new byte[totalSize];
-        var span = new Span<byte>(buffer);
+    private static void SerializeInternal(GlobalState state, byte[] buffer, int totalSize, int entityCapacity, int presenceByteCount, int activeComponentCount)
+    {
+        var span = new Span<byte>(buffer, 0, totalSize);
         int offset = 0;
 
         // 2. Write Header
@@ -55,13 +103,37 @@ public static class StateSerializer
 
         BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), entityCapacity);
         offset += 4;
+        
+        // 2.5 Write External State
+        BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), state.ExternalState.Count);
+        offset += 4;
+        
+        foreach (var kvp in state.ExternalState)
+        {
+            // Key
+            byte[] keyBytes = System.Text.Encoding.UTF8.GetBytes(kvp.Key);
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), keyBytes.Length);
+            offset += 4;
+            
+            keyBytes.CopyTo(span.Slice(offset));
+            offset += keyBytes.Length;
+            
+            // Value
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), kvp.Value.Length);
+            offset += 4;
+            
+            kvp.Value.CopyTo(span.Slice(offset));
+            offset += kvp.Value.Length;
+        }
 
         // 3. Write Components
-        BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), activeComponents.Count);
+        BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), activeComponentCount);
         offset += 4;
 
-        foreach (var denseId in activeComponents)
+        for (int denseId = 0; denseId < state._componentArrays.Length; denseId++)
         {
+            if (state._componentArrays[denseId] == null) continue;
+
             var array = state._componentArrays[denseId];
             
             // Write DenseId directly (Handshake ensures consistency)
@@ -76,6 +148,9 @@ public static class StateSerializer
             // We need to know which entities actually HAVE this component enabled in their mask
             BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), presenceByteCount);
             offset += 4;
+
+            // Clear presence bytes in buffer before writing ORed bits
+            span.Slice(offset, presenceByteCount).Clear();
 
             for (int e = 0; e < entityCapacity; e++)
             {
@@ -92,8 +167,6 @@ public static class StateSerializer
             
             offset += writtenBytes;
         }
-
-        return buffer;
     }
 
     public static void Deserialize(GlobalState state, byte[] buffer)
@@ -116,16 +189,57 @@ public static class StateSerializer
 
         int entityCapacity = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
         offset += 4;
+        
+        Console.WriteLine($"[StateSerializer] Header: Version={version}, NextEntityId={state._nextEntityId}, EntityCapacity={entityCapacity}, Offset={offset}");
 
         if (entityCapacity > MAX_ARRAY_SIZE) throw new Exception("EntityMask array too large. Possible corruption.");
 
-        // Force new array allocation to ensure 100% clean slate
-        state._entityMasks = new BitMask128[entityCapacity];
+        // Resize or Reallocate EntityMasks
+        if (state._entityMasks == null || state._entityMasks.Length < entityCapacity)
+        {
+            state._entityMasks = new BitMask128[entityCapacity];
+        }
+        else
+        {
+            // Clear existing masks for reuse
+            Array.Clear(state._entityMasks, 0, state._entityMasks.Length);
+        }
+        
         // Note: No need to read raw masks anymore, we rebuild them from components
+
+        // 2.5 Read External State
+        int externalStateCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+        offset += 4;
+        
+        Console.WriteLine($"[StateSerializer] ExternalState Count: {externalStateCount}, Offset={offset}");
+
+        state.ExternalState.Clear();
+        for (int i = 0; i < externalStateCount; i++)
+        {
+            // Key
+            int keyLength = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            offset += 4;
+            
+            string key = System.Text.Encoding.UTF8.GetString(span.Slice(offset, keyLength));
+            offset += keyLength;
+            
+            // Value
+            int valueLength = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            offset += 4;
+            
+            Console.WriteLine($"[StateSerializer] ExternalState[{i}]: Key='{key}' (len={keyLength}), ValueLen={valueLength}, Offset={offset}");
+
+            byte[] value = span.Slice(offset, valueLength).ToArray();
+            offset += valueLength;
+            
+            state.ExternalState[key] = value;
+        }
 
         // 3. Read Components
         int componentCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
         offset += 4;
+
+        Console.WriteLine($"[StateSerializer] Component Count: {componentCount}, Offset={offset}");
 
         for (int i = 0; i < componentCount; i++)
         {
@@ -138,7 +252,16 @@ public static class StateSerializer
             int presenceByteCount = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
             offset += 4;
 
+            Console.WriteLine($"[StateSerializer] Component[{i}]: DenseId={denseId}, ArrayLen={arrayLength}, PresenceBytes={presenceByteCount}, Offset={offset}");
+
             if (arrayLength > MAX_ARRAY_SIZE) throw new Exception($"Component Array for DenseId {denseId} too large ({arrayLength}). Possible corruption.");
+
+            // Verify presenceByteCount validity to debug IndexOutOfRangeException
+            int expectedPresenceBytes = (entityCapacity + 7) / 8;
+            if (presenceByteCount < expectedPresenceBytes)
+            {
+                Console.WriteLine($"[StateSerializer] ERROR: Component DenseId {denseId}: presenceByteCount {presenceByteCount} is too small for entityCapacity {entityCapacity}. Expected at least {expectedPresenceBytes}. Offset: {offset}");
+            }
 
             // Read Presence Mask and Apply to EntityMasks
             var presenceSpan = span.Slice(offset, presenceByteCount);
@@ -163,7 +286,7 @@ public static class StateSerializer
                 {
                     type = state._componentArrays[denseId].GetType().GetElementType()!;
                     state._componentTypes[denseId] = type;
-                    state._componentElementSizes[denseId] = Marshal.SizeOf(type);
+                    state._componentElementSizes[denseId] = GetManagedSize(type);
                 }
                 else
                 {
@@ -187,6 +310,12 @@ public static class StateSerializer
             
             offset += dataByteLength;
         }
+    }
+
+    private static int GetManagedSize(Type type)
+    {
+        var method = typeof(Unsafe).GetMethod("SizeOf")!.MakeGenericMethod(type);
+        return (int)method.Invoke(null, null)!;
     }
 
     private static SerializeComponentDelegate GetSerializer(int typeId, Type type)

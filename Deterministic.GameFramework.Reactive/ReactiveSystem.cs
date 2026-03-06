@@ -57,7 +57,7 @@ public class ReactiveSystem : IDisposable
         _tail = null;
     }
 
-    public void Register(ObserverNode node)
+    public void Register(ObserverNode node, bool evaluateImmediately = true)
     {
         if (node.Owner != null) throw new InvalidOperationException("Observer already registered to a system");
         
@@ -73,6 +73,20 @@ public class ReactiveSystem : IDisposable
             _tail.Next = node;
             node.Prev = _tail;
             _tail = node;
+        }
+
+        // Perform an eager evaluation so observers have an initial value
+        // as soon as they are registered, instead of waiting for the next Tick.
+        if (evaluateImmediately && !IsResimulating)
+        {
+            try
+            {
+                node.CheckAndNotify();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ReactiveSystem] Error in observer (initial): {ex}");
+            }
         }
     }
 

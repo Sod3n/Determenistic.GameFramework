@@ -1,5 +1,5 @@
 namespace Deterministic.GameFramework.CoreV2;
 
-public interface IAction
+public interface IAction 
 {
 }

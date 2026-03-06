@@ -201,6 +201,27 @@ public static class ServiceLocator
     {
         var types = assemblies.SelectMany(a => a.GetTypes()).ToArray();
         RegisterSystems(loop, types);
+        RegisterStartups(loop, types);
+    }
+
+    private static void RegisterStartups(GameLoop loop, IEnumerable<Type> types)
+    {
+        foreach (var type in types)
+        {
+            if (typeof(IGameStartup).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+            {
+                try
+                {
+                    var startup = (IGameStartup)Activator.CreateInstance(type)!;
+                    Console.WriteLine($"[ServiceLocator] Running GameStartup: {type.Name}");
+                    startup.Configure(loop);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ServiceLocator] Failed to run startup {type.Name}: {ex.Message}");
+                }
+            }
+        }
     }
 
     private static void RegisterSystems(GameLoop loop, IEnumerable<Type> types)

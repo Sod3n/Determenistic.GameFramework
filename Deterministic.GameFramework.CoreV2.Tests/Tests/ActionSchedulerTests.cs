@@ -82,9 +82,10 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             state.GetComponent<HealthComponent>(e2).CurrentHealth = 100;
             state.GetComponent<HealthComponent>(e3).CurrentHealth = 100;
             
-            scheduler.Schedule(new DamageAction(30), 1, e3, 10);
-            scheduler.Schedule(new DamageAction(10), 1, e1, 10);
-            scheduler.Schedule(new DamageAction(20), 1, e2, 10);
+            var denseId = dispatcher.GetDenseId<DamageAction>();
+            scheduler.Schedule(new DamageAction(30), denseId, e3, 10);
+            scheduler.Schedule(new DamageAction(10), denseId, e1, 10);
+            scheduler.Schedule(new DamageAction(20), denseId, e2, 10);
             
             scheduler.ExecuteActions(10, state, dispatcher);
             
@@ -157,8 +158,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var entity = state.CreateEntity();
             state.GetComponent<HealthComponent>(entity).CurrentHealth = 100;
             
-            scheduler.Schedule(new DamageAction(10), 1, entity, 5);
-            scheduler.Schedule(new DamageAction(20), 1, entity, 10);
+            var denseId = dispatcher.GetDenseId<DamageAction>();
+            scheduler.Schedule(new DamageAction(10), denseId, entity, 5);
+            scheduler.Schedule(new DamageAction(20), denseId, entity, 10);
             
             scheduler.ExecuteActions(5, state, dispatcher);
             

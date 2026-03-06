@@ -21,8 +21,21 @@ public class SignalRPeer : INetworkPeer
 
     public async Task SendAsync(byte[] data, PacketType type)
     {
-        string method = type == PacketType.TickSnapshot ? "OnTickSnapshot" : "OnFullStateReceived";
+        string method = GetMethodName(type);
         await _clientProxy.SendAsync(method, data);
+    }
+
+    private static string GetMethodName(PacketType type)
+    {
+        return type switch
+        {
+            PacketType.TickSnapshot => "OnTickSnapshot",
+            PacketType.FullState => "OnFullStateReceived",
+            PacketType.MatchJoined => "OnMatchJoined",
+            PacketType.ComponentMapping => "OnComponentMappingReceived",
+            PacketType.StateHash => "OnStateHashReceived",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 }
 
@@ -54,7 +67,20 @@ public class SignalRNetworkServer : INetworkServer
 
     public async Task BroadcastToGroupAsync(string groupName, byte[] data, PacketType type)
     {
-        string method = type == PacketType.TickSnapshot ? "OnTickSnapshot" : "OnFullStateReceived";
+        string method = GetMethodName(type);
         await _hubContext.Clients.Group(groupName).SendAsync(method, data);
+    }
+
+    private static string GetMethodName(PacketType type)
+    {
+        return type switch
+        {
+            PacketType.TickSnapshot => "OnTickSnapshot",
+            PacketType.FullState => "OnFullStateReceived",
+            PacketType.MatchJoined => "OnMatchJoined",
+            PacketType.ComponentMapping => "OnComponentMappingReceived",
+            PacketType.StateHash => "OnStateHashReceived",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
     }
 }

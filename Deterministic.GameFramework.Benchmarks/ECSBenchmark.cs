@@ -6,7 +6,7 @@ namespace Deterministic.GameFramework.Benchmarks
     [MemoryDiagnoser]
     public class ECSBenchmark
     {
-        private GlobalState _state;
+        private GlobalState _state = null!;
         private const int EntityCount = 100_000;
 
         [GlobalSetup]

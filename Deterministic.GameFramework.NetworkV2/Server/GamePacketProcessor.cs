@@ -9,22 +9,22 @@ namespace Deterministic.GameFramework.NetworkV2.Server;
 
 public class GamePacketProcessor
 {
-    private readonly MatchManager _matchManager;
+    private MatchManager? _matchManager;
     private readonly IServiceProvider _serviceProvider;
     private INetworkServer? _networkServer;
 
     private INetworkServer NetworkServer => _networkServer ??= _serviceProvider.GetRequiredService<INetworkServer>();
+    private MatchManager MatchManager => _matchManager ??= _serviceProvider.GetRequiredService<MatchManager>();
 
-    public GamePacketProcessor(MatchManager matchManager, IServiceProvider serviceProvider)
+    public GamePacketProcessor(IServiceProvider serviceProvider)
     {
-        _matchManager = matchManager;
         _serviceProvider = serviceProvider;
     }
 
     public async Task JoinMatchAsync(System.Guid matchId, string? authToken, INetworkPeer peer, IAuthService authService)
     {
         Console.WriteLine($"[GamePacketProcessor] JoinMatch requested for match {matchId} by {peer.Id}");
-        var match = _matchManager.GetMatch(matchId);
+        var match = MatchManager.GetMatch(matchId);
         if (match == null)
         {
             Console.WriteLine($"[GamePacketProcessor] Match {matchId} not found");
@@ -48,12 +48,40 @@ public class GamePacketProcessor
         
         await peer.SendAsync(packetData, PacketType.MatchJoined);
         
+        // Send Component Mapping (Handshake)
+        var mappings = ComponentTypeRegistry.ExportMappings();
+        var mappingData = SerializeMappings(mappings);
+        await peer.SendAsync(mappingData, PacketType.ComponentMapping);
+        
         Console.WriteLine($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
+    }
+
+    private byte[] SerializeMappings(System.Collections.Generic.Dictionary<Deterministic.GameFramework.CoreV2.Guid, int> mappings)
+    {
+        int count = mappings.Count;
+        // Count (4) + (Guid (16) + int (4)) * count
+        int size = 4 + (16 + 4) * count;
+        byte[] buffer = new byte[size];
+        var span = new Span<byte>(buffer);
+        
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(span, count);
+        int offset = 4;
+        
+        foreach (var kvp in mappings)
+        {
+            ((System.Guid)kvp.Key).TryWriteBytes(span.Slice(offset));
+            offset += 16;
+            
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), kvp.Value);
+            offset += 4;
+        }
+        
+        return buffer;
     }
 
     public async Task ProcessBatchAsync(System.Guid matchId, byte[] payload, INetworkPeer peer)
     {
-        var match = _matchManager.GetMatch(matchId);
+        var match = MatchManager.GetMatch(matchId);
         if (match == null) return;
 
         bool fullStateRequired = ProcessBatchInternal(match, payload);
@@ -94,7 +122,7 @@ public class GamePacketProcessor
 
     public async Task RequestFullStateAsync(System.Guid matchId, INetworkPeer peer)
     {
-        var match = _matchManager.GetMatch(matchId);
+        var match = MatchManager.GetMatch(matchId);
         if (match == null) return;
 
         byte[] packetData = CreateFullStatePacket(match);

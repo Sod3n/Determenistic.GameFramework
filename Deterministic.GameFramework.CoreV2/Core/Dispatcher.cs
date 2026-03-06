@@ -4,12 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Deterministic.GameFramework.CoreV2.Logging;
 
 namespace Deterministic.GameFramework.CoreV2;
 
 public class Dispatcher
 {
-    private readonly Dictionary<int, Action<object, GlobalState, Entity>> _actionRunners = new();
+    private readonly Dictionary<int, object> _actionRunners = new();
     private readonly Dictionary<int, Action<byte[], int, GlobalState, Entity>> _byteActionRunners = new();
     
     // Map Action Struct Type -> Service Dense ID
@@ -128,10 +129,19 @@ public class Dispatcher
         var additionalReactions = (List<AdditionalReactionEntry<TAction>>)listObj;
         // Console.WriteLine($"[Dispatcher] RegisterAction for {typeof(TAction).Name}. AdditionalReactions List Hash: {additionalReactions.GetHashCode()}");
 
-        Action<object, GlobalState, Entity> runner = (actionObj, state, entity) =>
+        Action<TAction, GlobalState, Entity> runner = (action, state, entity) =>
         {
-            var action = (TAction)actionObj;
-            // Console.WriteLine($"[Dispatcher] Executing {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
+#if DEBUG
+            try
+            {
+                var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
+                ILogger.Log($"[Action] Executing {typeof(TAction).Name}: {json}");
+            }
+            catch
+            {
+                ILogger.Log($"[Action] Executing {typeof(TAction).Name}: <serialization failed>");
+            }
+#endif
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -156,8 +166,18 @@ public class Dispatcher
             // Deserialize struct from raw bytes
             var span = new ReadOnlySpan<byte>(buffer, offset, Marshal.SizeOf<TAction>());
             var action = MemoryMarshal.Read<TAction>(span);
-            
-            // Console.WriteLine($"[Dispatcher] Executing (Byte) {typeof(TAction).Name}: {JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true })}");
+
+#if DEBUG
+            try
+            {
+                var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
+                ILogger.Log($"[Action] Executing (Byte) {typeof(TAction).Name}: {json}");
+            }
+            catch
+            {
+                ILogger.Log($"[Action] Executing (Byte) {typeof(TAction).Name}: <serialization failed>");
+            }
+#endif
             var ctx = new Context(state, entity);
             ref var target = ref state.GetComponent<TTarget>(entity);
 
@@ -226,7 +246,7 @@ public class Dispatcher
 
         if (_actionRunners.TryGetValue(denseId, out var runner))
         {
-            runner(action, state, entity);
+            ((Action<TAction, GlobalState, Entity>)runner)(action, state, entity);
         }
         else
         {

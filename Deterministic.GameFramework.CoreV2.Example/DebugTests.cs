@@ -32,10 +32,10 @@ public static class DebugTests
     {
         Console.WriteLine("Test 2: Component IDs");
         var attr = typeof(RegionDamageReactionTag).GetCustomAttribute<NetworkIdAttribute>();
-        int tagId = attr?.Id ?? -1;
+        Guid tagId = attr?.Id ?? Guid.Empty;
         Console.WriteLine($"RegionDamageReactionTag ID: {tagId}");
         
-        if (tagId != 107) Console.WriteLine($"WARNING: Expected ID 107, got {tagId}");
+        if (tagId != Guid.Parse("00000000-0000-0000-0000-000000000107")) Console.WriteLine($"WARNING: Expected ID 00000000-0000-0000-0000-000000000107, got {tagId}");
     }
 
     private static void TestGlobalState()
@@ -62,7 +62,7 @@ public static class DebugTests
         
         // Check if ID is correct
         var attr = typeof(RegionDamageReactionTag).GetCustomAttribute<NetworkIdAttribute>();
-        int typeId = attr?.Id ?? -1;
+        Guid typeId = attr?.Id ?? Guid.Empty;
         // Re-add to trigger logging if enabled
         state.AddComponent(entity, new RegionDamageReactionTag());
     }

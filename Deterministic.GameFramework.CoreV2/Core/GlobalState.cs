@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Linq;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -17,6 +18,10 @@ public class GlobalState : IActionDispatcher
     
     public int NextEntityId => _nextEntityId;
     public BitMask128[] EntityMasks => _entityMasks;
+    
+    // Allows systems to store arbitrary state (e.g. Physics World Serialization) that needs to be snapshotted.
+    // Key: System Name (e.g. "RapierPhysics"), Value: Serialized Data
+    public Dictionary<string, byte[]> ExternalState { get; set; } = new();
     
     // Dirty tracking
     internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
@@ -163,6 +168,25 @@ public class GlobalState : IActionDispatcher
         }
     }
 
+    public IEnumerable<Entity> Filter<T1, T2, T3>() 
+        where T1 : struct, IComponent 
+        where T2 : struct, IComponent
+        where T3 : struct, IComponent
+    {
+        var mask = new BitMask128();
+        mask.Set(InternalTypeId<T1>.Value);
+        mask.Set(InternalTypeId<T2>.Value);
+        mask.Set(InternalTypeId<T3>.Value);
+        
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].HasAll(mask))
+            {
+                yield return new Entity(i);
+            }
+        }
+    }
+
     public delegate void ComponentAction<T1, T2>(ref T1 c1, ref T2 c2);
     public delegate void ComponentActionEntity<T1, T2>(Entity e, ref T1 c1, ref T2 c2);
 
@@ -241,7 +265,8 @@ public class GlobalState : IActionDispatcher
             if (ComponentTypeRegistry.DenseIdToType.TryGetValue(typeId, out var type))
             {
                 _componentTypes[typeId] = type;
-                _componentElementSizes[typeId] = Marshal.SizeOf(type);
+                // Get managed size using reflection to invoke Unsafe.SizeOf<T>()
+                _componentElementSizes[typeId] = GetManagedSize(type);
             }
         }
     }
@@ -253,7 +278,7 @@ public class GlobalState : IActionDispatcher
         if (_componentArrays[typeId] == null)
         {
             _componentArrays[typeId] = new T[256];
-            _componentElementSizes[typeId] = Marshal.SizeOf<T>();
+            _componentElementSizes[typeId] = Unsafe.SizeOf<T>(); // Use Unsafe.SizeOf for correct managed size
             _componentTypes[typeId] = typeof(T);
         }
     }
@@ -308,6 +333,12 @@ public class GlobalState : IActionDispatcher
         Array.Resize(ref specificArray, Math.Max(specificArray.Length * 2, entityId + 1));
         _componentArrays[typeId] = specificArray;
     }
+
+    private static int GetManagedSize(Type type)
+    {
+        var method = typeof(Unsafe).GetMethod("SizeOf")!.MakeGenericMethod(type);
+        return (int)method.Invoke(null, null)!;
+    }
 }
 
 public static class ComponentTypeRegistry
@@ -336,49 +367,83 @@ public static class ComponentTypeRegistry
         }
     }
 
+    // Import mappings from byte array (Handshake)
+    public static void ImportMappings(byte[] data)
+    {
+        var mappings = new Dictionary<Guid, int>();
+        var span = new ReadOnlySpan<byte>(data);
+        
+        int count = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(span);
+        int offset = 4;
+        
+        for (int i = 0; i < count; i++)
+        {
+            var guidSpan = span.Slice(offset, 16);
+            var networkId = new Guid(guidSpan.ToArray());
+            offset += 16;
+            
+            int denseId = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
+            offset += 4;
+            
+            mappings[networkId] = denseId;
+        }
+        
+        ImportMappings(mappings);
+    }
+
     // Import mappings from handshake
     public static void ImportMappings(Dictionary<Guid, int> mappings)
     {
         InitializeIfNeeded();
         lock (NetworkIdToDenseId)
         {
+            // 1. Capture known Types for the NetworkIds we are about to update
+            // This protects against swapping issues (A->0, B->1 becoming A->1, B->0)
+            var typeCache = new Dictionary<Guid, Type>();
+            foreach (var kvp in mappings)
+            {
+                var networkId = kvp.Key;
+                if (NetworkIdToDenseId.TryGetValue(networkId, out int existingDenseId))
+                {
+                    if (DenseIdToType.TryGetValue(existingDenseId, out var type))
+                    {
+                        typeCache[networkId] = type;
+                    }
+                }
+            }
+            
+            // 2. Apply Mappings
             foreach (var kvp in mappings)
             {
                 var networkId = kvp.Key;
                 var denseId = kvp.Value;
 
-                if (NetworkIdToDenseId.TryGetValue(networkId, out int existingDenseId))
+                // Clean up old reverse mapping if this NetworkId existed elsewhere
+                if (NetworkIdToDenseId.TryGetValue(networkId, out int oldDenseId))
                 {
-                    if (existingDenseId != denseId)
+                    if (oldDenseId != denseId)
                     {
-                        // Collision or mismatch!
-                        // In a real scenario, we might need to remap or error.
-                        // For now, we trust the authoritative source (usually server) 
-                        // and might need to adjust our local denseId if we already allocated one.
-                        // But ComponentTypeRegistry is usually static/global. 
-                        // Remapping DenseIds at runtime is hard if arrays are already allocated.
-                        // Ideally, ImportMappings happens BEFORE any components are created.
-                        Console.WriteLine($"[ComponentTypeRegistry] Warning: NetworkId {networkId} already mapped to {existingDenseId}, but import requests {denseId}. Keeping existing.");
+                        DenseIdToNetworkId.Remove(oldDenseId);
+                        DenseIdToType.Remove(oldDenseId); // Clear old type slot
                     }
-                    continue;
                 }
 
-                // If denseId is already taken by another NetworkId?
-                if (DenseIdToNetworkId.ContainsKey(denseId))
+                // Conflict check: Is this denseId occupied by someone else?
+                if (DenseIdToNetworkId.TryGetValue(denseId, out var occupantNetId) && occupantNetId != networkId)
                 {
-                    // Shift local denseId? Or error?
-                    Console.WriteLine($"[ComponentTypeRegistry] Warning: DenseId {denseId} already used. Cannot import mapping for {networkId}.");
-                    continue;
+                    Console.WriteLine($"[ComponentTypeRegistry] Evicting {occupantNetId} from DenseId {denseId} to make room for {networkId}");
+                    NetworkIdToDenseId.Remove(occupantNetId);
+                    // We don't remove from typeCache, so if occupant is remapped later in this loop, it will be restored.
                 }
 
                 NetworkIdToDenseId[networkId] = denseId;
                 DenseIdToNetworkId[denseId] = networkId;
                 
-                // We don't necessarily know the Type here if it hasn't been registered yet.
-                // But usually we register types locally first, which assigns random denseIds.
-                // This Import should ideally set the denseIds to match the server.
-                // Implementation detail: If we call GetOrRegister later, it checks NetworkIdToDenseId first.
-                // So if we pre-populate this, it works.
+                // Restore Type
+                if (typeCache.TryGetValue(networkId, out var cachedType))
+                {
+                    DenseIdToType[denseId] = cachedType;
+                }
                 
                 // Update _nextDenseId to avoid collisions
                 if (denseId >= _nextDenseId)
@@ -386,6 +451,8 @@ public static class ComponentTypeRegistry
                     _nextDenseId = denseId + 1;
                 }
             }
+            
+            Console.WriteLine($"[ComponentTypeRegistry] Imported {mappings.Count} mappings. NextDenseId: {_nextDenseId}");
         }
     }
 

@@ -18,6 +18,8 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
     
     public event Action<byte[]>? OnTickSnapshotReceived;
     public event Action<byte[]>? OnFullStateReceived;
+    public event Action<byte[]>? OnComponentMappingReceived;
+    public event Action<byte[]>? OnStateHashReceived;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
 
@@ -193,6 +195,18 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
                     reader.GetBytes(guidBytes, 16);
                     var playerId = new Guid(guidBytes);
                     _joinMatchTcs?.TrySetResult(playerId);
+                    break;
+                }
+                case PacketType.ComponentMapping:
+                {
+                    byte[] data = reader.GetRemainingBytes();
+                    OnComponentMappingReceived?.Invoke(data);
+                    break;
+                }
+                case PacketType.StateHash:
+                {
+                    byte[] data = reader.GetRemainingBytes();
+                    OnStateHashReceived?.Invoke(data);
                     break;
                 }
             }

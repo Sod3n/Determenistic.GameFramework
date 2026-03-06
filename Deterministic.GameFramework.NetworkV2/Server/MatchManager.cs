@@ -14,13 +14,15 @@ public class MatchManager
 {
     private readonly ConcurrentDictionary<System.Guid, Match> _matches = new();
     private readonly IMatchFactory _factory;
+    private readonly INetworkServer _networkServer;
 
     public event Action<Match>? OnMatchCreated;
     public event Action<Match>? OnMatchRemoved;
 
-    public MatchManager(IMatchFactory factory)
+    public MatchManager(IMatchFactory factory, INetworkServer networkServer)
     {
         _factory = factory;
+        _networkServer = networkServer;
     }
 
     public Match CreateMatch(System.Guid matchId)
@@ -31,6 +33,11 @@ public class MatchManager
         }
 
         var match = _factory.CreateMatch(matchId);
+        
+        // Attach State Verification Service
+        var verificationService = new StateVerificationService(match, _networkServer);
+        match.AddService(verificationService);
+        
         if (!_matches.TryAdd(matchId, match))
         {
              // Should not happen due to check above, but for thread safety

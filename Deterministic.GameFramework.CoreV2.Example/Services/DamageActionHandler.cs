@@ -4,7 +4,7 @@ using Deterministic.GameFramework.CoreV2.Example.Components;
 
 namespace Deterministic.GameFramework.CoreV2.Example.Services;
 
-[NetworkId(1)]
+[NetworkId("00000000-0000-0000-0000-000000000001")]
 public class DamageActionHandler : ActionService<DamageAction, HealthComponent>
 {
     protected override void ExecuteProcess(DamageAction args, ref HealthComponent target, Context ctx)

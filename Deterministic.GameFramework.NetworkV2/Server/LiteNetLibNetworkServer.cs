@@ -75,6 +75,7 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
     {
         if (peer is LiteNetLibPeer lnlPeer)
         {
+            Console.WriteLine($"[Server] JoinGroup {groupName} add peer {lnlPeer.Peer.Id}");
             lock (_groupLock)
             {
                 if (!_groups.TryGetValue(groupName, out var set))
@@ -112,6 +113,7 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
             if (!_groups.TryGetValue(groupName, out var set)) return Task.CompletedTask;
             peerIds = new List<int>(set);
         }
+        Console.WriteLine($"[Server] BroadcastToGroup {groupName}, peers={peerIds.Count}");
 
         var writer = new NetDataWriter();
         writer.Put((byte)type);

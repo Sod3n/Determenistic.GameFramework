@@ -4,7 +4,7 @@ using Deterministic.GameFramework.CoreV2.Example.Components;
 
 namespace Deterministic.GameFramework.CoreV2.Example.Reactions;
 
-[NetworkId(2)]
+[NetworkId("00000000-0000-0000-0000-000000000002")]
 public class DecreaseDamageReaction : ReactionService<DamageAction, HealthComponent>
 {
     public override int Priority => PriorityDefault;

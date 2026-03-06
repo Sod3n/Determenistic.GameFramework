@@ -43,6 +43,14 @@ namespace Deterministic.GameFramework.Benchmarks
         }
 
         [Benchmark]
+        public void SerializePooled()
+        {
+            using var buffer = StateSerializer.SerializePooled(_sourceState);
+            // Simulate usage (e.g. access Length)
+            var len = buffer.Length;
+        }
+
+        [Benchmark]
         public void Deserialize()
         {
             StateSerializer.Deserialize(_targetState, _serializedData);

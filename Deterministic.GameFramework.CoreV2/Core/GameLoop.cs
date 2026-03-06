@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Deterministic.GameFramework.CoreV2;
 
-public class GameLoop
+public class GameLoop : IDisposable
 {
     private readonly GlobalState _state;
     private readonly Dispatcher _dispatcher;
@@ -31,6 +31,8 @@ public class GameLoop
     public event Action? OnRollbackFailed;
 
     private readonly StateHistory _history;
+    public StateHistory History => _history;
+    public GlobalState State => _state;
 
     public GameLoop(GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler)
     {
@@ -43,6 +45,12 @@ public class GameLoop
         _state.GameLoop = this;
     }
 
+    public void Dispose()
+    {
+        Stop();
+        _systemRunner.Dispose();
+    }
+
     public void RegisterSystem(ISystem system)
     {
         _systemRunner.RegisterSystem(system);
@@ -51,6 +59,16 @@ public class GameLoop
     public void RegisterSystems(IEnumerable<ISystem> systems)
     {
         _systemRunner.RegisterSystems(systems);
+    }
+
+    public void RemoveSystem(ISystem system)
+    {
+        _systemRunner.RemoveSystem(system);
+    }
+
+    public void RemoveSystems(IEnumerable<ISystem> systems)
+    {
+        _systemRunner.RemoveSystems(systems);
     }
 
     public void SetTickRate(int tickRate)

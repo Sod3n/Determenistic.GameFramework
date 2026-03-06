@@ -3,7 +3,7 @@ using Deterministic.GameFramework.CoreV2;
 
 namespace Deterministic.GameFramework.CoreV2.Example.Components;
 
-[NetworkId(108)]
+[NetworkId("00000000-0000-0000-0000-000000000108")]
 public struct Party : IComponent, IEquatable<Party>
 {
     public int PartyId;

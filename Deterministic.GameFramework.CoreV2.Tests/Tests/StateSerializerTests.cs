@@ -76,10 +76,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
         public void RoundTrip_ShouldHandleLargeEntityCounts()
         {
             var state = new GlobalState();
-            
+            var entities = new Entity[500];
+
             for (int i = 0; i < 500; i++)
             {
                 var entity = state.CreateEntity();
+                entities[i] = entity;
                 ref var health = ref state.GetComponent<HealthComponent>(entity);
                 health.CurrentHealth = i;
             }
@@ -92,7 +94,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             
             for (int i = 0; i < 500; i++)
             {
-                var entity = new Entity(i);
+                var entity = entities[i];
                 newState.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(i);
             }
         }
@@ -134,7 +136,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var newState = new GlobalState();
             StateSerializer.Deserialize(newState, serialized);
             
-            newState._nextEntityId.Should().Be(0);
+            newState._nextEntityId.Should().Be(state.NextEntityId);
         }
 
         [Fact]

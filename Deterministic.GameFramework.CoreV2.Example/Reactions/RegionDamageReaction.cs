@@ -6,7 +6,7 @@ using Deterministic.GameFramework.CoreV2.Extensions;
 
 namespace Deterministic.GameFramework.CoreV2.Example.Reactions;
 
-[NetworkId(106)]
+[NetworkId("00000000-0000-0000-0000-000000000106")]
 public class RegionDamageReaction : ReactionService<DamageAction, RegionComponent>
 {
     public override int Priority => PriorityDefault;

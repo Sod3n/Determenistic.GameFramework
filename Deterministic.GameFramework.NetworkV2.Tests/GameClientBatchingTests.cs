@@ -21,7 +21,7 @@ public class GameClientBatchingTests
         var span = buffer.GetSpan(headerSize + actionData.Length);
         var header = new NetworkActionHeader
         {
-            NetworkId = networkId,
+            DenseId = networkId,
             TargetEntityId = targetEntityId,
             ExecuteTick = executeTick,
             DataLength = actionData.Length
@@ -37,7 +37,7 @@ public class GameClientBatchingTests
         var readSpan = new ReadOnlySpan<byte>(payload);
         var decodedHeader = MemoryMarshal.Read<NetworkActionHeader>(readSpan);
 
-        decodedHeader.NetworkId.Should().Be(networkId);
+        decodedHeader.DenseId.Should().Be(networkId);
         decodedHeader.TargetEntityId.Should().Be(targetEntityId);
         decodedHeader.ExecuteTick.Should().Be(executeTick);
         decodedHeader.DataLength.Should().Be(actionData.Length);
@@ -54,9 +54,9 @@ public class GameClientBatchingTests
 
         var actions = new[]
         {
-            (NetworkId: 1, TargetId: 10, Tick: 100L, Data: new byte[] { 0x01, 0x02 }),
-            (NetworkId: 2, TargetId: 20, Tick: 200L, Data: new byte[] { 0x03, 0x04, 0x05 }),
-            (NetworkId: 3, TargetId: 30, Tick: 300L, Data: new byte[] { 0x06 })
+            (DenseId: 1, TargetId: 10, Tick: 100L, Data: new byte[] { 0x01, 0x02 }),
+            (DenseId: 2, TargetId: 20, Tick: 200L, Data: new byte[] { 0x03, 0x04, 0x05 }),
+            (DenseId: 3, TargetId: 30, Tick: 300L, Data: new byte[] { 0x06 })
         };
 
         foreach (var action in actions)
@@ -64,7 +64,7 @@ public class GameClientBatchingTests
             var span = buffer.GetSpan(headerSize + action.Data.Length);
             var header = new NetworkActionHeader
             {
-                NetworkId = action.NetworkId,
+                DenseId = action.DenseId,
                 TargetEntityId = action.TargetId,
                 ExecuteTick = action.Tick,
                 DataLength = action.Data.Length
@@ -90,7 +90,7 @@ public class GameClientBatchingTests
             var data = readSpan.Slice(offset, header.DataLength).ToArray();
             offset += header.DataLength;
 
-            header.NetworkId.Should().Be(actions[actionIndex].NetworkId);
+            header.DenseId.Should().Be(actions[actionIndex].DenseId);
             header.TargetEntityId.Should().Be(actions[actionIndex].TargetId);
             header.ExecuteTick.Should().Be(actions[actionIndex].Tick);
             data.Should().Equal(actions[actionIndex].Data);
@@ -111,7 +111,7 @@ public class GameClientBatchingTests
         var span = buffer.GetSpan(headerSize + actionData.Length);
         var header = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 1,
             ExecuteTick = 1L,
             DataLength = actionData.Length
@@ -145,7 +145,7 @@ public class GameClientBatchingTests
                 var span = buffer.GetSpan(headerSize + actionData.Length);
                 var header = new NetworkActionHeader
                 {
-                    NetworkId = cycle * 10 + i,
+                    DenseId = cycle * 10 + i,
                     TargetEntityId = i,
                     ExecuteTick = cycle * 100L + i,
                     DataLength = actionData.Length
@@ -212,7 +212,7 @@ public class GameClientBatchingTests
             var span = buffer.GetSpan(headerSize + actionData.Length);
             var header = new NetworkActionHeader
             {
-                NetworkId = i,
+                DenseId = i,
                 TargetEntityId = i * 2,
                 ExecuteTick = i * 3L,
                 DataLength = actionData.Length
@@ -260,7 +260,7 @@ public class GameClientBatchingTests
                     var span = buffer.GetSpan(headerSize + actionData.Length);
                     var header = new NetworkActionHeader
                     {
-                        NetworkId = taskId,
+                        DenseId = taskId,
                         TargetEntityId = taskId,
                         ExecuteTick = taskId,
                         DataLength = actionData.Length
@@ -314,7 +314,7 @@ public class GameClientBatchingTests
             var span = buffer.GetSpan(headerSize + actionData.Length);
             var header = new NetworkActionHeader
             {
-                NetworkId = size,
+                DenseId = size,
                 TargetEntityId = size * 2,
                 ExecuteTick = size * 3L,
                 DataLength = actionData.Length
@@ -355,7 +355,7 @@ public class GameClientBatchingTests
         var span1 = buffer.GetSpan(headerSize + firstData.Length);
         var header1 = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 1,
             ExecuteTick = 1L,
             DataLength = firstData.Length
@@ -371,7 +371,7 @@ public class GameClientBatchingTests
         var span2 = buffer.GetSpan(headerSize + secondData.Length);
         var header2 = new NetworkActionHeader
         {
-            NetworkId = 2,
+            DenseId = 2,
             TargetEntityId = 2,
             ExecuteTick = 2L,
             DataLength = secondData.Length

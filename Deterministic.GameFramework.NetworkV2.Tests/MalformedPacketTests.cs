@@ -37,7 +37,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = 100
@@ -82,7 +82,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = -50
@@ -122,7 +122,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = int.MaxValue
@@ -162,7 +162,7 @@ public class MalformedPacketTests
 
         var header1 = new NetworkActionHeader
         {
-            NetworkId = 1,
+            DenseId = 1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = 5
@@ -176,7 +176,7 @@ public class MalformedPacketTests
 
         var header2 = new NetworkActionHeader
         {
-            NetworkId = 2,
+            DenseId = 2,
             TargetEntityId = 20,
             ExecuteTick = 200L,
             DataLength = 1000
@@ -273,7 +273,7 @@ public class MalformedPacketTests
         {
             var header = new NetworkActionHeader
             {
-                NetworkId = i,
+                DenseId = i,
                 TargetEntityId = i * 10,
                 ExecuteTick = i * 100L,
                 DataLength = 4
@@ -288,7 +288,7 @@ public class MalformedPacketTests
 
         var corruptHeader = new NetworkActionHeader
         {
-            NetworkId = 999,
+            DenseId = 999,
             TargetEntityId = 9999,
             ExecuteTick = 99999L,
             DataLength = 10000
@@ -336,7 +336,7 @@ public class MalformedPacketTests
         {
             var header = new NetworkActionHeader
             {
-                NetworkId = 1,
+                DenseId = 1,
                 TargetEntityId = 1,
                 ExecuteTick = 1L,
                 DataLength = action.DataLength

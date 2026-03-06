@@ -16,58 +16,134 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 {
     private readonly INetworkClient _networkClient;
     private readonly string _connectionString;
-    private readonly Dispatcher _dispatcher;
-    private readonly GlobalState _state;
-    private readonly ActionScheduler _scheduler;
-    private readonly GameLoop _gameLoop;
+    private readonly Game _game;
     
     private System.Guid _currentMatchId;
     private readonly PacketBuffer _outgoingBuffer = new PacketBuffer();
     private readonly TaskCompletionSource _syncTcs = new TaskCompletionSource();
     private bool _isWaitingForFullState = false;
+    private bool _actionsRegistered = false;
     
     public event Action<string>? OnLog;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
+    public event Action<long, System.Guid, System.Guid>? OnStateMismatch;
 
     public int DefaultTickDelay { get; set; } = 5;
     public bool DefaultPrediction { get; set; } = true;
 
     public ReactiveSystem Reactive { get; }
-    public GlobalState State => _state;
+    public Game Game => _game;
+    public GlobalState State => _game.State;
+    public GameLoop Loop => _game.Loop;
+    public Dispatcher Dispatcher => _game.Dispatcher;
+    public ActionScheduler Scheduler => _game.Scheduler;
     
     public System.Guid PlayerId { get; private set; }
 
-    public GameClient(INetworkClient networkClient, string connectionString, GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler, GameLoop gameLoop)
+    public GameClient(INetworkClient networkClient, string connectionString, Game game)
     {
-        _state = state;
-        _dispatcher = dispatcher;
-        _scheduler = scheduler;
-        _gameLoop = gameLoop;
+        _game = game;
         _networkClient = networkClient;
         _connectionString = connectionString;
         
         Reactive = ReactiveSystem.Instance;
         // Since ReactiveSystem is a singleton, ensure we start with a clean slate
         Reactive.Dispose(); 
-        Reactive.Bind(state);
-        
-        // Auto-discover services and NetworkIds
-        ServiceLocator.Initialize(dispatcher);
-        ServiceLocator.Initialize(gameLoop);
+        Reactive.Bind(game.State);
         
         // Hook into GameLoop
-        _gameLoop.OnTick += Flush;
-        _gameLoop.OnRollbackFailed += OnRollbackFailed;
+        _game.Loop.OnTick += Flush;
+        _game.Loop.OnRollbackFailed += OnRollbackFailed;
         
         _networkClient.OnTickSnapshotReceived += OnTickSnapshot;
         _networkClient.OnFullStateReceived += OnFullStateReceived;
+        _networkClient.OnComponentMappingReceived += OnComponentMappingReceived;
+        _networkClient.OnStateHashReceived += OnStateHashReceived;
         
         _networkClient.OnDisconnected += () => OnDisconnected?.Invoke();
         _networkClient.OnConnected += () => OnConnected?.Invoke();
     }
 
-    public Context CreateContext(Entity entity) => new Context(_state, entity, this);
+    private void OnStateHashReceived(byte[] data)
+    {
+        try
+        {
+            var span = new ReadOnlySpan<byte>(data);
+            if (span.Length < Marshal.SizeOf<StateHashPacket>()) return;
+
+            var packet = MemoryMarshal.Read<StateHashPacket>(span);
+            // Log($"[StateHash] Received Server Hash for Tick {packet.Tick}");
+            
+            Deterministic.GameFramework.CoreV2.Guid localHash;
+
+            if (_game.Loop.CurrentTick == packet.Tick)
+            {
+                // We are exactly on the same tick
+                localHash = StateHasher.Hash(_game.State);
+            }
+            else
+            {
+                // Check history
+                if (_game.Loop.History.TryGetSnapshotData(packet.Tick, out byte[]? snapshotData))
+                {
+                    localHash = StateHasher.Hash(snapshotData!);
+                }
+                else
+                {
+                    // Too old or too new (future?)
+                    // Log($"[StateHash] Skipped verification. Tick {packet.Tick} not in history (Range: {_game.Loop.History.GetOldestTick()}-{_game.Loop.History.GetLatestTick()})");
+                    return;
+                }
+            }
+
+            if (localHash != packet.Hash)
+            {
+                Log($"[StateHash] MISMATCH at Tick {packet.Tick}! Local: {localHash} != Server: {packet.Hash}");
+                OnStateMismatch?.Invoke(packet.Tick, (System.Guid)localHash, packet.Hash);
+                
+                if (!_isWaitingForFullState)
+                {
+                    Log("[StateHash] Requesting full state sync due to mismatch...");
+                    _isWaitingForFullState = true;
+                    _ = RequestFullState();
+                }
+            }
+            else
+            {
+                // Log($"[StateHash] Verified match at Tick {packet.Tick}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"Error processing StateHash: {ex}");
+        }
+    }
+
+    private void OnComponentMappingReceived(byte[] data)
+    {
+        Log($"Received Component Mappings ({data.Length} bytes). Importing...");
+        try 
+        {
+            ComponentTypeRegistry.ImportMappings(data);
+            Log("Component Mappings imported successfully.");
+
+            // IMPORTANT: Register action services only AFTER mappings are imported,
+            // so Dispatcher denseIds match the server's ComponentTypeRegistry.
+            if (!_actionsRegistered)
+            {
+                ServiceLocator.Initialize(Dispatcher);
+                _actionsRegistered = true;
+                Log("Action services registered after Component Mappings import.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"Failed to import mappings: {ex}");
+        }
+    }
+
+    public Context CreateContext(Entity entity) => new Context(State, entity, this);
 
     private void OnRollbackFailed()
     {
@@ -132,8 +208,8 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         int actualDelay = tickDelay ?? DefaultTickDelay;
         bool actualPredict = predict ?? DefaultPrediction;
 
-        int denseId = _dispatcher.GetDenseId<TAction>();
-        long executeTick = _gameLoop.CurrentTick + actualDelay;
+        int denseId = Dispatcher.GetDenseId<TAction>();
+        long executeTick = Loop.CurrentTick + actualDelay;
 
         // Serialize
         int size = Marshal.SizeOf<TAction>();
@@ -143,7 +219,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         // Schedule Locally (Prediction)
         if (actualPredict)
         {
-            var result = _scheduler.Schedule(action, denseId, new Entity(targetEntityId), executeTick);
+            var result = Scheduler.Schedule(action, denseId, new Entity(targetEntityId), executeTick);
             if (result == ActionScheduler.ScheduleResult.Duplicate)
             {
                 Log($"[Prediction] Duplicate action {typeof(TAction).Name} ignored.");
@@ -215,6 +291,8 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         
         var header = MemoryMarshal.Read<TickSnapshotHeader>(packetSpan);
         var payloadSpan = packetSpan.Slice(headerSize, header.PayloadLength);
+
+        Log($"Received TickSnapshot: ServerTick={header.ServerTick}, PayloadLength={header.PayloadLength}");
         
         // 1. Process Actions from Binary Payload
         int offset = 0;
@@ -229,15 +307,17 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             
             var dataSpan = payloadSpan.Slice(offset, actionHeader.DataLength);
             offset += actionHeader.DataLength;
+
+            Log($"TickSnapshot action: DenseId={actionHeader.DenseId}, TargetEntityId={actionHeader.TargetEntityId}, ExecuteTick={actionHeader.ExecuteTick}, DataLength={actionHeader.DataLength}");
             
-            _scheduler.ScheduleFromBytes(actionHeader.DenseId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
+            Scheduler.ScheduleFromBytes(actionHeader.DenseId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
         }
         
         // 2. Sync Tick (Basic)
-        long delta = header.ServerTick - _gameLoop.CurrentTick;
+        long delta = header.ServerTick - Loop.CurrentTick;
         if (Math.Abs(delta) > 60) // 1 second drift
         {
-            Log($"Tick Drift Large: {delta}. Server: {header.ServerTick}, Client: {_gameLoop.CurrentTick}");
+            Log($"Tick Drift Large: {delta}. Server: {header.ServerTick}, Client: {Loop.CurrentTick}");
         }
     }
     
@@ -261,16 +341,16 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             Log($"Received Full State for Tick {header.Tick}. Size: {stateData.Length} bytes");
             
             Log("Deserializing state...");
-            StateSerializer.Deserialize(_state, stateData);
+            StateSerializer.Deserialize(State, stateData);
             Log("State deserialized!");
             
             Log($"Setting tick to {header.Tick}...");
-            _gameLoop.ForceSetTick(header.Tick);
+            Loop.ForceSetTick(header.Tick);
             Log($"Tick set to {header.Tick}!");
             
             // Critical: Prune scheduler history to match new authoritative state
             // This resets EarliestDirtyTick and prevents immediate rollback attempts to the past
-            _scheduler.PruneHistory(header.Tick);
+            Scheduler.PruneHistory(header.Tick);
             
             Log("Completing sync task...");
             _syncTcs.TrySetResult();
@@ -293,7 +373,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
     public void Dispose()
     {
         Reactive.Dispose();
-        _gameLoop.OnTick -= Flush;
+        Loop.OnTick -= Flush;
         _ = DisposeAsync();
     }
 

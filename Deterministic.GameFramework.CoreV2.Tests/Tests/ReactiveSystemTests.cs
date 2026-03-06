@@ -292,13 +292,13 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             reactive.Subscribe(() => value, (v) => callbackCount++, comparer);
 
             reactive.Tick();
-            callbackCount.Should().Be(1);
-
-            reactive.Tick();
             callbackCount.Should().Be(2);
 
             reactive.Tick();
             callbackCount.Should().Be(3);
+
+            reactive.Tick();
+            callbackCount.Should().Be(4);
         }
 
         private class AlwaysDifferentComparer : IEqualityComparer<int>
@@ -346,12 +346,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
             reactive.Tick();
             callback1Count.Should().Be(1);
-            callback2Count.Should().Be(0);
+            callback2Count.Should().Be(1);
 
             value = 20;
             reactive.Tick();
             callback1Count.Should().Be(2);
-            callback2Count.Should().Be(1); // Fires once when it first sees value=20
+            callback2Count.Should().Be(2);
         }
     }
 }

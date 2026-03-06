@@ -123,7 +123,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             MemoryMarshal.Write(dBytes, in lateDamage);
 
             // Schedule for Tick 5 (past)
-            _scheduler.ScheduleFromBytes(1, dBytes, player.Id, 5);
+            var denseId = _dispatcher.GetDenseId<DamageAction>();
+            _scheduler.ScheduleFromBytes(denseId, dBytes, player.Id, 5);
 
             // Run Tick 11 - This should trigger Rollback!
             _gameLoop.RunSingleTick();

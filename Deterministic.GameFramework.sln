@@ -1,19 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deterministic.GameFramework", "Deterministic.GameFramework", "{EF2F9D45-2585-48FB-8757-0511A05BAD95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Core", "Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj", "{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Server", "Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj", "{D2345678-90AB-CDEF-1234-567890ABCDEF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Client", "Deterministic.GameFramework.Client\Deterministic.GameFramework.Client.csproj", "{E3456789-01BC-DEF2-3456-7890ABCDEF01}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.SourceGenerators", "Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj", "{B1234567-89AB-CDEF-0123-456789ABCDEF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Examples", "Deterministic.GameFramework.Examples\Deterministic.GameFramework.Examples.csproj", "{43C50E54-8F5A-446A-9957-CF3C54B1852B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Network", "Deterministic.GameFramework.Network\Deterministic.GameFramework.Network.csproj", "{ED5957D0-27C0-45F2-8BD3-15A95FFE1393}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.CoreV2.Tests", "Deterministic.GameFramework.CoreV2.Tests\Deterministic.GameFramework.CoreV2.Tests.csproj", "{0B025BFC-7674-490F-BA9C-F364BDB628FD}"
 EndProject
@@ -29,36 +19,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Benchmarks", "Deterministic.GameFramework.Benchmarks\Deterministic.GameFramework.Benchmarks.csproj", "{41D91AE6-7432-41AE-B1A3-376D8F776559}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Physics.Tests", "Deterministic.GameFramework.Physics.Tests\Deterministic.GameFramework.Physics.Tests.csproj", "{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2345678-90AB-CDEF-1234-567890ABCDEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2345678-90AB-CDEF-1234-567890ABCDEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2345678-90AB-CDEF-1234-567890ABCDEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2345678-90AB-CDEF-1234-567890ABCDEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3456789-01BC-DEF2-3456-7890ABCDEF01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3456789-01BC-DEF2-3456-7890ABCDEF01}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3456789-01BC-DEF2-3456-7890ABCDEF01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3456789-01BC-DEF2-3456-7890ABCDEF01}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1234567-89AB-CDEF-0123-456789ABCDEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B1234567-89AB-CDEF-0123-456789ABCDEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1234567-89AB-CDEF-0123-456789ABCDEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1234567-89AB-CDEF-0123-456789ABCDEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43C50E54-8F5A-446A-9957-CF3C54B1852B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43C50E54-8F5A-446A-9957-CF3C54B1852B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43C50E54-8F5A-446A-9957-CF3C54B1852B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43C50E54-8F5A-446A-9957-CF3C54B1852B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED5957D0-27C0-45F2-8BD3-15A95FFE1393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED5957D0-27C0-45F2-8BD3-15A95FFE1393}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED5957D0-27C0-45F2-8BD3-15A95FFE1393}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED5957D0-27C0-45F2-8BD3-15A95FFE1393}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0B025BFC-7674-490F-BA9C-F364BDB628FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0B025BFC-7674-490F-BA9C-F364BDB628FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B025BFC-7674-490F-BA9C-F364BDB628FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -87,19 +59,20 @@ Global
 		{41D91AE6-7432-41AE-B1A3-376D8F776559}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41D91AE6-7432-41AE-B1A3-376D8F776559}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41D91AE6-7432-41AE-B1A3-376D8F776559}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C14E5A65-E06C-4C9E-B420-6CAFA4A58C57} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
-		{D2345678-90AB-CDEF-1234-567890ABCDEF} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
-		{E3456789-01BC-DEF2-3456-7890ABCDEF01} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{B1234567-89AB-CDEF-0123-456789ABCDEF} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
-		{43C50E54-8F5A-446A-9957-CF3C54B1852B} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
-		{ED5957D0-27C0-45F2-8BD3-15A95FFE1393} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{0B025BFC-7674-490F-BA9C-F364BDB628FD} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{438A28BF-1983-490E-88DE-F1BF20B43C97} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{BA1CBB0C-964B-46B2-80A5-42A77E389F9D} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{A5F5E8FA-021F-4186-917F-A439EBA8E644} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{58AAC68A-2DFF-4659-B728-7BF63DB90558} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{F9B8C7D6-5E4A-3B2C-1D0E-9F8A7B6C5D4E} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
+		{41D91AE6-7432-41AE-B1A3-376D8F776559} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
+		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 	EndGlobalSection
 EndGlobal

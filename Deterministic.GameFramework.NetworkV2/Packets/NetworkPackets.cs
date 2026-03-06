@@ -30,3 +30,10 @@ public struct MatchJoinedPacket
 {
     public Guid PlayerId;
 }
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct StateHashPacket
+{
+    public long Tick;
+    public Guid Hash;
+}

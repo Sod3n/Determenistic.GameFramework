@@ -27,7 +27,7 @@ public struct Guid : IParam, IEquatable<Guid>, IComparable<Guid>
     
     public static Guid Parse(string input) => new Guid(System.Guid.Parse(input));
 
-    public static implicit operator System.Guid(Guid g) => g._value;
+    public static explicit operator System.Guid(Guid g) => g._value;
     public static implicit operator Guid(System.Guid g) => new Guid(g);
 
     public override bool Equals(object? obj) => obj is Guid other && Equals(other);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.CoreV2.Scene;
 
 namespace Deterministic.GameFramework.NetworkV2.Server;
 
@@ -11,24 +12,32 @@ namespace Deterministic.GameFramework.NetworkV2.Server;
 public class Match : IDisposable
 {
     public System.Guid Id { get; }
-    public GlobalState State { get; }
-    public GameLoop Loop { get; }
-    public Dispatcher Dispatcher { get; }
-    public ActionScheduler Scheduler { get; }
+    public Game Game { get; }
+
+    public GlobalState State => Game.State;
+    public GameLoop Loop => Game.Loop;
+    public Dispatcher Dispatcher => Game.Dispatcher;
+    public ActionScheduler Scheduler => Game.Scheduler;
+    public SceneManager SceneManager => Game.SceneManager;
     
     private readonly List<System.Guid> _players = new();
     public IReadOnlyList<System.Guid> Players => _players;
+    
+    // Services attached to this match (e.g. StateVerificationService)
+    private readonly List<IDisposable> _attachedServices = new();
 
     public event Action<System.Guid>? OnPlayerJoined;
     public event Action<System.Guid>? OnPlayerLeft;
 
-    public Match(System.Guid id, GlobalState state, GameLoop loop, Dispatcher dispatcher, ActionScheduler scheduler)
+    public Match(System.Guid id, Game game)
     {
         Id = id;
-        State = state;
-        Loop = loop;
-        Dispatcher = dispatcher;
-        Scheduler = scheduler;
+        Game = game;
+    }
+    
+    public void AddService(IDisposable service)
+    {
+        _attachedServices.Add(service);
     }
 
     public void AddPlayer(System.Guid playerId)
@@ -51,5 +60,18 @@ public class Match : IDisposable
     public void Dispose()
     {
         Loop.Stop();
+        
+        foreach (var service in _attachedServices)
+        {
+            try
+            {
+                service.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Match] Error disposing service {service.GetType().Name}: {ex}");
+            }
+        }
+        _attachedServices.Clear();
     }
 }

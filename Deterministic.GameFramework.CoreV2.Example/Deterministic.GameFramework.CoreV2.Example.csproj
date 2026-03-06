@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Deterministic.GameFramework.CoreV2\Deterministic.GameFramework.CoreV2.csproj" />
+    <ProjectReference Include="..\Deterministic.GameFramework.Physics\Deterministic.GameFramework.Physics.csproj" />
     <ProjectReference Include="..\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
     <ProjectReference Include="..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>

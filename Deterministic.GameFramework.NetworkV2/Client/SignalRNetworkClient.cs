@@ -13,6 +13,8 @@ public class SignalRNetworkClient : INetworkClient
 
     public event Action<byte[]>? OnTickSnapshotReceived;
     public event Action<byte[]>? OnFullStateReceived;
+    public event Action<byte[]>? OnComponentMappingReceived;
+    public event Action<byte[]>? OnStateHashReceived;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
     
@@ -27,6 +29,8 @@ public class SignalRNetworkClient : INetworkClient
 
         _hubConnection.On<byte[]>("OnTickSnapshot", data => OnTickSnapshotReceived?.Invoke(data));
         _hubConnection.On<byte[]>("OnFullStateReceived", data => OnFullStateReceived?.Invoke(data));
+        _hubConnection.On<byte[]>("OnComponentMappingReceived", data => OnComponentMappingReceived?.Invoke(data));
+        _hubConnection.On<byte[]>("OnStateHashReceived", data => OnStateHashReceived?.Invoke(data));
         _hubConnection.On<byte[]>("OnMatchJoined", data => 
         {
             if (data.Length >= 16)
