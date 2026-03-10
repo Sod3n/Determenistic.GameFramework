@@ -7,368 +7,217 @@ using System.Reflection;
 
 namespace Deterministic.GameFramework.CoreV2;
 
+public class ServiceRegistration
+{
+    public SystemRunnerDisposable? Systems { get; set; }
+    public ActionRunnerDisposable? Actions { get; set; }
+    public ReactionRunnerDisposable? Reactions { get; set; }
+    
+    // Store raw lists for deep unregistration
+    public List<IActionService> RegisteredActionServices { get; set; } = new();
+    public List<IReactionService> RegisteredReactionServices { get; set; } = new();
+}
+
 public static class ServiceLocator
 {
-    public static readonly Dictionary<Type, Guid> TypeToId = new Dictionary<Type, Guid>();
-    public static readonly Dictionary<Guid, Type> IdToType = new Dictionary<Guid, Type>();
+    private static readonly HashSet<Assembly> _registeredAssemblies = new();
+    
+    private static readonly Dictionary<Type, object> _singletons = new();
+    private static readonly object _lock = new();
 
-    /// <summary>
-    /// Scans all loaded assemblies for types with [NetworkId] and registers services to the Dispatcher.
-    /// Also proactively loads referenced assemblies and scans the base directory to ensure game logic is found.
-    /// </summary>
-    public static void Initialize(Dispatcher dispatcher)
+    // Cache for Action/Reaction types to avoid scanning repeatedly
+    // private static readonly List<Type> _actionServiceTypes = new();
+    // private static readonly List<Type> _reactionServiceTypes = new();
+
+    public static ServiceRegistration Register(GameLoop loop, IEnumerable<Assembly> assemblies)
     {
-        var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)));
-        
-        // 1. Eager load referenced assemblies
-        var entryAssembly = Assembly.GetEntryAssembly();
-        if (entryAssembly != null && !IsIgnoredAssembly(entryAssembly))
-        {
-            assemblies.Add(entryAssembly);
-            LoadReferencedAssemblies(entryAssembly, assemblies);
-        }
+        var systems = new List<ISystem>();
+        var actions = new List<IActionService>();
+        var reactions = new List<IReactionService>();
 
-        // 2. Scan directory for DLLs (Plugins / Shared libraries not yet loaded)
-        try 
+        foreach (var assembly in assemblies)
         {
-            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            var dlls = Directory.GetFiles(baseDir, "*.dll", SearchOption.TopDirectoryOnly);
-            
-            Console.WriteLine($"[ServiceLocator] Scanning base directory: {baseDir}");
-            foreach (var dllPath in dlls)
+            RegisterAssembly(assembly);
+
+            foreach (var type in assembly.GetTypes())
             {
-                try 
+                if (type.IsAbstract || type.IsInterface) continue;
+
+                if (typeof(ISystem).IsAssignableFrom(type))
                 {
-                    var fileName = Path.GetFileNameWithoutExtension(dllPath);
-                    if (IsIgnoredName(fileName)) 
-                    {
-                        // Console.WriteLine($"[ServiceLocator] Ignored by name: {fileName}");
-                        continue;
-                    }
-
-                    // Avoid re-loading if already in memory (by simple name check)
-                    if (assemblies.Any(a => a.GetName().Name == fileName)) 
-                    {
-                        Console.WriteLine($"[ServiceLocator] Already loaded: {fileName}");
-                        continue;
-                    }
-
-                    Console.WriteLine($"[ServiceLocator] Loading external assembly: {fileName}");
-                    var loadedAssembly = Assembly.LoadFrom(dllPath);
-                    
-                    if (!IsIgnoredAssembly(loadedAssembly))
-                    {
-                        if (assemblies.Add(loadedAssembly))
-                        {
-                            Console.WriteLine($"[ServiceLocator] Successfully added: {loadedAssembly.FullName}");
-                            LoadReferencedAssemblies(loadedAssembly, assemblies);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine($"[ServiceLocator] Ignored after load: {fileName}");
-                    }
+                    systems.Add((ISystem)GetOrCreate(type));
                 }
-                catch (Exception ex)
-                { 
-                    Console.WriteLine($"[ServiceLocator] Failed to load {dllPath}: {ex.Message}");
+                else if (typeof(IActionService).IsAssignableFrom(type))
+                {
+                    actions.Add((IActionService)GetOrCreate(type));
+                }
+                else if (typeof(IReactionService).IsAssignableFrom(type))
+                {
+                    reactions.Add((IReactionService)GetOrCreate(type));
                 }
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ServiceLocator] Warning: Failed to scan directory assemblies: {ex.Message}");
-        }
 
-        Console.WriteLine($"[ServiceLocator] Final assembly count: {assemblies.Count}");
-        Initialize(dispatcher, assemblies);
+        // Register Services with Dispatcher first (ensure IDs are assigned)
+        loop.Dispatcher.RegisterServices(actions, reactions);
+
+        var registration = new ServiceRegistration
+        {
+            Systems = loop.SystemRunner.EnableSystems(systems),
+            Actions = loop.Dispatcher.EnableActions(actions),
+            Reactions = loop.Dispatcher.EnableReactions(reactions),
+            RegisteredActionServices = actions,
+            RegisteredReactionServices = reactions
+        };
+
+        return registration;
     }
 
-    private static bool IsIgnoredName(string name)
+    public static void Unregister(GameLoop loop, ServiceRegistration registration)
     {
-        return name != null && (name.StartsWith("System") || name.StartsWith("Microsoft") || name.StartsWith("mscorlib") || name.StartsWith("netstandard"));
+        registration.Systems?.Dispose();
+        registration.Actions?.Dispose();
+        registration.Reactions?.Dispose();
+        
+        loop.Dispatcher.UnregisterServices(registration.RegisteredActionServices, registration.RegisteredReactionServices);
     }
 
-    private static bool IsIgnoredAssembly(Assembly assembly)
+    /// <summary>
+    /// Resets the ServiceLocator state. USE ONLY IN TESTS.
+    /// </summary>
+    public static void Reset()
     {
-        try
+        lock (_lock)
         {
-            if (assembly.IsDynamic) return true;
-            return IsIgnoredName(assembly.GetName().Name);
-        }
-        catch
-        {
-            return true;
+            _registeredAssemblies.Clear();
+            _singletons.Clear();
+            // ComponentId state might also need resetting if it persists static data
+            ComponentId.ClearMappings();
         }
     }
 
-    private static void LoadReferencedAssemblies(Assembly assembly, HashSet<Assembly> loadedAssemblies)
+    private static object GetOrCreate(Type type)
     {
-        AssemblyName[] references;
-        try
+        lock (_lock)
         {
-            references = assembly.GetReferencedAssemblies();
-        }
-        catch
-        {
-            return; // Can't get references
-        }
-
-        foreach (var refName in references)
-        {
-            // Optimization: Skip system/microsoft assemblies
-            if (refName.Name != null && (refName.Name.StartsWith("System") || refName.Name.StartsWith("Microsoft") || refName.Name.StartsWith("mscorlib") || refName.Name.StartsWith("netstandard")))
-                continue;
+            if (_singletons.TryGetValue(type, out var instance))
+            {
+                return instance;
+            }
 
             try
             {
-                // Check if already loaded by name
-                if (loadedAssemblies.Any(a => a.GetName().Name == refName.Name)) 
-                    continue;
-
-                var loadedAssembly = Assembly.Load(refName);
-                
-                if (!IsIgnoredAssembly(loadedAssembly))
-                {
-                    if (loadedAssemblies.Add(loadedAssembly))
-                    {
-                        // Recurse into user/game assemblies
-                        LoadReferencedAssemblies(loadedAssembly, loadedAssemblies);
-                    }
-                }
+                instance = Activator.CreateInstance(type)!;
+                _singletons[type] = instance;
+                return instance;
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore load errors (optional dependencies, etc.)
+                Console.WriteLine($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
+                throw;
             }
         }
     }
 
     /// <summary>
-    /// Scans specified assemblies for types with [NetworkId] and registers services to the Dispatcher.
+    /// Registers an assembly for component and service discovery.
+    /// This should be called during application startup (e.g. in GameFactory).
     /// </summary>
-    public static void Initialize(Dispatcher dispatcher, IEnumerable<Assembly> assemblies)
+    public static void RegisterAssembly(Assembly assembly)
     {
-        var types = assemblies.SelectMany(a => a.GetTypes()).ToArray();
-
-        // 1. Build NetworkId Map
-        TypeToId.Clear();
-        IdToType.Clear();
-
-        foreach (var type in types)
+        lock (_lock)
         {
-            var attr = type.GetCustomAttribute<NetworkIdAttribute>();
-            if (attr != null)
-            {
-                if (TypeToId.ContainsKey(type))
-                {
-                    Console.WriteLine($"[ServiceLocator] Warning: Duplicate NetworkId for type {type.Name}");
-                    continue;
-                }
-
-                if (IdToType.ContainsKey(attr.Id))
-                {
-                    Console.WriteLine($"[ServiceLocator] Warning: Duplicate NetworkId {attr.Id} for type {type.Name} (Collision with {IdToType[attr.Id].Name})");
-                    continue;
-                }
-
-                TypeToId[type] = attr.Id;
-                IdToType[attr.Id] = type;
-                // Console.WriteLine($"[ServiceLocator] Mapped {type.Name} -> {attr.Id}");
-            }
-        }
-
-        // 2. Register Services
-        RegisterServices(dispatcher, types);
-    }
-
-    public static void Initialize(GameLoop loop)
-    {
-        var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)));
-        
-        // 1. Eager load referenced assemblies
-        var entryAssembly = Assembly.GetEntryAssembly();
-        if (entryAssembly != null && !IsIgnoredAssembly(entryAssembly))
-        {
-            assemblies.Add(entryAssembly);
-            LoadReferencedAssemblies(entryAssembly, assemblies);
-        }
-
-        Initialize(loop, assemblies);
-    }
-
-    public static void Initialize(GameLoop loop, IEnumerable<Assembly> assemblies)
-    {
-        var types = assemblies.SelectMany(a => a.GetTypes()).ToArray();
-        RegisterSystems(loop, types);
-        RegisterStartups(loop, types);
-    }
-
-    private static void RegisterStartups(GameLoop loop, IEnumerable<Type> types)
-    {
-        foreach (var type in types)
-        {
-            if (typeof(IGameStartup).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
-            {
-                try
-                {
-                    var startup = (IGameStartup)Activator.CreateInstance(type)!;
-                    Console.WriteLine($"[ServiceLocator] Running GameStartup: {type.Name}");
-                    startup.Configure(loop);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ServiceLocator] Failed to run startup {type.Name}: {ex.Message}");
-                }
-            }
-        }
-    }
-
-    private static void RegisterSystems(GameLoop loop, IEnumerable<Type> types)
-    {
-        var systems = new List<ISystem>();
-        foreach (var type in types)
-        {
-            if (typeof(ISystem).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
-            {
-                try
-                {
-                    var system = (ISystem)Activator.CreateInstance(type)!;
-                    systems.Add(system);
-                    Console.WriteLine($"[ServiceLocator] Found System: {type.Name}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ServiceLocator] Failed to instantiate system {type.Name}: {ex.Message}");
-                }
-            }
-        }
-        loop.RegisterSystems(systems);
-    }
-
-    private static void RegisterServices(Dispatcher dispatcher, IEnumerable<Type> types)
-    {
-        // Find all ReactionServices
-        var reactionMap = new Dictionary<(Type ActionType, Type TargetType), List<object>>();
-        var allReactions = new List<(Type type, Type actionType, Type targetType, object instance)>();
-        
-        foreach (var type in types)
-        {
-            if (type.IsAbstract || type.IsInterface) continue;
+            _registeredAssemblies.Add(assembly);
             
-            var baseType = GetGenericBaseType(type, typeof(ReactionService<,>));
-            if (baseType != null)
-            {
-                var genericArgs = baseType.GetGenericArguments();
-                var actionType = genericArgs[0];
-                var targetType = genericArgs[1];
-                var key = (actionType, targetType);
-                
-                if (!reactionMap.ContainsKey(key))
-                {
-                    reactionMap[key] = new List<object>();
-                }
-                
-                try
-                {
-                    var reaction = Activator.CreateInstance(type);
-                    if (reaction != null)
-                    {
-                        reactionMap[key].Add(reaction);
-                        allReactions.Add((type, actionType, targetType, reaction));
-                    }
-                }
-                catch (Exception ex)
-                {
-                     Console.WriteLine($"[ServiceLocator] Failed to instantiate reaction {type.Name}: {ex.Message}");
-                }
-            }
-        }
-
-        // Track which reactions are consumed by ActionServices
-        var consumedReactions = new HashSet<(Type ActionType, Type TargetType)>();
-
-        // Find and Register all ActionServices
-        foreach (var type in types)
-        {
-            if (type.IsAbstract || type.IsInterface) continue;
-
-            var baseType = GetGenericBaseType(type, typeof(ActionService<,>));
-            if (baseType != null)
-            {
-                var genericArgs = baseType.GetGenericArguments();
-                var actionType = genericArgs[0];
-                var targetType = genericArgs[1];
-                
-                try
-                {
-                    var service = Activator.CreateInstance(type);
-                    
-                    // Find matching reactions
-                    Array reactions;
-                    var reactionType = typeof(ReactionService<,>).MakeGenericType(actionType, targetType);
-
-                    if (reactionMap.TryGetValue((actionType, targetType), out var reactionList))
-                    {
-                        reactions = Array.CreateInstance(reactionType, reactionList.Count);
-                        for (int i = 0; i < reactionList.Count; i++)
-                        {
-                            reactions.SetValue(reactionList[i], i);
-                        }
-                        consumedReactions.Add((actionType, targetType));
-                    }
-                    else
-                    {
-                        reactions = Array.CreateInstance(reactionType, 0);
-                    }
-
-                    // Call dispatcher.RegisterAction<TAction, TTarget>(service, reactions)
-                    var registerMethod = typeof(Dispatcher).GetMethod(nameof(Dispatcher.RegisterAction))?
-                        .MakeGenericMethod(actionType, targetType);
-                    
-                    registerMethod?.Invoke(dispatcher, new[] { service, reactions });
-                    
-                    Console.WriteLine($"[ServiceLocator] Registered ActionService: {type.Name} for {actionType.Name} -> {targetType.Name}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ServiceLocator] Failed to register {type.Name}: {ex.Message}");
-                }
-            }
-        }
-
-        // Register standalone reactions (not consumed by any ActionService)
-        foreach (var (type, actionType, targetType, instance) in allReactions)
-        {
-            if (!consumedReactions.Contains((actionType, targetType)))
-            {
-                try
-                {
-                    // Call dispatcher.RegisterReaction<TAction, TTarget>(reaction)
-                    var registerReactionMethod = typeof(Dispatcher).GetMethod(nameof(Dispatcher.RegisterReaction))?
-                        .MakeGenericMethod(actionType, targetType);
-                    
-                    registerReactionMethod?.Invoke(dispatcher, new[] { instance });
-                    
-                    Console.WriteLine($"[ServiceLocator] Registered standalone ReactionService: {type.Name} for {actionType.Name} -> {targetType.Name}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ServiceLocator] Failed to register standalone reaction {type.Name}: {ex.Message}");
-                }
-            }
+            // 1. Register Components (Data) via ComponentId
+            // Must be done inside lock to prevent race condition where other threads see assembly as registered
+            // but components are not yet mapped.
+            // Always call this, as ComponentId.RegisterAssembly handles duplicates safely, 
+            // and we need to recover if ComponentId mappings were cleared (e.g. in tests).
+            ComponentId.RegisterAssembly(assembly);
+            
+            Console.WriteLine($"[ServiceLocator] Registered assembly: {assembly.GetName().Name}");
         }
     }
 
-    private static Type? GetGenericBaseType(Type type, Type genericOpenType)
+    public static T Get<T>()
     {
-        while (type != null && type != typeof(object))
+        var type = typeof(T);
+        lock (_lock)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == genericOpenType)
+            if (_singletons.TryGetValue(type, out var instance))
             {
-                return type;
+                return (T)instance;
             }
-            type = type.BaseType!;
+
+            // Find implementation
+            var implementation = FindImplementation<T>();
+            if (implementation == null)
+            {
+                throw new Exception($"No implementation found for {type.Name} in registered assemblies.");
+            }
+
+            var newInstance = Activator.CreateInstance(implementation)!;
+            _singletons[type] = newInstance;
+            
+            // Also cache by implementation type
+            _singletons[implementation] = newInstance;
+            
+            return (T)newInstance;
+        }
+    }
+
+    public static IEnumerable<T> GetAll<T>()
+    {
+        var interfaceType = typeof(T);
+        var implementations = new List<T>();
+
+        lock (_lock)
+        {
+            foreach (var assembly in _registeredAssemblies)
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (interfaceType.IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                    {
+                        if (!_singletons.TryGetValue(type, out var instance))
+                        {
+                            try
+                            {
+                                instance = Activator.CreateInstance(type)!;
+                                _singletons[type] = instance;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
+                                continue;
+                            }
+                        }
+                        implementations.Add((T)instance);
+                    }
+                }
+            }
+        }
+        return implementations;
+    }
+
+    public static IEnumerable<Type> GetAllTypes()
+    {
+        return _registeredAssemblies.SelectMany(a => a.GetTypes());
+    }
+
+    private static Type? FindImplementation<T>()
+    {
+        var interfaceType = typeof(T);
+        foreach (var assembly in _registeredAssemblies)
+        {
+            foreach (var type in assembly.GetTypes())
+            {
+                if (interfaceType.IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                {
+                    return type;
+                }
+            }
         }
         return null;
     }

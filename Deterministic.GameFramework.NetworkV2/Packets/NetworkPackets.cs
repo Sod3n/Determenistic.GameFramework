@@ -1,11 +1,13 @@
 using System.Runtime.InteropServices;
+using Deterministic.GameFramework.CoreV2;
+using Guid = System.Guid;
 
 namespace Deterministic.GameFramework.NetworkV2.Packets;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct NetworkActionHeader
 {
-    public int DenseId;
+    public DenseComponentId ComponentId;
     public int TargetEntityId;
     public long ExecuteTick;
     public int DataLength;

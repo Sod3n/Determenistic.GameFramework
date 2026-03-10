@@ -5,9 +5,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Deterministic.GameFramework.CoreV2;
 using Deterministic.GameFramework.NetworkV2.Buffers;
 using Deterministic.GameFramework.NetworkV2.Packets;
 using Deterministic.GameFramework.NetworkV2.Server;
+using Guid = System.Guid;
 
 namespace Deterministic.GameFramework.ServerV2;
 
@@ -43,7 +45,7 @@ public class MatchBroadcaster : IDisposable
         _buffers.TryRemove(match.Id, out _);
     }
 
-    private void OnActionScheduled(Guid matchId, int denseId, ReadOnlySpan<byte> data, int targetId, long tick)
+    private void OnActionScheduled(Guid matchId, DenseComponentId componentId, ReadOnlySpan<byte> data, int targetId, long tick)
     {
         if (_buffers.TryGetValue(matchId, out var buffer))
         {
@@ -57,7 +59,7 @@ public class MatchBroadcaster : IDisposable
                 
                 var header = new NetworkActionHeader
                 {
-                    DenseId = denseId,
+                    ComponentId = componentId,
                     TargetEntityId = targetId,
                     ExecuteTick = tick,
                     DataLength = data.Length

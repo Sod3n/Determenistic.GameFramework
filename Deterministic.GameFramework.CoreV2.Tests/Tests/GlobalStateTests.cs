@@ -8,6 +8,13 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 {
     public class GlobalStateTests
     {
+        public GlobalStateTests()
+        {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(GlobalStateTests).Assembly);
+        }
+
         [Fact]
         public void CreateEntity_ShouldGenerateUniqueIds()
         {

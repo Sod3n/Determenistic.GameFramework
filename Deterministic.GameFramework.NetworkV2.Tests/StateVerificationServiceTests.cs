@@ -12,6 +12,11 @@ namespace Deterministic.GameFramework.NetworkV2.Tests;
 
 public class StateVerificationServiceTests
 {
+    public StateVerificationServiceTests()
+    {
+        ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+    }
+
     private class MockNetworkServer : INetworkServer
     {
         public List<(string group, byte[] data, PacketType type)> Broadcasts = new();

@@ -31,6 +31,7 @@ public struct Vector2 : IParam, IEquatable<Vector2>
     public static Vector2 operator -(Vector2 a, Vector2 b) => new Vector2(a.X - b.X, a.Y - b.Y);
     public static Vector2 operator *(Vector2 a, Float b) => new Vector2(a.X * b, a.Y * b);
     public static Vector2 operator *(Float b, Vector2 a) => new Vector2(a.X * b, a.Y * b);
+    public static Vector2 operator *(Vector2 a, Vector2 b) => new Vector2(a.X * b.X, a.Y * b.Y);
     public static Vector2 operator /(Vector2 a, Float b) => new Vector2(a.X / b, a.Y / b);
 
     public static bool operator ==(Vector2 a, Vector2 b) => a.X == b.X && a.Y == b.Y;

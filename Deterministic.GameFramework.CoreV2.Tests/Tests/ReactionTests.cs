@@ -17,6 +17,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
         public ReactionTests()
         {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
             _state = new GlobalState();
             _scheduler = new ActionScheduler();
             _dispatcher = new Dispatcher();
@@ -28,9 +30,13 @@ namespace Deterministic.GameFramework.CoreV2.Tests
         {
             // Arrange
             var damageHandler = new DamageActionHandler();
-            var reactions = new[] { new DecreaseDamageReaction() };
+            // Now that RegionDamageReaction targets HealthComponent, we can register it together
+            var reactions = new ReactionService<DamageAction, HealthComponent>[] 
+            { 
+                new DecreaseDamageReaction(),
+                new RegionDamageReaction()
+            };
             _dispatcher.RegisterAction<DamageAction, HealthComponent>(damageHandler, reactions);
-            _dispatcher.RegisterReaction(new RegionDamageReaction());
 
             var player = new Entity(2);
             ref var health = ref _state.GetComponent<HealthComponent>(player);

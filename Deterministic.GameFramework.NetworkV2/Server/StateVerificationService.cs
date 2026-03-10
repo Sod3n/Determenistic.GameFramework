@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.CoreV2.Logging;
 using Deterministic.GameFramework.NetworkV2.Packets;
 using Deterministic.GameFramework.NetworkV2.Server;
 
@@ -15,6 +16,7 @@ public class StateVerificationService : IDisposable
 
     public StateVerificationService(Match match, INetworkServer networkServer, int intervalTicks = 60)
     {
+        Console.WriteLine($"[StateVerificationService] Initialized for Match {match.Id}. Interval: {intervalTicks} ticks.");
         _match = match;
         _networkServer = networkServer;
         _intervalTicks = intervalTicks;
@@ -49,6 +51,7 @@ public class StateVerificationService : IDisposable
 
     private void BroadcastHash(StateHashPacket packet)
     {
+        ILogger.Log($"[StateVerification] Broadcasting Hash for Tick {packet.Tick}: {packet.Hash}");
         int size = Marshal.SizeOf<StateHashPacket>();
         byte[] data = new byte[size];
         

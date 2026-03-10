@@ -44,39 +44,11 @@ public class GamePacketProcessor
         // Send MatchJoined confirmation with PlayerId
         var packet = new MatchJoinedPacket { PlayerId = playerId };
         var packetData = new byte[16];
-        packet.PlayerId.TryWriteBytes(packetData);
+        packet.PlayerId.ToByteArray().CopyTo(packetData, 0);
         
         await peer.SendAsync(packetData, PacketType.MatchJoined);
         
-        // Send Component Mapping (Handshake)
-        var mappings = ComponentTypeRegistry.ExportMappings();
-        var mappingData = SerializeMappings(mappings);
-        await peer.SendAsync(mappingData, PacketType.ComponentMapping);
-        
         Console.WriteLine($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
-    }
-
-    private byte[] SerializeMappings(System.Collections.Generic.Dictionary<Deterministic.GameFramework.CoreV2.Guid, int> mappings)
-    {
-        int count = mappings.Count;
-        // Count (4) + (Guid (16) + int (4)) * count
-        int size = 4 + (16 + 4) * count;
-        byte[] buffer = new byte[size];
-        var span = new Span<byte>(buffer);
-        
-        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(span, count);
-        int offset = 4;
-        
-        foreach (var kvp in mappings)
-        {
-            ((System.Guid)kvp.Key).TryWriteBytes(span.Slice(offset));
-            offset += 16;
-            
-            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset), kvp.Value);
-            offset += 4;
-        }
-        
-        return buffer;
     }
 
     public async Task ProcessBatchAsync(System.Guid matchId, byte[] payload, INetworkPeer peer)
@@ -110,11 +82,18 @@ public class GamePacketProcessor
             offset += header.DataLength;
             
             // Schedule
-            var result = match.Scheduler.ScheduleFromBytes(header.DenseId, dataSpan, header.TargetEntityId, header.ExecuteTick);
-
-            if (result == ActionScheduler.ScheduleResult.TooOld)
+            if (ComponentId.TryFromDense(header.ComponentId, out var networkId))
             {
-                 fullStateRequired = true;
+                var result = match.Scheduler.ScheduleFromBytes(networkId.ToDense(), dataSpan, header.TargetEntityId, header.ExecuteTick);
+
+                if (result == ActionScheduler.ScheduleResult.TooOld)
+                {
+                     fullStateRequired = true;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[GamePacketProcessor] Warning: Received unknown ComponentId {header.ComponentId}. Skipping.");
             }
         }
         return fullStateRequired;

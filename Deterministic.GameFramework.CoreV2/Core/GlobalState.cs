@@ -10,9 +10,9 @@ namespace Deterministic.GameFramework.CoreV2;
 
 public class GlobalState : IActionDispatcher
 {
-    internal Array[] _componentArrays = new Array[128];
+    internal Array?[] _componentArrays = new Array?[128];
     internal int[] _componentElementSizes = new int[128];
-    internal Type[] _componentTypes = new Type[128];
+    internal Type?[] _componentTypes = new Type?[128];
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
     internal int _nextEntityId = 0;
     
@@ -47,6 +47,47 @@ public class GlobalState : IActionDispatcher
         return new Entity(id);
     }
 
+    public void ResetComponents(bool clearCache = false)
+    {
+        // 1. Clear Entity Masks
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            _entityMasks[i].Clear();
+        }
+        
+        // 2. Clear Component Arrays
+        if (clearCache)
+        {
+            // Hard reset: drop everything to force re-resolution of types
+            Array.Clear(_componentTypes, 0, _componentTypes.Length);
+            Array.Clear(_componentElementSizes, 0, _componentElementSizes.Length);
+            Array.Clear(_componentArrays, 0, _componentArrays.Length);
+        }
+        else
+        {
+            // Soft reset: keep arrays, just clear content
+            for (int i = 0; i < _componentArrays.Length; i++)
+            {
+                if (_componentArrays[i] != null)
+                {
+                    Array.Clear(_componentArrays[i]!, 0, _componentArrays[i]!.Length);
+                }
+            }
+        }
+        
+        // 3. Reset Entity Allocator?
+        // Deserialization sets _nextEntityId, so strictly speaking we don't need to,
+        // but it's good practice.
+        _nextEntityId = 0;
+        
+        // 4. Clear Dirty Tracking
+        _dirtyEntitySet.SetAll(false);
+        _dirtyEntities.Clear();
+        
+        // 5. Clear External State
+        ExternalState.Clear();
+    }
+
     public void AddComponent<T>(Entity entity, T component) where T : struct, IComponent
     {
         MarkDirty(entity.Id);
@@ -59,7 +100,7 @@ public class GlobalState : IActionDispatcher
         if (entity.Id >= _entityMasks.Length) return;
         
         MarkDirty(entity.Id);
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         
         // Unset mask
         _entityMasks[entity.Id].Unset(typeId);
@@ -72,8 +113,8 @@ public class GlobalState : IActionDispatcher
         // Let's clear it to be safe against partial updates on re-add.
         if (typeId < _componentArrays.Length && _componentArrays[typeId] != null)
         {
-             var specificArray = (T[])_componentArrays[typeId];
-             if (entity.Id < specificArray.Length)
+             var specificArray = _componentArrays[typeId] as T[];
+             if (specificArray != null && entity.Id < specificArray.Length)
              {
                  specificArray[entity.Id] = default;
              }
@@ -95,7 +136,7 @@ public class GlobalState : IActionDispatcher
             {
                 if (i < _componentArrays.Length && _componentArrays[i] != null)
                 {
-                    Array.Clear(_componentArrays[i], entity.Id, 1);
+                    Array.Clear(_componentArrays[i]!, entity.Id, 1);
                 }
             }
         }
@@ -106,17 +147,17 @@ public class GlobalState : IActionDispatcher
 
     public ref T GetComponent<T>(Entity entity) where T : struct, IComponent
     {
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         
         EnsureTypedCapacity<T>(typeId);
         EnsureEntityCapacity(entity.Id);
 
-        var specificArray = (T[])_componentArrays[typeId];
+        var specificArray = (T[])_componentArrays[typeId]!;
         
         if (entity.Id >= specificArray.Length)
         {
             ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
-            specificArray = (T[])_componentArrays[typeId]; // Re-fetch after expansion
+            specificArray = (T[])_componentArrays[typeId]!; // Re-fetch after expansion
         }
 
         // Mark component as present using bitmask (Fast!)
@@ -134,13 +175,13 @@ public class GlobalState : IActionDispatcher
     {
         if (entity.Id >= _entityMasks.Length) return false;
         
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         return _entityMasks[entity.Id].IsSet(typeId);
     }
 
     public IEnumerable<Entity> Filter<T>() where T : struct, IComponent
     {
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         
         for (int i = 0; i < _entityMasks.Length; i++)
         {
@@ -156,8 +197,8 @@ public class GlobalState : IActionDispatcher
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
-        mask.Set(InternalTypeId<T1>.Value);
-        mask.Set(InternalTypeId<T2>.Value);
+        mask.Set(ComponentId<T1>.IntId);
+        mask.Set(ComponentId<T2>.IntId);
         
         for (int i = 0; i < _entityMasks.Length; i++)
         {
@@ -174,9 +215,9 @@ public class GlobalState : IActionDispatcher
         where T3 : struct, IComponent
     {
         var mask = new BitMask128();
-        mask.Set(InternalTypeId<T1>.Value);
-        mask.Set(InternalTypeId<T2>.Value);
-        mask.Set(InternalTypeId<T3>.Value);
+        mask.Set(ComponentId<T1>.IntId);
+        mask.Set(ComponentId<T2>.IntId);
+        mask.Set(ComponentId<T3>.IntId);
         
         for (int i = 0; i < _entityMasks.Length; i++)
         {
@@ -186,25 +227,45 @@ public class GlobalState : IActionDispatcher
             }
         }
     }
+    
+    public delegate void ComponentAction1<T1>(ref T1 c1);
+    public delegate void ComponentAction2<T1, T2>(ref T1 c1, ref T2 c2);
+    public delegate void ComponentActionEntity1<T1>(Entity e, ref T1 c1);
+    public delegate void ComponentActionEntity2<T1, T2>(Entity e, ref T1 c1, ref T2 c2);
 
-    public delegate void ComponentAction<T1, T2>(ref T1 c1, ref T2 c2);
-    public delegate void ComponentActionEntity<T1, T2>(Entity e, ref T1 c1, ref T2 c2);
+    public void ForEach<T1>(ComponentAction1<T1> action)
+        where T1 : struct, IComponent
+    {
+        var typeId = ComponentId<T1>.IntId;
+        
+        EnsureTypedCapacity<T1>(typeId);
 
-    public void ForEach<T1, T2>(ComponentAction<T1, T2> action)
+        var specificArray = (T1[])_componentArrays[typeId]!;
+        
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].IsSet(typeId))
+            {
+                action(ref specificArray[i]);
+            }
+        }
+    }
+    
+    public void ForEach<T1, T2>(ComponentAction2<T1, T2> action)
         where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
-        var t1Id = InternalTypeId<T1>.Value;
-        var t2Id = InternalTypeId<T2>.Value;
+        var t1Id = ComponentId<T1>.IntId;
+        var t2Id = ComponentId<T2>.IntId;
         mask.Set(t1Id);
         mask.Set(t2Id);
 
         EnsureTypedCapacity<T1>(t1Id);
         EnsureTypedCapacity<T2>(t2Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id];
-        var t2Array = (T2[])_componentArrays[t2Id];
+        var t1Array = (T1[])_componentArrays[t1Id]!;
+        var t2Array = (T2[])_componentArrays[t2Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
@@ -214,22 +275,42 @@ public class GlobalState : IActionDispatcher
             }
         }
     }
+    
+    public void ForEach<T1>(ComponentActionEntity1<T1> action)
+        where T1 : struct, IComponent
+    {
+        var mask = new BitMask128();
+        var t1Id = ComponentId<T1>.IntId;
+        mask.Set(t1Id);
 
-    public void ForEach<T1, T2>(ComponentActionEntity<T1, T2> action)
+        EnsureTypedCapacity<T1>(t1Id);
+
+        var t1Array = (T1[])_componentArrays[t1Id]!;
+
+        for (int i = 0; i < _entityMasks.Length; i++)
+        {
+            if (_entityMasks[i].HasAll(mask))
+            {
+                action(new Entity(i), ref t1Array[i]);
+            }
+        }
+    }
+
+    public void ForEach<T1, T2>(ComponentActionEntity2<T1, T2> action)
         where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
-        var t1Id = InternalTypeId<T1>.Value;
-        var t2Id = InternalTypeId<T2>.Value;
+        var t1Id = ComponentId<T1>.IntId;
+        var t2Id = ComponentId<T2>.IntId;
         mask.Set(t1Id);
         mask.Set(t2Id);
 
         EnsureTypedCapacity<T1>(t1Id);
         EnsureTypedCapacity<T2>(t2Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id];
-        var t2Array = (T2[])_componentArrays[t2Id];
+        var t1Array = (T1[])_componentArrays[t1Id]!;
+        var t2Array = (T2[])_componentArrays[t2Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
@@ -242,15 +323,15 @@ public class GlobalState : IActionDispatcher
     
     public void RegisterComponent<T>() where T : struct, IComponent
     {
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         EnsureTypedCapacity<T>(typeId);
     }
 
     public T[] GetRawArray<T>() where T : struct, IComponent
     {
-        var typeId = InternalTypeId<T>.Value;
+        var typeId = ComponentId<T>.IntId;
         EnsureTypedCapacity<T>(typeId);
-        return (T[])_componentArrays[typeId];
+        return (T[])_componentArrays[typeId]!;
     }
 
     internal void EnsureTypedCapacityInternal(int typeId)
@@ -262,11 +343,14 @@ public class GlobalState : IActionDispatcher
 
         if (_componentTypes[typeId] == null)
         {
-            if (ComponentTypeRegistry.DenseIdToType.TryGetValue(typeId, out var type))
+            if (ComponentId.TryGetType(new DenseComponentId(typeId), out var type))
             {
-                _componentTypes[typeId] = type;
-                // Get managed size using reflection to invoke Unsafe.SizeOf<T>()
-                _componentElementSizes[typeId] = GetManagedSize(type);
+                if (type != null)
+                {
+                    _componentTypes[typeId] = type;
+                    // Get managed size using reflection to invoke Unsafe.SizeOf<T>()
+                    _componentElementSizes[typeId] = GetManagedSize(type);
+                }
             }
         }
     }
@@ -338,348 +422,5 @@ public class GlobalState : IActionDispatcher
     {
         var method = typeof(Unsafe).GetMethod("SizeOf")!.MakeGenericMethod(type);
         return (int)method.Invoke(null, null)!;
-    }
-}
-
-public static class ComponentTypeRegistry
-{
-    private static int _nextDenseId = 0;
-    // Map NetworkId (stable) -> DenseId (runtime index)
-    public static readonly Dictionary<Guid, int> NetworkIdToDenseId = new();
-    // Map DenseId -> NetworkId
-    public static readonly Dictionary<int, Guid> DenseIdToNetworkId = new();
-    // Map DenseId -> Type
-    public static readonly Dictionary<int, Type> DenseIdToType = new();
-    
-    // Delegate to resolve Type from NetworkId (e.g. from Generated Registry)
-    public static Func<Guid, Type?> TypeResolver { get; set; } = DefaultTypeResolver;
-
-    private static bool _isInitialized = false;
-    private static readonly object _initLock = new();
-
-    // Export mappings for handshake (NetworkId -> DenseId)
-    public static Dictionary<Guid, int> ExportMappings()
-    {
-        InitializeIfNeeded();
-        lock (NetworkIdToDenseId)
-        {
-            return new Dictionary<Guid, int>(NetworkIdToDenseId);
-        }
-    }
-
-    // Import mappings from byte array (Handshake)
-    public static void ImportMappings(byte[] data)
-    {
-        var mappings = new Dictionary<Guid, int>();
-        var span = new ReadOnlySpan<byte>(data);
-        
-        int count = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(span);
-        int offset = 4;
-        
-        for (int i = 0; i < count; i++)
-        {
-            var guidSpan = span.Slice(offset, 16);
-            var networkId = new Guid(guidSpan.ToArray());
-            offset += 16;
-            
-            int denseId = System.Buffers.Binary.BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset));
-            offset += 4;
-            
-            mappings[networkId] = denseId;
-        }
-        
-        ImportMappings(mappings);
-    }
-
-    // Import mappings from handshake
-    public static void ImportMappings(Dictionary<Guid, int> mappings)
-    {
-        InitializeIfNeeded();
-        lock (NetworkIdToDenseId)
-        {
-            // 1. Capture known Types for the NetworkIds we are about to update
-            // This protects against swapping issues (A->0, B->1 becoming A->1, B->0)
-            var typeCache = new Dictionary<Guid, Type>();
-            foreach (var kvp in mappings)
-            {
-                var networkId = kvp.Key;
-                if (NetworkIdToDenseId.TryGetValue(networkId, out int existingDenseId))
-                {
-                    if (DenseIdToType.TryGetValue(existingDenseId, out var type))
-                    {
-                        typeCache[networkId] = type;
-                    }
-                }
-            }
-            
-            // 2. Apply Mappings
-            foreach (var kvp in mappings)
-            {
-                var networkId = kvp.Key;
-                var denseId = kvp.Value;
-
-                // Clean up old reverse mapping if this NetworkId existed elsewhere
-                if (NetworkIdToDenseId.TryGetValue(networkId, out int oldDenseId))
-                {
-                    if (oldDenseId != denseId)
-                    {
-                        DenseIdToNetworkId.Remove(oldDenseId);
-                        DenseIdToType.Remove(oldDenseId); // Clear old type slot
-                    }
-                }
-
-                // Conflict check: Is this denseId occupied by someone else?
-                if (DenseIdToNetworkId.TryGetValue(denseId, out var occupantNetId) && occupantNetId != networkId)
-                {
-                    Console.WriteLine($"[ComponentTypeRegistry] Evicting {occupantNetId} from DenseId {denseId} to make room for {networkId}");
-                    NetworkIdToDenseId.Remove(occupantNetId);
-                    // We don't remove from typeCache, so if occupant is remapped later in this loop, it will be restored.
-                }
-
-                NetworkIdToDenseId[networkId] = denseId;
-                DenseIdToNetworkId[denseId] = networkId;
-                
-                // Restore Type
-                if (typeCache.TryGetValue(networkId, out var cachedType))
-                {
-                    DenseIdToType[denseId] = cachedType;
-                }
-                
-                // Update _nextDenseId to avoid collisions
-                if (denseId >= _nextDenseId)
-                {
-                    _nextDenseId = denseId + 1;
-                }
-            }
-            
-            Console.WriteLine($"[ComponentTypeRegistry] Imported {mappings.Count} mappings. NextDenseId: {_nextDenseId}");
-        }
-    }
-
-    private static void InitializeIfNeeded()
-    {
-        if (_isInitialized) return;
-        lock (_initLock)
-        {
-            if (_isInitialized) return;
-            _isInitialized = true; // Set early to prevent recursion during RegisterAll calls
-
-            var domainId = AppDomain.CurrentDomain.Id;
-            var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            
-            // Use the same logic as ServiceLocator to find assemblies
-            var assemblies = new HashSet<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
-            
-            // Try to find the entry assembly and its references
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly != null)
-            {
-                LoadReferencedAssemblies(entryAssembly, assemblies);
-            }
-
-            // Also scan directory for DLLs
-            try 
-            {
-                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                var dlls = Directory.GetFiles(baseDir, "*.dll", SearchOption.TopDirectoryOnly);
-                
-                foreach (var dllPath in dlls)
-                {
-                    try 
-                    {
-                        var fileName = Path.GetFileNameWithoutExtension(dllPath);
-                        if (IsIgnoredName(fileName)) continue;
-                        if (assemblies.Any(a => a.GetName().Name == fileName)) continue;
-
-                        var loadedAssembly = Assembly.LoadFrom(dllPath);
-                        if (!IsIgnoredAssembly(loadedAssembly))
-                        {
-                            if (assemblies.Add(loadedAssembly))
-                            {
-                                LoadReferencedAssemblies(loadedAssembly, assemblies);
-                            }
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ComponentTypeRegistry] Warning: Failed to scan directory assemblies: {ex.Message}");
-            }
-
-            var processedAssemblies = new HashSet<string>();
-
-            // Scan all found assemblies for the generated RegisterAll method
-            foreach (var assembly in assemblies)
-            {
-                if (IsIgnoredAssembly(assembly)) continue;
-                
-                var assemblyName = assembly.GetName().Name;
-                if (assemblyName != null && processedAssemblies.Contains(assemblyName)) continue;
-                if (assemblyName != null) processedAssemblies.Add(assemblyName);
-
-                // Look for the generated registry
-                var registryType = assembly.GetType("Deterministic.GameFramework.Generated.NetworkIdRegistry");
-                if (registryType != null)
-                {
-                    var registerMethod = registryType.GetMethod("RegisterAll", BindingFlags.Public | BindingFlags.Static);
-                    if (registerMethod != null)
-                    {
-                        try
-                        {
-                            registerMethod.Invoke(null, null);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"[ComponentTypeRegistry] Failed to invoke RegisterAll in {assemblyName}: {ex.Message}");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void LoadReferencedAssemblies(Assembly assembly, HashSet<Assembly> loadedAssemblies)
-    {
-        try
-        {
-            foreach (var refName in assembly.GetReferencedAssemblies())
-            {
-                if (IsIgnoredName(refName.Name)) continue;
-                if (loadedAssemblies.Any(a => a.GetName().Name == refName.Name)) continue;
-
-                try
-                {
-                    var loaded = Assembly.Load(refName);
-                    if (loadedAssemblies.Add(loaded))
-                    {
-                        LoadReferencedAssemblies(loaded, loadedAssemblies);
-                    }
-                }
-                catch { }
-            }
-        }
-        catch { }
-    }
-
-    private static bool IsIgnoredName(string? name)
-    {
-        if (string.IsNullOrEmpty(name)) return true;
-        return name.StartsWith("System") || name.StartsWith("Microsoft") || name.StartsWith("mscorlib") || name.StartsWith("netstandard");
-    }
-
-    private static bool IsIgnoredAssembly(Assembly assembly)
-    {
-        try
-        {
-            if (assembly.IsDynamic) return true;
-            return IsIgnoredName(assembly.GetName().Name);
-        }
-        catch
-        {
-            return true;
-        }
-    }
-
-    private static Type? DefaultTypeResolver(Guid networkId)
-    {
-        InitializeIfNeeded();
-        
-        lock (NetworkIdToDenseId)
-        {
-            if (NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
-            {
-                return DenseIdToType[denseId];
-            }
-        }
-        return null;
-    }
-
-    public static int GetOrRegister(Guid networkId, Type type)
-    {
-        InitializeIfNeeded();
-        lock (NetworkIdToDenseId)
-        {
-            if (!NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
-            {
-                denseId = _nextDenseId++;
-                NetworkIdToDenseId[networkId] = denseId;
-                DenseIdToNetworkId[denseId] = networkId;
-                DenseIdToType[denseId] = type;
-                Console.WriteLine($"[ComponentTypeRegistry] Mapping NetworkId {networkId} -> DenseId {denseId} ({type.FullName})");
-            }
-            return denseId;
-        }
-    }
-    
-    public static int GetOrRegister(Guid networkId)
-    {
-        InitializeIfNeeded();
-
-        // 1. Quick check under lock
-        lock (NetworkIdToDenseId)
-        {
-            if (NetworkIdToDenseId.TryGetValue(networkId, out var denseId))
-            {
-                return denseId;
-            }
-        }
-
-        Console.WriteLine($"[ComponentTypeRegistry] Requesting unknown NetworkId {networkId}. Attempting resolution...");
-
-        // 2. Resolve type outside of lock to avoid deadlock
-        if (TypeResolver == null)
-        {
-            throw new Exception($"Unknown NetworkId {networkId} and no TypeResolver configured.");
-        }
-
-        var type = TypeResolver(networkId);
-        if (type == null)
-        {
-            lock (NetworkIdToDenseId)
-            {
-                Console.WriteLine($"[ComponentTypeRegistry] ERROR: Could not resolve NetworkId {networkId}. Current Mappings: {string.Join(", ", NetworkIdToDenseId.Select(kv => $"{kv.Key}->{kv.Value} ({DenseIdToType[kv.Value].Name})"))}");
-            }
-            throw new Exception($"TypeResolver returned null for NetworkId {networkId}. Ensure the component has [NetworkId(\"{networkId}\")] and its assembly is loaded.");
-        }
-
-        // 3. Register under lock (handling race)
-        return GetOrRegister(networkId, type);
-    }
-    
-    public static bool TryGetDenseId(Guid networkId, out int denseId)
-    {
-        lock (NetworkIdToDenseId)
-        {
-            return NetworkIdToDenseId.TryGetValue(networkId, out denseId);
-        }
-    }
-
-    public static bool TryGetNetworkId(int denseId, out Guid networkId)
-    {
-        lock (NetworkIdToDenseId)
-        {
-            return DenseIdToNetworkId.TryGetValue(denseId, out networkId);
-        }
-    }
-}
-
-public static class InternalTypeId<T> where T : struct, IComponent
-{
-    public static readonly Guid NetworkId = GetNetworkId();
-    public static readonly int Value = ComponentTypeRegistry.GetOrRegister(NetworkId, typeof(T));
-
-    private static Guid GetNetworkId()
-    {
-        // Slow reflection path, but only runs ONCE per type per application lifetime.
-        // This is acceptable for initialization.
-        var attr = typeof(T).GetCustomAttributes(typeof(NetworkIdAttribute), false);
-        if (attr.Length > 0)
-        {
-            return ((NetworkIdAttribute)attr[0]).Id;
-        }
-        
-        throw new Exception($"Component {typeof(T).Name} is missing [NetworkId] attribute. All components must have a fixed ID for determinism.");
     }
 }

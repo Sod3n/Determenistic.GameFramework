@@ -1,4 +1,5 @@
 using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.CoreV2.Components;
 using Deterministic.GameFramework.Physics.Components;
 using FluentAssertions;
 using Xunit;
@@ -7,6 +8,13 @@ namespace Deterministic.GameFramework.Physics.Tests;
 
 public class PhysicsIntegrationTests
 {
+    public PhysicsIntegrationTests()
+    {
+        ServiceLocator.Reset();
+        ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        ServiceLocator.RegisterAssembly(typeof(Area2D).Assembly);
+    }
+
     [Fact]
     public void CanRegisterAndAttachPhysicsComponents_ToEntity()
     {

@@ -24,6 +24,9 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
     private bool _isWaitingForFullState = false;
     private bool _actionsRegistered = false;
     
+    // Buffering for future state hashes
+    private readonly System.Collections.Generic.Dictionary<long, StateHashPacket> _pendingHashes = new();
+
     public event Action<string>? OnLog;
     public event Action? OnConnected;
     public event Action? OnDisconnected;
@@ -54,15 +57,46 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         
         // Hook into GameLoop
         _game.Loop.OnTick += Flush;
+        _game.Loop.OnTick += ProcessPendingHashes;
         _game.Loop.OnRollbackFailed += OnRollbackFailed;
         
         _networkClient.OnTickSnapshotReceived += OnTickSnapshot;
         _networkClient.OnFullStateReceived += OnFullStateReceived;
-        _networkClient.OnComponentMappingReceived += OnComponentMappingReceived;
         _networkClient.OnStateHashReceived += OnStateHashReceived;
         
         _networkClient.OnDisconnected += () => OnDisconnected?.Invoke();
         _networkClient.OnConnected += () => OnConnected?.Invoke();
+    }
+
+    private void ProcessPendingHashes()
+    {
+        long currentTick = Loop.CurrentTick;
+        
+        // Check if we have a hash for the current tick (or slightly older if we missed it)
+        // We iterate keys to find match. Since it's a Dictionary, fast lookup is only possible if we know the tick.
+        // But we might have multiple.
+        
+        if (_pendingHashes.TryGetValue(currentTick, out var packet))
+        {
+            VerifyStateHash(packet);
+            _pendingHashes.Remove(currentTick);
+        }
+        
+        // Cleanup old hashes (if we moved past them without verifying, e.g. rollback/reset)
+        // This is O(N) but N is small.
+        var ticksToRemove = new System.Collections.Generic.List<long>();
+        foreach (var tick in _pendingHashes.Keys)
+        {
+            if (tick < currentTick - 300) // Older than history buffer
+            {
+                ticksToRemove.Add(tick);
+            }
+        }
+        
+        foreach (var tick in ticksToRemove)
+        {
+            _pendingHashes.Remove(tick);
+        }
     }
 
     private void OnStateHashReceived(byte[] data)
@@ -73,28 +107,41 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             if (span.Length < Marshal.SizeOf<StateHashPacket>()) return;
 
             var packet = MemoryMarshal.Read<StateHashPacket>(span);
-            // Log($"[StateHash] Received Server Hash for Tick {packet.Tick}");
             
+            // If the hash is for a future tick, buffer it
+            if (packet.Tick > Loop.CurrentTick)
+            {
+                // Log($"[StateHash] Buffering hash for future Tick {packet.Tick} (Current: {Loop.CurrentTick})");
+                _pendingHashes[packet.Tick] = packet;
+                return;
+            }
+            
+            VerifyStateHash(packet);
+        }
+        catch (Exception ex)
+        {
+            Log($"Error processing StateHash: {ex}");
+        }
+    }
+
+    private void VerifyStateHash(StateHashPacket packet)
+    {
+        try
+        {
             Deterministic.GameFramework.CoreV2.Guid localHash;
 
-            if (_game.Loop.CurrentTick == packet.Tick)
+            // ALWAYS use history for thread safety.
+            // Accessing _game.State directly is unsafe because GameLoop might be modifying it.
+            if (_game.Loop.History.TryGetSnapshotData(packet.Tick, out byte[]? snapshotData))
             {
-                // We are exactly on the same tick
-                localHash = StateHasher.Hash(_game.State);
+                localHash = StateHasher.Hash(snapshotData!);
             }
             else
             {
-                // Check history
-                if (_game.Loop.History.TryGetSnapshotData(packet.Tick, out byte[]? snapshotData))
-                {
-                    localHash = StateHasher.Hash(snapshotData!);
-                }
-                else
-                {
-                    // Too old or too new (future?)
-                    // Log($"[StateHash] Skipped verification. Tick {packet.Tick} not in history (Range: {_game.Loop.History.GetOldestTick()}-{_game.Loop.History.GetLatestTick()})");
-                    return;
-                }
+                // If it's not in history, it might be too old, or we haven't stored it yet (e.g. tick 0).
+                // Safest to skip verification than to crash the networking thread.
+                Log($"[StateHash] Skipped verification. Tick {packet.Tick} not in history (Current: {Loop.CurrentTick}, Oldest: {Loop.History.GetOldestTick()}).");
+                return;
             }
 
             if (localHash != packet.Hash)
@@ -111,39 +158,14 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             }
             else
             {
-                // Log($"[StateHash] Verified match at Tick {packet.Tick}");
+                Log($"[StateHash] Verified match at Tick {packet.Tick}");
             }
         }
         catch (Exception ex)
         {
-            Log($"Error processing StateHash: {ex}");
+            Log($"Error verifying StateHash: {ex}");
         }
     }
-
-    private void OnComponentMappingReceived(byte[] data)
-    {
-        Log($"Received Component Mappings ({data.Length} bytes). Importing...");
-        try 
-        {
-            ComponentTypeRegistry.ImportMappings(data);
-            Log("Component Mappings imported successfully.");
-
-            // IMPORTANT: Register action services only AFTER mappings are imported,
-            // so Dispatcher denseIds match the server's ComponentTypeRegistry.
-            if (!_actionsRegistered)
-            {
-                ServiceLocator.Initialize(Dispatcher);
-                _actionsRegistered = true;
-                Log("Action services registered after Component Mappings import.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log($"Failed to import mappings: {ex}");
-        }
-    }
-
-    public Context CreateContext(Entity entity) => new Context(State, entity, this);
 
     private void OnRollbackFailed()
     {
@@ -170,20 +192,12 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             await _networkClient.ConnectAsync(_connectionString); 
             Console.WriteLine("[GameClient] _networkClient.ConnectAsync returned.");
             
-            // Note: SignalR adapter might fire OnConnected immediately if already started, 
-            // but LiteNetLib needs explicit connect. 
-            // The INetworkClient.ConnectAsync should handle the transport connection.
-            
-            // Wait a bit for connection if needed or rely on event? 
-            // For now assume ConnectAsync establishes link.
-            
-            Console.WriteLine("[GameClient] Joining match...");
             PlayerId = await _networkClient.JoinMatchAsync(matchId, null);
             Log($"Connected to match {matchId}. Assigned PlayerId: {PlayerId}");
             
             // Request full state on connect
             Console.WriteLine("[GameClient] Requesting full state...");
-            await RequestFullState();
+            Task.WaitAll(RequestFullState(), WaitForSyncAsync());
         }
         catch (Exception ex)
         {
@@ -208,7 +222,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         int actualDelay = tickDelay ?? DefaultTickDelay;
         bool actualPredict = predict ?? DefaultPrediction;
 
-        int denseId = Dispatcher.GetDenseId<TAction>();
+        var componentId = ComponentId<TAction>.DenseId;
         long executeTick = Loop.CurrentTick + actualDelay;
 
         // Serialize
@@ -219,7 +233,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         // Schedule Locally (Prediction)
         if (actualPredict)
         {
-            var result = Scheduler.Schedule(action, denseId, new Entity(targetEntityId), executeTick);
+            var result = Scheduler.Schedule(action, componentId, new Entity(targetEntityId), executeTick);
             if (result == ActionScheduler.ScheduleResult.Duplicate)
             {
                 Log($"[Prediction] Duplicate action {typeof(TAction).Name} ignored.");
@@ -228,7 +242,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         }
 
         // Send to Server
-        _ = SendAction(denseId, data, targetEntityId, executeTick);
+        _ = SendAction(componentId, data, targetEntityId, executeTick);
     }
 
     public void Dispatch<TAction>(TAction action, Entity target) where TAction : struct, IAction
@@ -236,7 +250,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         Execute(action, target.Id);
     }
 
-    public Task SendAction(int denseId, byte[] data, int targetEntityId, long tick)
+    public Task SendAction(DenseComponentId componentId, byte[] data, int targetEntityId, long tick)
     {
         // Buffer the action
         lock (_outgoingBuffer)
@@ -247,7 +261,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             var span = _outgoingBuffer.GetSpan(totalSize);
             var header = new NetworkActionHeader
             {
-                DenseId = denseId,
+                ComponentId = componentId,
                 TargetEntityId = targetEntityId,
                 ExecuteTick = tick,
                 DataLength = data.Length
@@ -308,9 +322,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             var dataSpan = payloadSpan.Slice(offset, actionHeader.DataLength);
             offset += actionHeader.DataLength;
 
-            Log($"TickSnapshot action: DenseId={actionHeader.DenseId}, TargetEntityId={actionHeader.TargetEntityId}, ExecuteTick={actionHeader.ExecuteTick}, DataLength={actionHeader.DataLength}");
-            
-            Scheduler.ScheduleFromBytes(actionHeader.DenseId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
+            Scheduler.ScheduleFromBytes(actionHeader.ComponentId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
         }
         
         // 2. Sync Tick (Basic)
@@ -341,11 +353,17 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             Log($"Received Full State for Tick {header.Tick}. Size: {stateData.Length} bytes");
             
             Log("Deserializing state...");
+            // Provide mapper to translate Server Component IDs to Local Component IDs
             StateSerializer.Deserialize(State, stateData);
             Log("State deserialized!");
             
             Log($"Setting tick to {header.Tick}...");
             Loop.ForceSetTick(header.Tick);
+            
+            // Store authoritative state in history so we can verify hashes against it
+            // and use it as a rollback baseline.
+            Loop.History.Store(header.Tick, State);
+            
             Log($"Tick set to {header.Tick}!");
             
             // Critical: Prune scheduler history to match new authoritative state

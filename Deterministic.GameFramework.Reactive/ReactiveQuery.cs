@@ -17,7 +17,7 @@ public struct ReactiveQuery<T1>
         System = system;
         State = state;
         Mask = new BitMask128();
-        Mask.Set(InternalTypeId<T1>.Value);
+        Mask.Set(ComponentId<T1>.IntId);
         Filters = new List<Func<Entity, bool>>();
     }
     
@@ -78,8 +78,8 @@ public struct ReactiveQuery<T1, T2>
         System = system;
         State = state;
         Mask = new BitMask128();
-        Mask.Set(InternalTypeId<T1>.Value);
-        Mask.Set(InternalTypeId<T2>.Value);
+        Mask.Set(ComponentId<T1>.IntId);
+        Mask.Set(ComponentId<T2>.IntId);
         Filters = new List<Func<Entity, bool>>();
     }
     
@@ -133,9 +133,9 @@ public struct ReactiveQuery<T1, T2, T3>
         System = system;
         State = state;
         Mask = new BitMask128();
-        Mask.Set(InternalTypeId<T1>.Value);
-        Mask.Set(InternalTypeId<T2>.Value);
-        Mask.Set(InternalTypeId<T3>.Value);
+        Mask.Set(ComponentId<T1>.IntId);
+        Mask.Set(ComponentId<T2>.IntId);
+        Mask.Set(ComponentId<T3>.IntId);
         Filters = new List<Func<Entity, bool>>();
     }
     

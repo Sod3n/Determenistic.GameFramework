@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.CoreV2;
+using Deterministic.GameFramework.CoreV2.Components;
 using Deterministic.GameFramework.Physics.Components;
 using uniffi.rapier_uniffi;
 
@@ -15,14 +19,25 @@ public class RapierPhysicsSystem : ISystem, IDisposable
     // Keep track of which entities have bodies in the current world
     // EntityId -> BodyHandle
     private readonly Dictionary<int, ulong> _entityToBody = new();
+    // BodyHandle -> EntityId (Reverse lookup for events)
+    private readonly Dictionary<ulong, int> _bodyToEntity = new();
 
-    // EntityId -> CharacterController
-    private readonly Dictionary<int, RapierCharacterController> _entityToController = new();
+    // Processors
+    private readonly RapierCharacterProcessor _characterProcessor = new();
+    private readonly RapierAreaProcessor _areaProcessor = new();
     
     // Store serialized world states
     private readonly Dictionary<long, byte[]> _worldStateHistory = new();
 
     private const string ExternalStateKey = "RapierPhysics";
+
+    static RapierPhysicsSystem()
+    {
+        RapierNativeLoader.Initialize();
+    }
+
+#if NETCOREAPP3_0_OR_GREATER
+#endif
 
     public RapierPhysicsSystem()
     {
@@ -49,7 +64,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         if (_world != null)
         {
             // Step Characters (Kinematic Movement) before physics step
-            StepCharacters(state);
+            _characterProcessor.StepCharacters(state, _world, _entityToBody);
             
             var gravity = new RVector(0.0f, 0.0f);
             var dt = (float)state.GameLoop.FixedDeltaTime;
@@ -72,6 +87,9 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             );
             
             _world.Step(gravity, integrationParams);
+            
+            // 3.5 Update Area2D Overlaps
+            _areaProcessor.UpdateAreaOverlaps(state, _world, _bodyToEntity);
         }
 
         // 4. Sync Physics to ECS
@@ -83,77 +101,6 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         _lastSimulatedTick = state.GameLoop.CurrentTick;
     }
     
-    private void StepCharacters(GlobalState state)
-    {
-        if (_world == null) return;
-        var dt = (float)state.GameLoop.FixedDeltaTime;
-
-        foreach (var entity in state.Filter<CharacterBody2D, Transform2D, CollisionShape2D>())
-        {
-            ref var character = ref state.GetComponent<CharacterBody2D>(entity);
-            ref var transform = ref state.GetComponent<Transform2D>(entity);
-            ref var shapeComp = ref state.GetComponent<CollisionShape2D>(entity);
-
-            // Get or Create Controller
-            if (!_entityToController.TryGetValue(entity.Id, out var controller))
-            {
-                controller = new RapierCharacterController(0.01f); // Default offset
-                _entityToController[entity.Id] = controller;
-            }
-
-            // Update Controller Settings
-            controller.SetUp(new RVector((float)character.UpDirection.X, (float)character.UpDirection.Y));
-            controller.SetMaxSlopeClimbAngle((float)character.FloorMaxAngle);
-            controller.SetMinSlopeSlideAngle((float)character.WallMinSlideAngle);
-            controller.SetSlideEnabled(true);
-            controller.SetSnapToGround((float)character.FloorSnapLength);
-            // controller.SetAutostep(...) // TODO: Add if needed
-
-            // Prepare Shape
-            RapierShape? shape = null;
-            if (shapeComp.Type == CollisionShapeType.Circle)
-                shape = RapierShape.Ball((float)shapeComp.Circle.Radius);
-            else if (shapeComp.Type == CollisionShapeType.Rectangle)
-                shape = RapierShape.Cuboid((float)shapeComp.Rectangle.Size.X / 2.0f, (float)shapeComp.Rectangle.Size.Y / 2.0f);
-            else if (shapeComp.Type == CollisionShapeType.Capsule)
-                shape = RapierShape.Capsule((float)shapeComp.Capsule.Height / 2.0f, (float)shapeComp.Capsule.Radius);
-
-            if (shape == null) continue;
-
-            // Prepare Movement
-            var shapePos = new RVector((float)transform.Position.X + (float)shapeComp.Position.X, (float)transform.Position.Y + (float)shapeComp.Position.Y);
-            var shapeRot = new RRotation((float)transform.Rotation + (float)shapeComp.Rotation);
-            
-            // Desired translation based on Velocity * dt
-            var desiredTranslation = new RVector((float)character.Velocity.X * dt, (float)character.Velocity.Y * dt);
-            
-            // Move
-            // uint.MaxValue for all layers collision for now
-            var result = controller.MoveShape(dt, _world, shape, shapePos, shapeRot, desiredTranslation, uint.MaxValue);
-            
-            // Update Transform
-            var newPos = new Vector2(shapePos.x + result.translation.x - (float)shapeComp.Position.X, shapePos.y + result.translation.y - (float)shapeComp.Position.Y);
-            transform.Position = newPos;
-            
-            // Update Character State
-            character.IsOnFloor = result.grounded;
-            // character.IsOnWall = ... // Need more info from result?
-            // character.FloorNormal = ...
-            
-            // Calculate Real Velocity
-            if (dt > 0)
-            {
-                character.RealVelocity = new Vector2(result.translation.x / dt, result.translation.y / dt);
-            }
-            else
-            {
-                character.RealVelocity = Vector2.Zero;
-            }
-
-            shape.Dispose();
-        }
-    }
-
     private Entity GetWorldEntity(GlobalState state)
     {
         // Assumption: There is exactly one entity with the World component.
@@ -175,6 +122,8 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             _world.Dispose();
             _world = null;
             _entityToBody.Clear();
+            _bodyToEntity.Clear();
+            _characterProcessor.Clear();
         }
 
         bool restored = false;
@@ -226,6 +175,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 if (bodyComp.BodyId != 0)
                 {
                     _entityToBody[entity.Id] = bodyComp.BodyId;
+                    _bodyToEntity[bodyComp.BodyId] = entity.Id;
                 }
             }
             
@@ -235,6 +185,27 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 if (bodyComp.BodyId != 0)
                 {
                     _entityToBody[entity.Id] = bodyComp.BodyId;
+                    _bodyToEntity[bodyComp.BodyId] = entity.Id;
+                }
+            }
+            
+            foreach (var entity in state.Filter<CharacterBody2D>())
+            {
+                var bodyComp = state.GetComponent<CharacterBody2D>(entity);
+                if (bodyComp.BodyId != 0)
+                {
+                    _entityToBody[entity.Id] = bodyComp.BodyId;
+                    _bodyToEntity[bodyComp.BodyId] = entity.Id;
+                }
+            }
+
+            foreach (var entity in state.Filter<Area2D>())
+            {
+                var bodyComp = state.GetComponent<Area2D>(entity);
+                if (bodyComp.BodyId != 0)
+                {
+                    _entityToBody[entity.Id] = bodyComp.BodyId;
+                    _bodyToEntity[bodyComp.BodyId] = entity.Id;
                 }
             }
         }
@@ -254,6 +225,22 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         foreach (var entity in state.Filter<StaticBody2D, Transform2D>())
         {
             ref var body = ref state.GetComponent<StaticBody2D>(entity);
+            body.BodyId = 0;
+            CreateBodyForEntity(state, entity);
+        }
+
+        // Rebuild CharacterBodies
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>())
+        {
+            ref var body = ref state.GetComponent<CharacterBody2D>(entity);
+            body.BodyId = 0;
+            CreateBodyForEntity(state, entity);
+        }
+
+        // Rebuild Area2Ds
+        foreach (var entity in state.Filter<Area2D, Transform2D>())
+        {
+            ref var body = ref state.GetComponent<Area2D>(entity);
             body.BodyId = 0;
             CreateBodyForEntity(state, entity);
         }
@@ -282,6 +269,8 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
     private void SyncEcsToPhysics(GlobalState state)
     {
+        if (_world == null) return;
+
         // 1. Dynamic Bodies
         foreach (var entity in state.Filter<RigidBody2D, Transform2D>())
         {
@@ -292,8 +281,22 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             else
             {
                 ref var body = ref state.GetComponent<RigidBody2D>(entity);
-                _world?.BodySetLinvel(bodyHandle, new RVector((float)body.LinearVelocity.X, (float)body.LinearVelocity.Y), true);
-                _world?.BodySetAngvel(bodyHandle, new RVector((float)body.AngularVelocity, 0), true);
+                ref var transform = ref state.GetComponent<Transform2D>(entity);
+
+                // Check for Teleport (Logic moved Transform)
+                // If ECS position differs from Physics position, we assume logic moved it.
+                var rapierPos = _world.BodyGetTranslation(bodyHandle);
+                float dx = (float)transform.GlobalPosition.X - rapierPos.x;
+                float dy = (float)transform.GlobalPosition.Y - rapierPos.y;
+                
+                if (dx * dx + dy * dy > 0.0001f) // Epsilon squared (0.01 * 0.01 = 0.0001)
+                {
+                    _world.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
+                    _world.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
+                }
+
+                _world.BodySetLinvel(bodyHandle, new RVector((float)body.LinearVelocity.X, (float)body.LinearVelocity.Y), true);
+                _world.BodySetAngvel(bodyHandle, new RVector((float)body.AngularVelocity, 0), true);
             }
         }
         
@@ -303,6 +306,46 @@ public class RapierPhysicsSystem : ISystem, IDisposable
              if (!_entityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
                  CreateBodyForEntity(state, entity);
+             }
+        }
+        
+        // 3. Character Bodies
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>())
+        {
+             if (!_entityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
+             {
+                 CreateBodyForEntity(state, entity);
+             }
+             else
+             {
+                 // Check for Teleport
+                 ref var transform = ref state.GetComponent<Transform2D>(entity);
+                 var rapierPos = _world.BodyGetTranslation(bodyHandle);
+                 float dx = (float)transform.GlobalPosition.X - rapierPos.x;
+                 float dy = (float)transform.GlobalPosition.Y - rapierPos.y;
+                 
+                 if (dx * dx + dy * dy > 0.0001f)
+                 {
+                     _world.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
+                     // Characters usually handle rotation differently (upright), but we sync it anyway if changed
+                     _world.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
+                 }
+             }
+        }
+
+        // 4. Area2D
+        foreach (var entity in state.Filter<Area2D, Transform2D>())
+        {
+             if (!_entityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
+             {
+                 CreateBodyForEntity(state, entity);
+             }
+             else
+             {
+                 // Sync position for Area2D (Kinematic)
+                 ref var transform = ref state.GetComponent<Transform2D>(entity);
+                 _world?.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
+                 _world?.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
              }
         }
     }
@@ -318,8 +361,8 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         if (state.HasComponent<RigidBody2D>(entity))
         {
             ref var body = ref state.GetComponent<RigidBody2D>(entity);
-            var translation = new RVector((float)transform.Position.X, (float)transform.Position.Y);
-            var rotation = new RRotation((float)transform.Rotation); 
+            var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
+            var rotation = new RRotation((float)transform.GlobalRotation); 
 
             bodyHandle = _world.BodyCreate(RRigidBodyType.Dynamic, translation, rotation);
             
@@ -337,10 +380,29 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         else if (state.HasComponent<StaticBody2D>(entity))
         {
             ref var body = ref state.GetComponent<StaticBody2D>(entity);
-            var translation = new RVector((float)transform.Position.X, (float)transform.Position.Y);
-            var rotation = new RRotation((float)transform.Rotation);
+            var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
+            var rotation = new RRotation((float)transform.GlobalRotation);
 
             bodyHandle = _world.BodyCreate(RRigidBodyType.Fixed, translation, rotation);
+            body.BodyId = bodyHandle;
+        }
+        else if (state.HasComponent<CharacterBody2D>(entity))
+        {
+            ref var body = ref state.GetComponent<CharacterBody2D>(entity);
+            var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
+            var rotation = new RRotation((float)transform.GlobalRotation);
+
+            bodyHandle = _world.BodyCreate(RRigidBodyType.KinematicPositionBased, translation, rotation);
+            body.BodyId = bodyHandle;
+        }
+        else if (state.HasComponent<Area2D>(entity))
+        {
+            ref var body = ref state.GetComponent<Area2D>(entity);
+            var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
+            var rotation = new RRotation((float)transform.GlobalRotation);
+
+            // Area2D is Kinematic so we can move it freely, but it doesn't have mass/forces
+            bodyHandle = _world.BodyCreate(RRigidBodyType.KinematicPositionBased, translation, rotation);
             body.BodyId = bodyHandle;
         }
         else
@@ -349,6 +411,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
 
         _entityToBody[entity.Id] = bodyHandle;
+        _bodyToEntity[bodyHandle] = entity.Id;
 
         // Create Collider if present
         if (state.HasComponent<CollisionShape2D>(entity))
@@ -375,8 +438,25 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 var colTranslation = new RVector((float)shapeComp.Position.X, (float)shapeComp.Position.Y);
                 var colRotation = new RRotation((float)shapeComp.Rotation);
                 
-                _world.ColliderCreate(shape, bodyHandle, colTranslation, colRotation, 0.5f, 0.0f); 
+                ulong colliderHandle = _world.ColliderCreate(shape, bodyHandle, colTranslation, colRotation, 0.5f, 0.0f); 
                 shape.Dispose();
+
+                // Special handling for Area2D
+                if (state.HasComponent<Area2D>(entity))
+                {
+                    ref var area = ref state.GetComponent<Area2D>(entity);
+                    _world.ColliderSetSensor(colliderHandle, true);
+                    
+                    // Set Collision Groups (Layer/Mask)
+                    // Rapier uses (memberships, filter)
+                    // We map Layer -> Memberships, Mask -> Filter
+                    _world.ColliderSetCollisionGroups(colliderHandle, area.CollisionLayer, area.CollisionMask);
+                }
+                else
+                {
+                     // For regular bodies, we might want to expose Layer/Mask on RigidBody2D too later.
+                     // Defaulting to All for now or using default 0xFFFF0001 if we had a component for it.
+                }
             }
         }
     }
@@ -399,8 +479,17 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             var rapierRot = _world.BodyGetRotation(bodyHandle); // Returns RRotation
             
             ref var transform = ref state.GetComponent<Transform2D>(entity);
-            transform.Position = new Vector2(rapierPos.x, rapierPos.y);
-            transform.Rotation = rapierRot.angle;
+            transform.GlobalPosition = new Vector2(rapierPos.x, rapierPos.y);
+            transform.GlobalRotation = rapierRot.angle;
+
+            // Sync World -> Local if root
+            // If it has a parent, we would need to calculate local from world (Inverse Transform),
+            // but usually physics bodies are roots or independent.
+            if (transform.Parent == Entity.Null)
+            {
+                transform.Position = transform.GlobalPosition;
+                transform.Rotation = transform.GlobalRotation;
+            }
 
             // Get Velocity for Dynamic Bodies
             if (state.HasComponent<RigidBody2D>(entity))
@@ -422,5 +511,6 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             _world.Dispose();
             _world = null;
         }
+        _characterProcessor.Clear();
     }
 }

@@ -9,6 +9,8 @@ public interface IScene
     /// These systems will be automatically unregistered when the scene unloads.
     /// </summary>
     IEnumerable<ISystem> RegisterSystems(GameLoop loop);
+    IEnumerable<IActionService> RegisterActionServices(GameLoop loop);
+    IEnumerable<IReactionService> RegisterReactionServices(GameLoop loop);
     
     /// <summary>
     /// Called when the scene is entered. Use this to spawn initial entities (Map, Spawners, UI).

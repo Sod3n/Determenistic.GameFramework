@@ -1,5 +1,6 @@
 using Deterministic.GameFramework.NetworkV2.Packets;
 using Deterministic.GameFramework.NetworkV2.Buffers;
+using Deterministic.GameFramework.CoreV2;
 
 namespace Deterministic.GameFramework.NetworkV2.Tests;
 
@@ -37,7 +38,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            DenseId = 1,
+            ComponentId = (DenseComponentId)1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = 100
@@ -82,7 +83,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            DenseId = 1,
+            ComponentId = (DenseComponentId)1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = -50
@@ -122,7 +123,7 @@ public class MalformedPacketTests
 
         var header = new NetworkActionHeader
         {
-            DenseId = 1,
+            ComponentId = (DenseComponentId)1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = int.MaxValue
@@ -162,7 +163,7 @@ public class MalformedPacketTests
 
         var header1 = new NetworkActionHeader
         {
-            DenseId = 1,
+            ComponentId = (DenseComponentId)1,
             TargetEntityId = 10,
             ExecuteTick = 100L,
             DataLength = 5
@@ -176,7 +177,7 @@ public class MalformedPacketTests
 
         var header2 = new NetworkActionHeader
         {
-            DenseId = 2,
+            ComponentId = (DenseComponentId)2,
             TargetEntityId = 20,
             ExecuteTick = 200L,
             DataLength = 1000
@@ -273,7 +274,7 @@ public class MalformedPacketTests
         {
             var header = new NetworkActionHeader
             {
-                DenseId = i,
+                ComponentId = (DenseComponentId)i,
                 TargetEntityId = i * 10,
                 ExecuteTick = i * 100L,
                 DataLength = 4
@@ -288,7 +289,7 @@ public class MalformedPacketTests
 
         var corruptHeader = new NetworkActionHeader
         {
-            DenseId = 999,
+            ComponentId = (DenseComponentId)999,
             TargetEntityId = 9999,
             ExecuteTick = 99999L,
             DataLength = 10000
@@ -336,7 +337,7 @@ public class MalformedPacketTests
         {
             var header = new NetworkActionHeader
             {
-                DenseId = 1,
+                ComponentId = (DenseComponentId)1,
                 TargetEntityId = 1,
                 ExecuteTick = 1L,
                 DataLength = action.DataLength

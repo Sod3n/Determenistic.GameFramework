@@ -10,6 +10,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 {
     public class ArchetypeObserverTests
     {
+        public ArchetypeObserverTests()
+        {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        }
+
         [Fact]
         public void ObserveArchetype_ShouldDetectExistingEntities()
         {

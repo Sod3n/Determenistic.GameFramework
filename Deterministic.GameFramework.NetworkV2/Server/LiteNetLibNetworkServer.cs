@@ -26,7 +26,18 @@ public class LiteNetLibPeer : INetworkPeer
         var writer = new NetDataWriter();
         writer.Put((byte)type);
         writer.Put(data);
-        _peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        
+        var deliveryMethod = DeliveryMethod.ReliableOrdered;
+        if (type == PacketType.TickSnapshot)
+        {
+            deliveryMethod = DeliveryMethod.ReliableUnordered;
+        }
+        else if (type == PacketType.StateHash)
+        {
+            deliveryMethod = DeliveryMethod.Sequenced;
+        }
+        
+        _peer.Send(writer, deliveryMethod);
         return Task.CompletedTask;
     }
 }
@@ -119,11 +130,21 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
         writer.Put((byte)type);
         writer.Put(data);
 
+        var deliveryMethod = DeliveryMethod.ReliableOrdered;
+        if (type == PacketType.TickSnapshot)
+        {
+            deliveryMethod = DeliveryMethod.ReliableUnordered;
+        }
+        else if (type == PacketType.StateHash)
+        {
+            deliveryMethod = DeliveryMethod.Sequenced;
+        }
+
         foreach (var id in peerIds)
         {
             if (_peers.TryGetValue(id, out var peer))
             {
-                peer.Peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                peer.Peer.Send(writer, deliveryMethod);
             }
         }
         

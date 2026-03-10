@@ -19,6 +19,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
         public GameLoopTests()
         {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
             _state = new GlobalState();
             _scheduler = new ActionScheduler();
             _dispatcher = new Dispatcher();
@@ -124,7 +126,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 
             // Schedule for Tick 5 (past)
             var denseId = _dispatcher.GetDenseId<DamageAction>();
-            _scheduler.ScheduleFromBytes(denseId, dBytes, player.Id, 5);
+            _scheduler.ScheduleFromBytes((DenseComponentId)denseId, dBytes, player.Id, 5);
 
             // Run Tick 11 - This should trigger Rollback!
             _gameLoop.RunSingleTick();

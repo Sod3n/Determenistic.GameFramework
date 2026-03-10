@@ -12,6 +12,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 {
     public class ActionSchedulerTests
     {
+        public ActionSchedulerTests()
+        {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        }
+
         [Fact]
         public void EarliestDirtyTick_ShouldTrackMinimumScheduledTick()
         {
@@ -20,13 +26,13 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             scheduler.EarliestDirtyTick.Should().Be(long.MaxValue);
             
             var action = new DamageAction(10);
-            scheduler.Schedule(action, 1, new Entity(1), 5);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(1), 5);
             scheduler.EarliestDirtyTick.Should().Be(5);
             
-            scheduler.Schedule(action, 1, new Entity(2), 3);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(2), 3);
             scheduler.EarliestDirtyTick.Should().Be(3);
             
-            scheduler.Schedule(action, 1, new Entity(3), 10);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(3), 10);
             scheduler.EarliestDirtyTick.Should().Be(3);
         }
 
@@ -40,7 +46,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             byte[] bytes = new byte[size];
             MemoryMarshal.Write(bytes, in action);
             
-            scheduler.ScheduleFromBytes(1, bytes, 1, 7);
+            scheduler.ScheduleFromBytes((DenseComponentId)1, bytes, 1, 7);
             scheduler.EarliestDirtyTick.Should().Be(7);
         }
 
@@ -56,7 +62,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             state.GetComponent<HealthComponent>(entity).CurrentHealth = 100;
             
             var action = new DamageAction(10);
-            scheduler.Schedule(action, 1, entity, 5);
+            scheduler.Schedule(action, (DenseComponentId)1, entity, 5);
             
             scheduler.EarliestDirtyTick.Should().Be(5);
             
@@ -83,11 +89,14 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             state.GetComponent<HealthComponent>(e3).CurrentHealth = 100;
             
             var denseId = dispatcher.GetDenseId<DamageAction>();
-            scheduler.Schedule(new DamageAction(30), denseId, e3, 10);
-            scheduler.Schedule(new DamageAction(10), denseId, e1, 10);
-            scheduler.Schedule(new DamageAction(20), denseId, e2, 10);
+            scheduler.Schedule(new DamageAction(30), (DenseComponentId)denseId, e3, 10);
+            scheduler.Schedule(new DamageAction(10), (DenseComponentId)denseId, e1, 10);
+            scheduler.Schedule(new DamageAction(20), (DenseComponentId)denseId, e2, 10);
             
             scheduler.ExecuteActions(10, state, dispatcher);
+            scheduler.ExecuteActions(10, state, dispatcher);
+            scheduler.ExecuteActions(10, state, dispatcher);
+            dispatcher.Update(state);
             
             state.GetComponent<HealthComponent>(e1).CurrentHealth.Value.Should().Be(90);
             state.GetComponent<HealthComponent>(e2).CurrentHealth.Value.Should().Be(80);
@@ -100,9 +109,9 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var scheduler = new ActionScheduler();
             
             var action = new DamageAction(10);
-            scheduler.Schedule(action, 1, new Entity(1), 5);
-            scheduler.Schedule(action, 1, new Entity(2), 10);
-            scheduler.Schedule(action, 1, new Entity(3), 15);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(1), 5);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(2), 10);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(3), 15);
             
             scheduler.PruneHistory(12);
             
@@ -115,8 +124,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             var scheduler = new ActionScheduler();
             
             var action = new DamageAction(10);
-            scheduler.Schedule(action, 1, new Entity(1), 5);
-            scheduler.Schedule(action, 1, new Entity(2), 10);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(1), 5);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(2), 10);
             
             scheduler.PruneHistory(20);
             
@@ -140,7 +149,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             };
             
             var action = new DamageAction(10);
-            scheduler.Schedule(action, 1, new Entity(5), 7);
+            scheduler.Schedule(action, (DenseComponentId)1, new Entity(5), 7);
             
             eventFired.Should().BeTrue();
             capturedNetworkId.Should().Be(1);
@@ -159,14 +168,16 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             state.GetComponent<HealthComponent>(entity).CurrentHealth = 100;
             
             var denseId = dispatcher.GetDenseId<DamageAction>();
-            scheduler.Schedule(new DamageAction(10), denseId, entity, 5);
-            scheduler.Schedule(new DamageAction(20), denseId, entity, 10);
+            scheduler.Schedule(new DamageAction(10), (DenseComponentId)denseId, entity, 5);
+            scheduler.Schedule(new DamageAction(20), (DenseComponentId)denseId, entity, 10);
             
             scheduler.ExecuteActions(5, state, dispatcher);
+            dispatcher.Update(state);
             
             state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(90);
             
             scheduler.ExecuteActions(10, state, dispatcher);
+            dispatcher.Update(state);
             
             state.GetComponent<HealthComponent>(entity).CurrentHealth.Value.Should().Be(70);
         }
@@ -182,7 +193,7 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             byte[] bytes = new byte[size];
             MemoryMarshal.Write(bytes, in action);
 
-            var result = scheduler.ScheduleFromBytes(1, bytes, 1, 5);
+            var result = scheduler.ScheduleFromBytes((DenseComponentId)1, bytes, 1, 5);
             
             result.Should().Be(ActionScheduler.ScheduleResult.TooOld);
             scheduler.EarliestDirtyTick.Should().Be(long.MaxValue); // Should not have dirtied anything
@@ -198,8 +209,8 @@ namespace Deterministic.GameFramework.CoreV2.Tests
             byte[] bytes = new byte[size];
             MemoryMarshal.Write(bytes, in action);
 
-            scheduler.ScheduleFromBytes(1, bytes, 1, 10);
-            var result = scheduler.ScheduleFromBytes(1, bytes, 1, 10);
+            scheduler.ScheduleFromBytes((DenseComponentId)1, bytes, 1, 10);
+            var result = scheduler.ScheduleFromBytes((DenseComponentId)1, bytes, 1, 10);
             
             result.Should().Be(ActionScheduler.ScheduleResult.Duplicate);
         }

@@ -1,9 +1,22 @@
 namespace Deterministic.GameFramework.CoreV2;
 
-public abstract class ReactionService<TAction, TTarget> 
+public interface IReactionService
+{
+    Type ActionType { get; }
+    Type TargetType { get; }
+    
+    int RuntimeId { get; set; }
+}
+
+public abstract class ReactionService<TAction, TTarget> : IReactionService
     where TAction : struct, IAction 
     where TTarget : struct, IComponent
 {
+    public Type ActionType => typeof(TAction);
+    public Type TargetType => typeof(TTarget);
+    
+    public int RuntimeId { get; set; } = -1;
+
     public const int PriorityDefault = 0;
     public const int PriorityAbort = 1;
     public const int PriorityPrepare = 2;

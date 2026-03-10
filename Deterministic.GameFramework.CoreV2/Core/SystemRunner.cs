@@ -5,33 +5,59 @@ using System.Reflection;
 
 namespace Deterministic.GameFramework.CoreV2;
 
-public class SystemRunner : IDisposable
+// TODO: Currently it doesnt use counter, so it sometimes may disable when we dont want.
+public class SystemRunnerDisposable(SystemRunner runner, IEnumerable<ISystem>? systemsToDisable) : IDisposable
+{
+    private IEnumerable<ISystem>? _systemsToDisable = systemsToDisable;
+
+    public void Dispose()
+    {
+        if (_systemsToDisable == null) return;
+        
+        runner.DisableSystems(_systemsToDisable);
+        _systemsToDisable = null;
+    }
+}
+
+public class SystemRunner
 {
     private readonly List<ISystem> _systems = new();
 
-    public void RegisterSystem(ISystem system)
+    public SystemRunnerDisposable EnableSystem(ISystem system)
     {
+        if (_systems.Contains(system)) return new SystemRunnerDisposable(this, null);
         _systems.Add(system);
         SortSystems();
+        return new SystemRunnerDisposable(this, new[] { system });
     }
 
-    public void RegisterSystems(IEnumerable<ISystem> systems)
+    public SystemRunnerDisposable EnableSystems(IEnumerable<ISystem> systems)
     {
-        _systems.AddRange(systems);
+        var enumerable = systems.ToList();
+        var systemsToAdd = enumerable.Where(s => !_systems.Contains(s)).ToList();
+        
+        _systems.AddRange(systemsToAdd);
         SortSystems();
+        
+        return new SystemRunnerDisposable(this, systemsToAdd);
     }
 
-    public void RemoveSystem(ISystem system)
+    public void DisableSystem(ISystem system)
     {
         _systems.Remove(system);
     }
 
-    public void RemoveSystems(IEnumerable<ISystem> systems)
+    public void DisableSystems(IEnumerable<ISystem> systems)
     {
         foreach (var system in systems)
         {
             _systems.Remove(system);
         }
+    }
+
+    public bool HasSystem(Type systemType)
+    {
+        return _systems.Any(s => s.GetType() == systemType);
     }
 
     private void SortSystems()
@@ -57,24 +83,5 @@ public class SystemRunner : IDisposable
                 Console.WriteLine($"[SystemRunner] Error in system {system.GetType().Name}: {ex}");
             }
         }
-    }
-
-    public void Dispose()
-    {
-        foreach (var system in _systems)
-        {
-            if (system is IDisposable disposable)
-            {
-                try
-                {
-                    disposable.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[SystemRunner] Error disposing system {system.GetType().Name}: {ex}");
-                }
-            }
-        }
-        _systems.Clear();
     }
 }

@@ -8,6 +8,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 {
     public class StateSerializerTests
     {
+        public StateSerializerTests()
+        {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        }
+
         [Fact]
         public void RoundTrip_ShouldPreserveCompleteState()
         {

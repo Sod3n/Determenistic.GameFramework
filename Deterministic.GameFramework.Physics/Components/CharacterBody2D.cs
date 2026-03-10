@@ -60,6 +60,8 @@ public struct CharacterBody2D : IComponent
     public bool SlideOnCeiling;
     public int MaxSlides;
     public bool FloorConstantSpeed;
+
+    public ulong BodyId; // Internal Rapier Handle for the Kinematic Body representing this character
     
     // State (Output from simulation)
     public bool IsOnFloor;
@@ -71,7 +73,7 @@ public struct CharacterBody2D : IComponent
 
     public static CharacterBody2D Default => new CharacterBody2D
     {
-        UpDirection = new Vector2(0, -1), 
+        UpDirection = new Vector2(0, 1), 
         FloorSnapLength = 0.1f,
         WallMinSlideAngle = 0.261799f, 
         FloorMaxAngle = 0.785398f, 

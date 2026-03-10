@@ -19,6 +19,12 @@ public struct TestComponent : IComponent
 
 public class GameClientStateSyncTests
 {
+    public GameClientStateSyncTests()
+    {
+        ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        ServiceLocator.RegisterAssembly(typeof(GameClientStateSyncTests).Assembly);
+    }
+
     private class MockNetworkClient : INetworkClient
     {
         public event Action<byte[]>? OnTickSnapshotReceived;
@@ -63,12 +69,6 @@ public class GameClientStateSyncTests
             
             OnStateHashReceived?.Invoke(data);
         }
-    }
-
-    [NetworkId("00000000-0000-0000-0000-000000000001")]
-    public struct TestComponent : IComponent
-    {
-        public int Value;
     }
 
     [Fact]

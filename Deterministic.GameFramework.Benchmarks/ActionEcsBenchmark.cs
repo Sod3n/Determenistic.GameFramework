@@ -24,11 +24,7 @@ namespace Deterministic.GameFramework.Benchmarks
             _entities = new Entity[Count];
             
             // Setup Dispatcher
-            _dispatcher = new Dispatcher(type => 
-            {
-                if (type == typeof(BenchmarkActionService)) return Deterministic.GameFramework.CoreV2.Guid.Parse("00000000-0000-0000-0000-000000000006");
-                return Deterministic.GameFramework.CoreV2.Guid.NewGuid();
-            });
+            _dispatcher = new Dispatcher();
             var service = new BenchmarkActionService();
             _dispatcher.RegisterAction(service, new List<ReactionService<BenchmarkAction, BenchmarkComponent>>());
 
@@ -52,6 +48,9 @@ namespace Deterministic.GameFramework.Benchmarks
             {
                 _dispatcher.Execute(_action, _state, _entities[i]);
             }
+            
+            // In the new ECS-based Dispatcher, execution happens here
+            _dispatcher.Update(_state);
         }
 
         [Benchmark]

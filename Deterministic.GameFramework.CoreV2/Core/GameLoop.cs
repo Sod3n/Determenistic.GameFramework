@@ -1,6 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -10,6 +13,8 @@ public class GameLoop : IDisposable
     private readonly Dispatcher _dispatcher;
     private readonly ActionScheduler _scheduler;
     private readonly SystemRunner _systemRunner;
+
+    public Dispatcher Dispatcher => _dispatcher;
 
     private bool _isRunning;
     private readonly Stopwatch _stopwatch = new();
@@ -33,6 +38,7 @@ public class GameLoop : IDisposable
     private readonly StateHistory _history;
     public StateHistory History => _history;
     public GlobalState State => _state;
+    public SystemRunner SystemRunner => _systemRunner;
 
     public GameLoop(GlobalState state, Dispatcher dispatcher, ActionScheduler scheduler)
     {
@@ -40,6 +46,7 @@ public class GameLoop : IDisposable
         _dispatcher = dispatcher;
         _scheduler = scheduler;
         _systemRunner = new SystemRunner();
+        // Dispatcher is now called explicitly in Tick()
         _history = new StateHistory(300); // 5 seconds of history @ 60hz (increased from 60)
         
         _state.GameLoop = this;
@@ -48,27 +55,6 @@ public class GameLoop : IDisposable
     public void Dispose()
     {
         Stop();
-        _systemRunner.Dispose();
-    }
-
-    public void RegisterSystem(ISystem system)
-    {
-        _systemRunner.RegisterSystem(system);
-    }
-
-    public void RegisterSystems(IEnumerable<ISystem> systems)
-    {
-        _systemRunner.RegisterSystems(systems);
-    }
-
-    public void RemoveSystem(ISystem system)
-    {
-        _systemRunner.RemoveSystem(system);
-    }
-
-    public void RemoveSystems(IEnumerable<ISystem> systems)
-    {
-        _systemRunner.RemoveSystems(systems);
     }
 
     public void SetTickRate(int tickRate)
@@ -190,13 +176,13 @@ public class GameLoop : IDisposable
 
     public void Schedule<TAction>(TAction action, Entity target) where TAction : struct, IAction
     {
-        var denseId = _dispatcher.GetDenseId<TAction>();
+        var denseId = ComponentId<TAction>.DenseId;
         _scheduler.Schedule(action, denseId, target, CurrentTick);
     }
     
     public void ScheduleOnTick<TAction>(long tick, TAction action, Entity target) where TAction : struct, IAction
     {
-        var denseId = _dispatcher.GetDenseId<TAction>();
+        var denseId = ComponentId<TAction>.DenseId;
         _scheduler.Schedule(action, denseId, target, tick);
     }
 
@@ -242,9 +228,14 @@ public class GameLoop : IDisposable
                 IsResimulating = true;
                 while (CurrentTick < originalTick)
                 {
-                    _systemRunner.Update(_state);
-                    
+                    // 1. Apply Actions (Add Components)
                     _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
+
+                    // 1.5 Process Actions
+                    _dispatcher.Update(_state);
+
+                    // 2. Run Systems (Process Logic & Action Components)
+                    _systemRunner.Update(_state);
                     
                     // Note: We might want to suppress OnTick (Render/Audio) during resimulation
                     // But for logic listeners (like the test logger), we keep it or handle it.
@@ -265,10 +256,14 @@ public class GameLoop : IDisposable
         }
 
         // 1. Simulate (Normal Step)
-        // 1.5 Run Systems
-        _systemRunner.Update(_state);
-
+        // 1.5 Apply Actions (Add Components)
         _scheduler.ExecuteActions(CurrentTick, _state, _dispatcher);
+
+        // 1.6 Process Actions
+        _dispatcher.Update(_state);
+
+        // 1.7 Run Systems (Process Logic & Action Components)
+        _systemRunner.Update(_state);
         
         try
         {

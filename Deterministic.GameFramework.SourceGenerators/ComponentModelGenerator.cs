@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -23,45 +24,102 @@ public class ComponentModelGenerator : IIncrementalGenerator
             options.PreprocessorSymbolNames.Contains("GODOT"));
 
         // Find all structs that implement IComponent
-        var components = context.SyntaxProvider
+        var sourceComponents = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: (node, _) => node is StructDeclarationSyntax,
                 transform: (ctx, _) => GetComponentInfo(ctx))
             .Where(m => m != null);
 
-        // Combine components with the check and godot flag
-        var componentsWithCheck = components.Combine(reactiveSystemRef).Combine(isGodot);
+        // Find all types with EntityDefinitionAttribute
+        var entityResults = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is TypeDeclarationSyntax t && t.AttributeLists.Count > 0,
+                transform: (ctx, _) => GetEntityAndComponentInfo(ctx))
+            .Where(m => m != null);
+
+        var entities = entityResults.Select((x, _) => x!.Entity);
+        var referencedComponents = entityResults.Select((x, _) => x!.Components);
+
+        // Combine all components (source + referenced)
+        var allComponents = sourceComponents.Collect()
+            .Combine(referencedComponents.Collect())
+            .Select((pair, _) => 
+            {
+                var list = new List<ComponentInfo>(pair.Left!);
+                foreach (var sublist in pair.Right)
+                {
+                    if (sublist != null)
+                    {
+                        list.AddRange(sublist);
+                    }
+                }
+                
+                // Deduplicate by StructName (and Namespace ideally, but mostly StructName matters for filename)
+                var distinct = new Dictionary<string, ComponentInfo>();
+                foreach (var comp in list)
+                {
+                    var key = $"{comp.Namespace}.{comp.StructName}";
+                    if (!distinct.ContainsKey(key))
+                    {
+                        distinct[key] = comp;
+                    }
+                }
+                return distinct.Values.ToList();
+            });
 
         // Generate the models only if ReactiveSystem exists
-        context.RegisterSourceOutput(componentsWithCheck, (spc, source) => 
+        var componentsWithCompilation = allComponents.Combine(context.CompilationProvider);
+        var generateInput = componentsWithCompilation.Combine(reactiveSystemRef).Combine(isGodot);
+
+        context.RegisterSourceOutput(generateInput, (spc, source) => 
         {
-            var info = source.Left.Left;
+            var (components, compilation) = source.Left.Left;
             var hasReactive = source.Left.Right;
             var godotMode = source.Right;
             
             if (hasReactive)
             {
-                Execute(spc, info, godotMode);
+                foreach (var comp in components)
+                {
+                    // Check if the model already exists in the compilation (referenced assemblies)
+                    var modelFullName = $"Deterministic.GameFramework.Reactive.{comp.StructName}Model";
+                    if (compilation.GetTypeByMetadataName(modelFullName) != null)
+                    {
+                        continue;
+                    }
+
+                    Execute(spc, comp, godotMode);
+                }
             }
         });
 
         // Generate the shared ComponentExtensions
-        var extensions = components.Collect().Combine(reactiveSystemRef);
-        context.RegisterSourceOutput(extensions, (spc, source) => 
+        context.RegisterSourceOutput(generateInput, (spc, source) => 
         {
-            if (source.Right)
+            var (components, compilation) = source.Left.Left;
+            var hasReactive = source.Left.Right;
+
+            if (hasReactive)
             {
-                ExecuteExtensions(spc, source.Left);
+                var uniqueComponents = new List<ComponentInfo?>();
+                foreach (var comp in components)
+                {
+                     var modelFullName = $"Deterministic.GameFramework.Reactive.{comp.StructName}Model";
+                     if (compilation.GetTypeByMetadataName(modelFullName) != null)
+                     {
+                         continue;
+                     }
+                     uniqueComponents.Add(comp);
+                }
+                
+                if (uniqueComponents.Count > 0)
+                {
+                    ExecuteExtensions(spc, uniqueComponents.ToImmutableArray());
+                }
             }
         });
 
-        // Find all types with EntityDefinitionAttribute
-        var entities = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: (node, _) => node is TypeDeclarationSyntax t && t.AttributeLists.Count > 0,
-                transform: (ctx, _) => GetEntityInfo(ctx))
-            .Where(m => m != null);
-
+        // Generate Entity Models
         var entitiesWithCheck = entities.Combine(reactiveSystemRef).Combine(isGodot);
         
         context.RegisterSourceOutput(entitiesWithCheck, (spc, source) => 
@@ -84,6 +142,11 @@ public class ComponentModelGenerator : IIncrementalGenerator
         
         if (symbol == null) return null;
 
+        return ExtractComponentInfoFromSymbol(symbol);
+    }
+
+    private static ComponentInfo? ExtractComponentInfoFromSymbol(INamedTypeSymbol symbol)
+    {
         // Check if implements IComponent
         if (!symbol.AllInterfaces.Any(i => i.Name == "IComponent"))
         {
@@ -111,7 +174,13 @@ public class ComponentModelGenerator : IIncrementalGenerator
         };
     }
 
-    private static EntityInfo? GetEntityInfo(GeneratorSyntaxContext context)
+    private class EntityGenResult
+    {
+        public EntityInfo? Entity { get; set; }
+        public List<ComponentInfo> Components { get; set; } = new();
+    }
+
+    private static EntityGenResult? GetEntityAndComponentInfo(GeneratorSyntaxContext context)
     {
         var typeDecl = (TypeDeclarationSyntax)context.Node;
         var symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl);
@@ -121,6 +190,8 @@ public class ComponentModelGenerator : IIncrementalGenerator
         if (attr == null) return null;
 
         var components = new List<string>();
+        var componentInfos = new List<ComponentInfo>();
+
         if (attr.ConstructorArguments.Length > 0)
         {
             var arg = attr.ConstructorArguments[0];
@@ -131,16 +202,28 @@ public class ComponentModelGenerator : IIncrementalGenerator
                     if (val.Value is INamedTypeSymbol typeSymbol)
                     {
                         components.Add(typeSymbol.Name);
+                        
+                        var compInfo = ExtractComponentInfoFromSymbol(typeSymbol);
+                        if (compInfo != null)
+                        {
+                            componentInfos.Add(compInfo);
+                        }
                     }
                 }
             }
         }
 
-        return new EntityInfo
+        var entityInfo = new EntityInfo
         {
             Namespace = symbol.ContainingNamespace.ToDisplayString(),
             Name = symbol.Name,
             ComponentNames = components
+        };
+
+        return new EntityGenResult
+        {
+            Entity = entityInfo,
+            Components = componentInfos
         };
     }
 

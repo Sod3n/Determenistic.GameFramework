@@ -43,10 +43,9 @@ namespace Deterministic.GameFramework.SourceGenerators
             while (baseType != null)
             {
                 var baseName = baseType.Name;
-                if (baseName == "ActionService" || baseName == "ReactionService")
+                if (baseName.Contains("ActionService") || baseName.Contains("ReactionService"))
                 {
-                    requiresNetworkId = true;
-                    break;
+                    return;
                 }
                 baseType = baseType.BaseType;
             }

@@ -8,68 +8,151 @@ using Deterministic.GameFramework.CoreV2.Logging;
 
 namespace Deterministic.GameFramework.CoreV2;
 
+// TODO: Currently it doesnt use counter, so it sometimes may disable when we dont want.
+public class ActionRunnerDisposable(Dispatcher dispatcher, IEnumerable<IActionService>? servicesToDisable) : IDisposable
+{
+    private IEnumerable<IActionService>? _servicesToDisable = servicesToDisable;
+
+    public void Dispose()
+    {
+        if (_servicesToDisable == null) return;
+        
+        dispatcher.DisableActions(_servicesToDisable);
+        _servicesToDisable = null;
+    }
+}
+
+// TODO: Currently it doesnt use counter, so it sometimes may disable when we dont want.
+public class ReactionRunnerDisposable(Dispatcher dispatcher, IEnumerable<IReactionService>? servicesToDisable) : IDisposable
+{
+    private IEnumerable<IReactionService>? _servicesToDisable = servicesToDisable;
+
+    public void Dispose()
+    {
+        if (_servicesToDisable == null) return;
+        
+        dispatcher.DisableReactions(_servicesToDisable);
+        _servicesToDisable = null;
+    }
+}
+
 public class Dispatcher
 {
     private readonly Dictionary<int, object> _actionRunners = new();
     private readonly Dictionary<int, Action<byte[], int, GlobalState, Entity>> _byteActionRunners = new();
+    // Changed from List to Dictionary to support UnregisterAction
+    private readonly Dictionary<Type, Action<GlobalState>> _systemRunners = new();
+
+    private readonly Func<Type, StableComponentId>? _serviceIdLookup;
     
-    // Map Action Struct Type -> Service Dense ID
-    internal readonly Dictionary<Type, int> _actionTypeToDenseId = new();
-    internal readonly Dictionary<int, Type> _denseIdToType = new();
+    private System.Collections.BitArray _executionMask = new(256);
+    private int _nextRuntimeId = 0;
 
-    // Map Action Struct Type -> List of Additional Local Reactions (different TTarget)
-    // Stored as object, cast to List<AdditionalReactionEntry<TAction>> at runtime
-    private readonly Dictionary<Type, object> _additionalReactions = new();
-
-    private class AdditionalReactionEntry<TAction>
-    {
-        public int ComponentId;
-        public required ReactionRunner<TAction> Runner; 
-        public int Priority;
-        public bool AfterActionExecuted;
-    }
-
-    private delegate bool ReactionRunner<TAction>(ref TAction action, GlobalState state, Entity entity, Context ctx);
-
-    private readonly Func<Type, Guid>? _serviceIdLookup;
-
-    public Dispatcher(Func<Type, Guid>? serviceIdLookup = null)
+    public Dispatcher(Func<Type, StableComponentId>? serviceIdLookup = null)
     {
         _serviceIdLookup = serviceIdLookup;
     }
 
-    public void RegisterReaction<TAction, TTarget>(ReactionService<TAction, TTarget> reaction)
-        where TAction : struct, IAction
-        where TTarget : struct, IComponent
+    public void RegisterServices(IEnumerable<IActionService> actionServices, IEnumerable<IReactionService> reactionServices)
     {
-        if (!_additionalReactions.TryGetValue(typeof(TAction), out var listObj))
+        // 1. Group Reactions by (ActionType, TargetType)
+        var reactionMap = reactionServices
+            .GroupBy(r => (r.ActionType, r.TargetType))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // 2. Register ActionServices
+        var consumedReactions = new HashSet<(Type ActionType, Type TargetType)>();
+
+        foreach (var service in actionServices)
         {
-            listObj = new List<AdditionalReactionEntry<TAction>>();
-            _additionalReactions[typeof(TAction)] = listObj;
+            var actionType = service.ActionType;
+            var targetType = service.TargetType;
+
+            try
+            {
+                if (IsActionRegistered(actionType)) continue;
+
+                // Find matching reactions
+                var key = (actionType, targetType);
+                object[] reactions;
+
+                if (reactionMap.TryGetValue(key, out var reactionList))
+                {
+                    // Create array of specific reaction type
+                    var reactionType = typeof(ReactionService<,>).MakeGenericType(actionType, targetType);
+                    var reactionArray = Array.CreateInstance(reactionType, reactionList.Count);
+                    for (int i = 0; i < reactionList.Count; i++)
+                    {
+                        reactionArray.SetValue(reactionList[i], i);
+                    }
+                    reactions = (object[])(object)reactionArray; // Double cast trick or just use Array
+                    consumedReactions.Add(key);
+                }
+                else
+                {
+                    var reactionType = typeof(ReactionService<,>).MakeGenericType(actionType, targetType);
+                    reactions = (object[])(object)Array.CreateInstance(reactionType, 0);
+                }
+
+                // Call RegisterAction
+                var registerMethod = GetType().GetMethod(nameof(RegisterAction))?
+                    .MakeGenericMethod(actionType, targetType);
+
+                registerMethod?.Invoke(this, new object[] { service, reactions });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Dispatcher] Failed to register {service.GetType().Name}: {ex.Message}");
+            }
+        }
+    }
+
+    public void UnregisterServices(IEnumerable<IActionService> actionServices, IEnumerable<IReactionService> reactionServices)
+    {
+        foreach (var service in actionServices)
+        {
+            // Remove from System Runners (stops processing and makes IsActionRegistered return false)
+            _systemRunners.Remove(service.ActionType);
+            
+            // Clear Execution Mask
+            DisableAction(service);
         }
         
-        var list = (List<AdditionalReactionEntry<TAction>>)listObj;
-        // Console.WriteLine($"[Dispatcher] Registering Reaction for {typeof(TAction).Name}. Component: {typeof(TTarget).Name}. List Hash: {list.GetHashCode()}");
-
-        int componentId = InternalTypeId<TTarget>.Value;
-
-        ReactionRunner<TAction> runner = (ref TAction action, GlobalState state, Entity entity, Context ctx) =>
+        foreach (var service in reactionServices)
         {
-            ref var target = ref state.GetComponent<TTarget>(entity);
-            var result = reaction.InternalReact(ref action, ref target, ctx);
-            return result.Value;
-        };
+            DisableReaction(service);
+        }
+    }
 
-        list.Add(new AdditionalReactionEntry<TAction>
+    private void EnsureMaskCapacity(int id)
+    {
+        if (id >= _executionMask.Length)
         {
-            ComponentId = componentId,
-            Runner = runner,
-            Priority = reaction.Priority,
-            AfterActionExecuted = reaction.AfterActionExecuted
-        });
+            var newLength = Math.Max(id + 1, _executionMask.Length * 2);
+            _executionMask.Length = newLength;
+        }
+    }
 
-        // Re-sort list by priority
-        list.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+    public bool IsActionRegistered(Type actionType)
+    {
+        return _systemRunners.ContainsKey(actionType);
+    }
+    
+    public void EnableReaction(IReactionService reaction)
+    {
+        if (reaction.RuntimeId != -1)
+        {
+            EnsureMaskCapacity(reaction.RuntimeId);
+            _executionMask[reaction.RuntimeId] = true;
+        }
+    }
+
+    public void DisableReaction(IReactionService reaction)
+    {
+        if (reaction.RuntimeId != -1 && reaction.RuntimeId < _executionMask.Length)
+        {
+            _executionMask[reaction.RuntimeId] = false;
+        }
     }
 
     public void RegisterAction<TAction, TTarget>(
@@ -78,198 +161,204 @@ public class Dispatcher
         where TAction : struct, IAction
         where TTarget : struct, IComponent
     {
-        // ... (Registration logic remains same) ...
-        // Resolve NetworkId from the Service class attribute
-        var serviceType = actionService.GetType();
-        Guid networkId;
-
-        if (_serviceIdLookup != null)
+        if (actionService.RuntimeId == -1)
         {
-            try 
-            {
-                networkId = _serviceIdLookup(serviceType);
-            }
-            catch (KeyNotFoundException)
-            {
-                 throw new Exception($"ActionService {serviceType.Name} not found in provided NetworkId registry.");
-            }
+            actionService.RuntimeId = _nextRuntimeId++;
+            EnsureMaskCapacity(actionService.RuntimeId);
         }
-        else
-        {
-            var networkIdAttr = serviceType.GetCustomAttribute<NetworkIdAttribute>();
-            if (networkIdAttr == null)
-            {
-                throw new Exception($"ActionService {serviceType.Name} is missing [NetworkId] attribute.");
-            }
-            networkId = networkIdAttr.Id;
-        }
-
-        // Resolve to DenseId for runtime efficiency
-        int denseId = ComponentTypeRegistry.GetOrRegister(networkId, typeof(TAction));
+        _executionMask[actionService.RuntimeId] = true;
+        
+        var id = ComponentId<TAction>.DenseId;
 
         // Map the Action Type to this Dense ID
-        if (_actionTypeToDenseId.ContainsKey(typeof(TAction)))
+        if (!_actionRunners.ContainsKey(id))
         {
-            throw new Exception($"Action Type {typeof(TAction).Name} is already registered to ID {_actionTypeToDenseId[typeof(TAction)]}. Cannot register multiple services for the same Action struct in this implementation.");
-        }
-        _actionTypeToDenseId[typeof(TAction)] = denseId;
-        _denseIdToType[denseId] = typeof(TAction);
+            // 2. Setup Dispatch Runners (Just AddComponent)
+            void Runner(TAction action, GlobalState state, Entity entity)
+            {
+                state.AddComponent(entity, action);
+            }
 
-        var sortedReactions = reactions.OrderByDescending(r => r.Priority).ToList();
+            void ByteRunner(byte[] buffer, int offset, GlobalState state, Entity entity)
+            {
+                // Deserialize struct from raw bytes
+                var span = new ReadOnlySpan<byte>(buffer, offset, Marshal.SizeOf<TAction>());
+                var action = MemoryMarshal.Read<TAction>(span);
+                state.AddComponent(entity, action);
+            }
+
+            _actionRunners[id] = (Action<TAction, GlobalState, Entity>)Runner;
+            _byteActionRunners[id] = ByteRunner;
+        }
+        
+        // Also register reactions runtime IDs
+        var reactionServices = reactions.ToList();
+        
+        foreach(var r in reactionServices)
+        {
+            if (r.RuntimeId == -1)
+            {
+                r.RuntimeId = _nextRuntimeId++;
+                EnsureMaskCapacity(r.RuntimeId);
+            }
+            _executionMask[r.RuntimeId] = true;
+        }
+
+        var sortedReactions = reactionServices.OrderByDescending(r => r.Priority).ToList();
         var preReactions = sortedReactions.Where(r => !r.AfterActionExecuted).ToList();
         var postReactions = sortedReactions.Where(r => r.AfterActionExecuted).ToList();
 
-        // Prepare additional reaction lookup
-        // FIX: Ensure the list exists so we capture a valid reference even if reactions are registered later.
-        if (!_additionalReactions.TryGetValue(typeof(TAction), out var listObj))
+        // 1. Create System Runner (ECS Loop)
+        void SystemRunner(GlobalState state)
         {
-            listObj = new List<AdditionalReactionEntry<TAction>>();
-            _additionalReactions[typeof(TAction)] = listObj;
+            // Check if ActionService is enabled
+            if (!_executionMask[actionService.RuntimeId]) return;
+
+            state.ForEach((Entity entity, ref TAction action, ref TTarget target) =>
+            {
+#if DEBUG
+                try
+                {
+                    var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
+                    ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}: {json}");
+                }
+                catch
+                {
+                    ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}: <serialization failed>");
+                }
+#endif
+                var ctx = new Context(state, entity);
+
+                if (RunPreReactions(ref action, ref target, ctx, preReactions))
+                {
+                    state.RemoveComponent<TAction>(entity);
+                    return;
+                }
+
+                actionService.InternalExecute(action, ref target, ctx);
+                RunPostReactions(ref action, ref target, ctx, postReactions);
+
+                state.RemoveComponent<TAction>(entity);
+            });
         }
-        var additionalReactions = (List<AdditionalReactionEntry<TAction>>)listObj;
-        // Console.WriteLine($"[Dispatcher] RegisterAction for {typeof(TAction).Name}. AdditionalReactions List Hash: {additionalReactions.GetHashCode()}");
 
-        Action<TAction, GlobalState, Entity> runner = (action, state, entity) =>
-        {
-#if DEBUG
-            try
-            {
-                var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
-                ILogger.Log($"[Action] Executing {typeof(TAction).Name}: {json}");
-            }
-            catch
-            {
-                ILogger.Log($"[Action] Executing {typeof(TAction).Name}: <serialization failed>");
-            }
-#endif
-            var ctx = new Context(state, entity);
-            ref var target = ref state.GetComponent<TTarget>(entity);
-
-            // 1. Local Pre-Reactions (Standard)
-            if (RunPreReactions(ref action, ref target, ctx, preReactions)) return;
-
-            // 2. Additional Pre-Reactions (Different Components, Local)
-            if (RunAdditionalReactions(ref action, state, entity, ctx, additionalReactions, true, false)) return;
-
-            // 3. Execution
-            actionService.InternalExecute(action, ref target, ctx);
-
-            // 4. Local Post-Reactions (Standard)
-            RunPostReactions(ref action, ref target, ctx, postReactions);
-
-            // 5. Additional Post-Reactions (Different Components, Local)
-            RunAdditionalReactions(ref action, state, entity, ctx, additionalReactions, false, true);
-        };
-        
-        Action<byte[], int, GlobalState, Entity> byteRunner = (buffer, offset, state, entity) =>
-        {
-            // Deserialize struct from raw bytes
-            var span = new ReadOnlySpan<byte>(buffer, offset, Marshal.SizeOf<TAction>());
-            var action = MemoryMarshal.Read<TAction>(span);
-
-#if DEBUG
-            try
-            {
-                var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
-                ILogger.Log($"[Action] Executing (Byte) {typeof(TAction).Name}: {json}");
-            }
-            catch
-            {
-                ILogger.Log($"[Action] Executing (Byte) {typeof(TAction).Name}: <serialization failed>");
-            }
-#endif
-            var ctx = new Context(state, entity);
-            ref var target = ref state.GetComponent<TTarget>(entity);
-
-            // 1. Local Pre-Reactions
-            if (RunPreReactions(ref action, ref target, ctx, preReactions)) return;
-
-            // 2. Additional Pre-Reactions
-            if (RunAdditionalReactions(ref action, state, entity, ctx, additionalReactions, true, false)) return;
-
-            // 3. Execution
-            actionService.InternalExecute(action, ref target, ctx);
-
-            // 4. Local Post-Reactions
-            RunPostReactions(ref action, ref target, ctx, postReactions);
-
-            // 5. Additional Post-Reactions
-            RunAdditionalReactions(ref action, state, entity, ctx, additionalReactions, false, true);
-        };
-
-        _actionRunners[denseId] = runner;
-        _byteActionRunners[denseId] = byteRunner;
+        _systemRunners[typeof(TAction)] = SystemRunner;
     }
 
-    private bool RunAdditionalReactions<TAction>(ref TAction action, GlobalState state, Entity entity, Context ctx, List<AdditionalReactionEntry<TAction>> reactions, bool canAbort, bool runAfterAction)
+    public bool IsActionEnabled(IActionService actionService)
     {
-        // Console.WriteLine($"[Dispatcher] RunAdditionalReactions for {typeof(TAction).Name}:{JsonSerializer.Serialize(action)}. Count: {reactions.Count}, Entity: {entity.Id}");
-        foreach (var reaction in reactions)
-        {
-            // Filter: Only run if the phase matches
-            if (reaction.AfterActionExecuted != runAfterAction) continue;
-
-            // Check if current entity has the component for this reaction
-            bool hasComponent = state._entityMasks.Length > entity.Id && state._entityMasks[entity.Id].IsSet(reaction.ComponentId);
-            // Console.WriteLine($"[Dispatcher] Checking reaction for ComponentId {reaction.ComponentId}. HasComponent: {hasComponent}");
-            
-            if (hasComponent)
-            {
-                try 
-                {
-                    // Run reaction
-                    bool isAborted = reaction.Runner(ref action, state, entity, ctx);
-                    if (canAbort && isAborted) return true;
-                }
-                catch (Exception ex)
-                {
-                        Console.WriteLine($"Error in additional reaction: {ex}");
-                }
-            }
-        }
-        return false;
+        return actionService.RuntimeId != -1 && 
+               actionService.RuntimeId < _executionMask.Length && 
+               _executionMask[actionService.RuntimeId];
     }
 
-    public Type? GetActionType(int denseId)
+    public bool IsReactionEnabled(IReactionService reaction)
     {
-        return _byteActionRunners.ContainsKey(denseId) && _denseIdToType.TryGetValue(denseId, out var type) 
+        return reaction.RuntimeId != -1 && 
+               reaction.RuntimeId < _executionMask.Length && 
+               _executionMask[reaction.RuntimeId];
+    }
+
+    public ActionRunnerDisposable EnableActions(IEnumerable<IActionService> actionServices)
+    {
+        var servicesToEnable = new List<IActionService>();
+        foreach (var service in actionServices)
+        {
+            if (!IsActionEnabled(service))
+            {
+                EnableAction(service);
+                servicesToEnable.Add(service);
+            }
+        }
+        return new ActionRunnerDisposable(this, servicesToEnable);
+    }
+
+    public void DisableActions(IEnumerable<IActionService> actionServices)
+    {
+        foreach (var service in actionServices)
+        {
+            DisableAction(service);
+        }
+    }
+
+    public ReactionRunnerDisposable EnableReactions(IEnumerable<IReactionService> reactionServices)
+    {
+        var servicesToEnable = new List<IReactionService>();
+        foreach (var service in reactionServices)
+        {
+            if (!IsReactionEnabled(service))
+            {
+                EnableReaction(service);
+                servicesToEnable.Add(service);
+            }
+        }
+        return new ReactionRunnerDisposable(this, servicesToEnable);
+    }
+
+    public void DisableReactions(IEnumerable<IReactionService> reactionServices)
+    {
+        foreach (var service in reactionServices)
+        {
+            DisableReaction(service);
+        }
+    }
+
+    public void EnableAction(IActionService actionService)
+    {
+        if (actionService.RuntimeId != -1)
+        {
+            EnsureMaskCapacity(actionService.RuntimeId);
+            _executionMask[actionService.RuntimeId] = true;
+        }
+    }
+
+    public void DisableAction(IActionService actionService)
+    {
+        if (actionService.RuntimeId != -1 && actionService.RuntimeId < _executionMask.Length)
+        {
+            _executionMask[actionService.RuntimeId] = false;
+        }
+    }
+
+    public void Update(GlobalState state)
+    {
+        foreach (var system in _systemRunners.Values)
+        {
+            system(state);
+        }
+    }
+
+    public int GetDenseId<TAction>() where TAction : struct, IAction
+    {
+        if (!IsActionRegistered(typeof(TAction)))
+        {
+            throw new Exception($"Action {typeof(TAction).Name} is not registered in Dispatcher.");
+        }
+        return ComponentId<TAction>.DenseId;
+    }
+    
+    public Type? GetActionType(int localId)
+    {
+        return _byteActionRunners.ContainsKey(localId) && ComponentId.TryGetType(new DenseComponentId(localId), out var type) 
             ? type 
             : null;
     }
 
     public void Execute<TAction>(TAction action, GlobalState state, Entity entity) where TAction : struct, IAction
     {
-        if (!_actionTypeToDenseId.TryGetValue(typeof(TAction), out int denseId))
+        var id = ComponentId<TAction>.DenseId;
+        if (_actionRunners.TryGetValue(id, out var runner))
         {
-             throw new Exception($"No registered service found for action {typeof(TAction).Name}");
-        }
-
-        if (_actionRunners.TryGetValue(denseId, out var runner))
-        {
-            ((Action<TAction, GlobalState, Entity>)runner)(action, state, entity);
-        }
-        else
-        {
-            throw new Exception($"No runner registered for ID {denseId}");
+             ((Action<TAction, GlobalState, Entity>)runner)(action, state, entity);
         }
     }
 
-    public void ExecuteByteAction(int denseId, byte[] buffer, int offset, GlobalState state, Entity entity)
+    public void ExecuteByteAction(int localId, byte[] data, int offset, GlobalState state, Entity entity)
     {
-        if (_byteActionRunners.TryGetValue(denseId, out var byteRunner))
+        if (_byteActionRunners.TryGetValue(localId, out var runner))
         {
-            byteRunner(buffer, offset, state, entity);
+            runner(data, offset, state, entity);
         }
-        // If not found? 
-    }
-
-    public int GetDenseId<TAction>()
-    {
-         if (_actionTypeToDenseId.TryGetValue(typeof(TAction), out int denseId))
-         {
-             return denseId;
-         }
-         throw new Exception($"Action {typeof(TAction).Name} is not registered.");
     }
 
     private bool RunPreReactions<TAction, TTarget>(
@@ -282,6 +371,7 @@ public class Dispatcher
     {
         foreach (var reaction in preReactions)
         {
+            if (!_executionMask[reaction.RuntimeId]) continue;
             var isAborted = reaction.InternalReact(ref action, ref target, ctx);
             if (isAborted.Value) return true; // Aborted
         }
@@ -298,6 +388,7 @@ public class Dispatcher
     {
         foreach (var reaction in postReactions)
         {
+            if (!_executionMask[reaction.RuntimeId]) continue;
             reaction.InternalReact(ref action, ref target, ctx);
         }
     }

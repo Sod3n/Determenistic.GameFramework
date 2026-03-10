@@ -31,6 +31,17 @@ public class StateHistory
         _count = 0;
     }
 
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _head = 0;
+            _tail = 0;
+            _count = 0;
+            Array.Clear(_buffer, 0, _capacity);
+        }
+    }
+
     public void Store(long tick, GlobalState state)
     {
         byte[] data = StateSerializer.Serialize(state);
@@ -81,7 +92,9 @@ public class StateHistory
                     
                     // Note: Deserializing inside lock is safe for history integrity, 
                     // but 'state' must be exclusively accessed by the caller (GameLoop usually)
-                    StateSerializer.Deserialize(state, _buffer[idx].Data);
+                    // CRITICAL: Pass syncComponentIds: false to avoid resetting global ComponentId mappings
+                    // during a local rollback.
+                    StateSerializer.Deserialize(state, _buffer[idx].Data, syncComponentIds: false);
                     
                     // DEBUG: Check mask after restore
                     // Console.WriteLine($"[StateHistory] Restored. New Mask[0]: {state._entityMasks[0]._part0:X}");

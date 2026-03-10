@@ -41,7 +41,7 @@ public static class ReactiveExtensions
         where T1 : struct, IComponent
     {
         var mask = new BitMask128();
-        mask.Set(InternalTypeId<T1>.Value);
+        mask.Set(ComponentId<T1>.IntId);
         
         var observer = ObserverPool<ArchetypeObserver>.Get();
         observer.Initialize(state, mask, onAdd, onRemove);
@@ -54,8 +54,8 @@ public static class ReactiveExtensions
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
-        mask.Set(InternalTypeId<T1>.Value);
-        mask.Set(InternalTypeId<T2>.Value);
+        mask.Set(ComponentId<T1>.IntId);
+        mask.Set(ComponentId<T2>.IntId);
         
         var observer = ObserverPool<ArchetypeObserver>.Get();
         observer.Initialize(state, mask, onAdd, onRemove);
@@ -69,9 +69,9 @@ public static class ReactiveExtensions
         where T3 : struct, IComponent
     {
         var mask = new BitMask128();
-        mask.Set(InternalTypeId<T1>.Value);
-        mask.Set(InternalTypeId<T2>.Value);
-        mask.Set(InternalTypeId<T3>.Value);
+        mask.Set(ComponentId<T1>.IntId);
+        mask.Set(ComponentId<T2>.IntId);
+        mask.Set(ComponentId<T3>.IntId);
         
         var observer = ObserverPool<ArchetypeObserver>.Get();
         observer.Initialize(state, mask, onAdd, onRemove);

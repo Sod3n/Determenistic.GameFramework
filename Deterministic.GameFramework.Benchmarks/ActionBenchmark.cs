@@ -8,8 +8,8 @@ namespace Deterministic.GameFramework.Benchmarks
     [MemoryDiagnoser]
     public class ActionBenchmark
     {
-        private GlobalState _state;
-        private Dispatcher _dispatcher;
+        private GlobalState _state = null!;
+        private Dispatcher _dispatcher = null!;
         private Entity _target;
         private BenchmarkAction _action;
 
@@ -17,12 +17,8 @@ namespace Deterministic.GameFramework.Benchmarks
         public void Setup()
         {
             _state = new GlobalState();
-            _dispatcher = new Dispatcher(type => 
-            {
-                // Simple deterministic ID generation for benchmark
-                if (type == typeof(BenchmarkActionService)) return Deterministic.GameFramework.CoreV2.Guid.Parse("00000000-0000-0000-0000-000000000001");
-                return Deterministic.GameFramework.CoreV2.Guid.NewGuid();
-            });
+            // Dispatcher no longer needs service lookup for registration
+            _dispatcher = new Dispatcher();
             
             _target = _state.CreateEntity();
             _state.AddComponent(_target, new BenchmarkComponent());
@@ -47,6 +43,7 @@ namespace Deterministic.GameFramework.Benchmarks
         }
     }
 
+    [NetworkId("00000000-0000-0000-0000-000000000008")]
     public struct BenchmarkAction : IAction
     {
         public int Value;
@@ -58,7 +55,6 @@ namespace Deterministic.GameFramework.Benchmarks
         public int Value;
     }
 
-    [NetworkId("00000000-0000-0000-0000-000000000006")]
     public class BenchmarkActionService : ActionService<BenchmarkAction, BenchmarkComponent>
     {
         protected override void ExecuteProcess(BenchmarkAction action, ref BenchmarkComponent component, Context context)

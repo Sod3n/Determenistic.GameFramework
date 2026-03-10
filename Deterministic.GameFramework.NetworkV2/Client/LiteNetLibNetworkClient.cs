@@ -126,7 +126,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         writer.Put((byte)PacketType.Batch);
         writer.Put(data);
         
-        _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableOrdered);
+        _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableUnordered);
     }
 
     public ValueTask DisposeAsync()

@@ -15,7 +15,7 @@ public class ActionScheduler
     // Struct to hold pending action metadata
     private struct PendingAction
     {
-        public int DenseId;
+        public DenseComponentId Id;
         public int TargetEntityId;
         public long ExecuteTick;
         public int DataOffset;
@@ -33,18 +33,16 @@ public class ActionScheduler
     /// <summary>
     /// Delegate for the OnActionScheduled event.
     /// </summary>
-    public delegate void ActionScheduledHandler(int denseId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick);
+    public delegate void ActionScheduledHandler(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick);
 
     public event ActionScheduledHandler? OnActionScheduled;
 
     public long EarliestDirtyTick { get; private set; } = long.MaxValue;
     public long MinAllowedTick { get; private set; } = 0;
 
-    public ScheduleResult Schedule<TAction>(TAction action, int denseId, Entity target, long executeTick) where TAction : struct, IAction
+    public ScheduleResult Schedule<TAction>(TAction action, DenseComponentId id, Entity target, long executeTick) where TAction : struct, IAction
     {
-        int structSize = Marshal.SizeOf<TAction>();
-
-        // Create ReadOnlySpan<byte> for deduplication check
+        // Create ReadOnlySpan<byte> for struct
 #if NETSTANDARD2_1 || NETSTANDARD2_0
         var actionSpan = MemoryMarshal.CreateReadOnlySpan(ref action, 1);
 #else
@@ -52,87 +50,54 @@ public class ActionScheduler
 #endif
         var byteSpan = MemoryMarshal.AsBytes(actionSpan);
 
-        lock (_lock)
-        {
-            // Deduplication
-            if (IsDuplicate(denseId, target.Id, executeTick, byteSpan))
-            {
-                return ScheduleResult.Duplicate;
-            }
-            
-            EnsureCapacity();
-            EnsureDataCapacity(structSize);
-
-            // Copy struct to buffer
-    #if NETSTANDARD2_1 || NETSTANDARD2_0
-            MemoryMarshal.Write(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize), ref action);
-    #else
-            MemoryMarshal.Write(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize), in action);
-    #endif
-
-            // Record metadata
-            AddPendingAction(denseId, target.Id, executeTick, _actionDataHead, structSize);
-
-            // Notify listeners (Network Layer)
-            if (OnActionScheduled != null)
-            {
-                var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, structSize);
-                OnActionScheduled.Invoke(denseId, span, target.Id, executeTick);
-            }
-
-            _actionDataHead += structSize;
-            
-            // Track for Rollback
-            if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
-        }
-
-        return ScheduleResult.Success;
+        return ScheduleInternal(id, target.Id, executeTick, byteSpan);
     }
 
-    public ScheduleResult ScheduleFromBytes(int denseId, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
+    public ScheduleResult ScheduleFromBytes(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
     {
         if (executeTick < MinAllowedTick)
         {
             return ScheduleResult.TooOld;
         }
+        return ScheduleInternal(id, targetEntityId, executeTick, data);
+    }
 
+    private ScheduleResult ScheduleInternal(DenseComponentId id, int targetEntityId, long executeTick, ReadOnlySpan<byte> data)
+    {
         lock (_lock)
         {
-            // Deduplication: Check if identical action is already scheduled for this tick
-            // This handles Client-Side Prediction (Local action matches Server action)
-            if (IsDuplicate(denseId, targetEntityId, executeTick, data))
+            // Deduplication
+            if (IsDuplicate(id, targetEntityId, executeTick, data))
             {
                 return ScheduleResult.Duplicate;
             }
-
-            int structSize = data.Length;
             
             EnsureCapacity();
-            EnsureDataCapacity(structSize);
+            EnsureDataCapacity(data.Length);
 
             // Copy bytes to buffer
-            data.CopyTo(new Span<byte>(_actionDataBuffer, _actionDataHead, structSize));
+            data.CopyTo(new Span<byte>(_actionDataBuffer, _actionDataHead, data.Length));
 
             // Record metadata
-            AddPendingAction(denseId, targetEntityId, executeTick, _actionDataHead, structSize);
+            AddPendingAction(id, targetEntityId, executeTick, _actionDataHead, data.Length);
 
-            // Notify listeners (Network Layer for Broadcasting)
+            // Notify listeners (Network Layer)
             if (OnActionScheduled != null)
             {
-                var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, structSize);
-                OnActionScheduled.Invoke(denseId, span, targetEntityId, executeTick);
+                var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, data.Length);
+                OnActionScheduled.Invoke(id, span, targetEntityId, executeTick);
             }
 
-            _actionDataHead += structSize;
-
+            _actionDataHead += data.Length;
+            
             // Track for Rollback
             if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
         }
-        
+
         return ScheduleResult.Success;
     }
 
-    private bool IsDuplicate(int denseId, int targetEntityId, long tick, ReadOnlySpan<byte> data)
+    private bool IsDuplicate(DenseComponentId id, int targetEntityId, long tick, ReadOnlySpan<byte> data)
     {
         for (int i = 0; i < _pendingActionCount; i++)
         {
@@ -140,7 +105,7 @@ public class ActionScheduler
             
             // Fast checks
             if (pending.ExecuteTick != tick) continue;
-            if (pending.DenseId != denseId) continue;
+            if (pending.Id != id) continue;
             if (pending.TargetEntityId != targetEntityId) continue;
             if (pending.DataLength != data.Length) continue;
 
@@ -190,7 +155,7 @@ public class ActionScheduler
                     
                     actionsToExecute[dst++] = new ExecutableAction
                     {
-                        DenseId = pending.DenseId,
+                        Id = pending.Id,
                         TargetEntityId = pending.TargetEntityId,
                         Data = data
                     };
@@ -201,22 +166,21 @@ public class ActionScheduler
         // 2. Sort (Insertion Sort for determinism - or Array.Sort with stable key)
         Array.Sort(actionsToExecute, (a, b) => 
         {
-            int netIdCompare = a.DenseId.CompareTo(b.DenseId);
-            if (netIdCompare != 0) return netIdCompare;
-            return a.TargetEntityId.CompareTo(b.TargetEntityId);
+            int netIdCompare = a.Id.CompareTo(b.Id);
+            return netIdCompare != 0 ? netIdCompare : a.TargetEntityId.CompareTo(b.TargetEntityId);
         });
 
         // 3. Execute
         for (int i = 0; i < actionsToExecute.Length; i++)
         {
             var action = actionsToExecute[i];
-            dispatcher.ExecuteByteAction(action.DenseId, action.Data, 0, state, new Entity(action.TargetEntityId));
+            dispatcher.ExecuteByteAction(action.Id, action.Data, 0, state, new Entity(action.TargetEntityId));
         }
     }
     
     private struct ExecutableAction
     {
-        public int DenseId;
+        public DenseComponentId Id;
         public int TargetEntityId;
         public byte[] Data;
     }
@@ -299,11 +263,11 @@ public class ActionScheduler
         }
     }
 
-    private void AddPendingAction(int denseId, int targetId, long tick, int offset, int length)
+    private void AddPendingAction(DenseComponentId id, int targetId, long tick, int offset, int length)
     {
         _pendingActions[_pendingActionCount++] = new PendingAction
         {
-            DenseId = denseId,
+            Id = id,
             TargetEntityId = targetId,
             ExecuteTick = tick,
             DataOffset = offset,

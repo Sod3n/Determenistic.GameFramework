@@ -11,6 +11,12 @@ namespace Deterministic.GameFramework.CoreV2.Tests
 {
     public class ReactiveSystemTests
     {
+        public ReactiveSystemTests()
+        {
+            ServiceLocator.RegisterAssembly(typeof(HealthComponent).Assembly);
+            ServiceLocator.RegisterAssembly(typeof(World).Assembly);
+        }
+
         [Fact]
         public void Subscribe_ShouldTriggerCallback_WhenValueChanges()
         {

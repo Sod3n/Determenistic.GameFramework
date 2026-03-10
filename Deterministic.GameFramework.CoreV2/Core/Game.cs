@@ -21,19 +21,23 @@ public class Game : IDisposable
         State = state ?? new GlobalState();
         
         // 2. Setup Dispatcher
-        // Use ServiceLocator for ID mapping
-        Dispatcher = new Dispatcher(type => ServiceLocator.TypeToId[type]);
+        // Use ComponentId for ID mapping
+        Dispatcher = new Dispatcher(type => ComponentId.FromType(type).ToStable());
         
         // 3. Setup Scheduler & Loop
         Scheduler = new ActionScheduler();
         Loop = new GameLoop(State, Dispatcher, Scheduler);
-        Loop.SetTickRate(tickRate); 
+        Loop.SetTickRate(tickRate);
         
-        // 4. Setup Scene Manager
+        // 4. Register All Services from ServiceLocator
+        // This ensures all actions/reactions are known and have RuntimeIDs assigned
+        Dispatcher.RegisterServices(
+            ServiceLocator.GetAll<IActionService>(), 
+            ServiceLocator.GetAll<IReactionService>()
+        );
+        
+        // 5. Setup Scene Manager
         SceneManager = new SceneManager(Loop);
-        
-        // 5. Initialize Services (Actions/Reactions are global)
-        ServiceLocator.Initialize(Dispatcher);
     }
 
     public System.Threading.Tasks.Task Start()
