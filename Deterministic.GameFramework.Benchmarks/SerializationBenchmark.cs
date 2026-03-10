@@ -1,59 +1,100 @@
 using BenchmarkDotNet.Attributes;
 using Deterministic.GameFramework.CoreV2;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace Deterministic.GameFramework.Benchmarks
 {
     [MemoryDiagnoser]
     public class SerializationBenchmark
     {
-        private GlobalState _sourceState;
-        private GlobalState _targetState;
-        private byte[] _serializedData;
+        private GlobalState _sourceState = null!;
+        private GlobalState _targetState = null!;
+        private byte[] _serializedData = null!;
         private const int EntityCount = 10_000;
+
+        private GlobalState _bigSourceState = null!;
+        private GlobalState _bigTargetState = null!;
+        private byte[] _bigSerializedData = null!;
+        private const int BigEntityCount = 100_000;
 
         [GlobalSetup]
         public void Setup()
         {
+            // Register types for ComponentId
+            ComponentId.RegisterAssembly(typeof(SerializationBenchmark).Assembly);
+            ComponentId.RegisterAssembly(typeof(GlobalState).Assembly); // For World component
+
+            // Normal State (10k)
             _sourceState = new GlobalState();
             _targetState = new GlobalState();
+            _sourceState.RegisterComponent<SerTransformComponent>();
+            _sourceState.RegisterComponent<SerVelocityComponent>();
+            _targetState.RegisterComponent<SerTransformComponent>();
+            _targetState.RegisterComponent<SerVelocityComponent>();
 
-            // Ensure types are registered
-            var t1 = InternalTypeId<SerTransformComponent>.Value;
-            var t2 = InternalTypeId<SerVelocityComponent>.Value;
+            FillState(_sourceState, EntityCount);
+            _serializedData = StateSerializer.Serialize(_sourceState);
 
-            for (int i = 0; i < EntityCount; i++)
+            // Big State (100k)
+            _bigSourceState = new GlobalState();
+            _bigTargetState = new GlobalState();
+            _bigSourceState.RegisterComponent<SerTransformComponent>();
+            _bigSourceState.RegisterComponent<SerVelocityComponent>();
+            _bigTargetState.RegisterComponent<SerTransformComponent>();
+            _bigTargetState.RegisterComponent<SerVelocityComponent>();
+
+            FillState(_bigSourceState, BigEntityCount);
+            _bigSerializedData = StateSerializer.Serialize(_bigSourceState);
+        }
+
+        private void FillState(GlobalState state, int count)
+        {
+            for (int i = 0; i < count; i++)
             {
-                var entity = _sourceState.CreateEntity();
-                _sourceState.AddComponent(entity, new SerTransformComponent { X = i, Y = i, Z = i });
+                var entity = state.CreateEntity();
+                state.AddComponent(entity, new SerTransformComponent { X = i, Y = i, Z = i });
                 if (i % 2 == 0)
                 {
-                    _sourceState.AddComponent(entity, new SerVelocityComponent { X = 1, Y = 1 });
+                    state.AddComponent(entity, new SerVelocityComponent { X = 1, Y = 1 });
                 }
             }
-
-            // Pre-serialize for deserialization benchmark
-            _serializedData = StateSerializer.Serialize(_sourceState);
         }
 
         [Benchmark]
-        public byte[] Serialize()
+        public byte[] Serialize_10k()
         {
             return StateSerializer.Serialize(_sourceState);
         }
 
         [Benchmark]
-        public void SerializePooled()
+        public void Deserialize_10k_FullSync()
         {
-            using var buffer = StateSerializer.SerializePooled(_sourceState);
-            // Simulate usage (e.g. access Length)
-            var len = buffer.Length;
+            StateSerializer.Deserialize(_targetState, _serializedData, syncComponentIds: true);
         }
 
         [Benchmark]
-        public void Deserialize()
+        public void Deserialize_10k_Rollback()
         {
-            StateSerializer.Deserialize(_targetState, _serializedData);
+            StateSerializer.Deserialize(_targetState, _serializedData, syncComponentIds: false);
+        }
+
+        [Benchmark]
+        public byte[] Serialize_100k()
+        {
+            return StateSerializer.Serialize(_bigSourceState);
+        }
+
+        [Benchmark]
+        public void Deserialize_100k_FullSync()
+        {
+            StateSerializer.Deserialize(_bigTargetState, _bigSerializedData, syncComponentIds: true);
+        }
+
+        [Benchmark]
+        public void Deserialize_100k_Rollback()
+        {
+            StateSerializer.Deserialize(_bigTargetState, _bigSerializedData, syncComponentIds: false);
         }
     }
 

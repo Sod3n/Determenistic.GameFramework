@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MessagePack;
 
@@ -16,10 +17,21 @@ public class StateSnapshot
     public Dictionary<string, byte[]> ExternalState { get; set; } = new();
 
     [Key(3)]
-    public List<ComponentSnapshot> Components { get; set; } = new();
+    public ReadOnlyMemory<byte> EntityMasks { get; set; }
 
     [Key(4)]
+    public List<ComponentSnapshot> Components { get; set; } = new();
+
+    [Key(5)]
     public List<MappingSnapshot> Mappings { get; set; } = new();
+
+    public void Clear()
+    {
+        ExternalState.Clear();
+        Components.Clear();
+        Mappings.Clear();
+        EntityMasks = ReadOnlyMemory<byte>.Empty;
+    }
 }
 
 [MessagePackObject]
@@ -29,12 +41,9 @@ public struct ComponentSnapshot
     public int TypeId { get; set; }
 
     [Key(1)]
-    public byte[] Data { get; set; }
+    public ReadOnlyMemory<byte> Data { get; set; }
 
     [Key(2)]
-    public byte[] PresenceMask { get; set; }
-
-    [Key(3)]
     public int Count { get; set; }
 }
 
@@ -42,7 +51,7 @@ public struct ComponentSnapshot
 public struct MappingSnapshot
 {
     [Key(0)]
-    public byte[] StableId { get; set; }
+    public ReadOnlyMemory<byte> StableId { get; set; }
 
     [Key(1)]
     public int DenseId { get; set; }

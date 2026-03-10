@@ -20,6 +20,8 @@ namespace Deterministic.GameFramework.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            ComponentId.RegisterAssembly(typeof(ActionEcsBenchmark).Assembly);
+            ComponentId.RegisterAssembly(typeof(GlobalState).Assembly);
             _state = new GlobalState();
             _entities = new Entity[Count];
             

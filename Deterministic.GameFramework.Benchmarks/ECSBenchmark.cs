@@ -12,6 +12,8 @@ namespace Deterministic.GameFramework.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            ComponentId.RegisterAssembly(typeof(ECSBenchmark).Assembly);
+            ComponentId.RegisterAssembly(typeof(GlobalState).Assembly);
             _state = new GlobalState();
             
             for (int i = 0; i < EntityCount; i++)
@@ -41,8 +43,8 @@ namespace Deterministic.GameFramework.Benchmarks
             
             // Reconstruct mask logic for fair comparison
             var tMask = new BitMask128();
-            tMask.Set(InternalTypeId<TransformComponent>.Value);
-            tMask.Set(InternalTypeId<VelocityComponent>.Value);
+            tMask.Set(ComponentId<TransformComponent>.IntId);
+            tMask.Set(ComponentId<VelocityComponent>.IntId);
 
             int count = masks.Length;
             for (int i = 0; i < count; i++)

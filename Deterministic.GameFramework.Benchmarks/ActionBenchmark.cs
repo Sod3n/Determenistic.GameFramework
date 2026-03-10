@@ -16,6 +16,8 @@ namespace Deterministic.GameFramework.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            ComponentId.RegisterAssembly(typeof(ActionBenchmark).Assembly);
+            ComponentId.RegisterAssembly(typeof(GlobalState).Assembly);
             _state = new GlobalState();
             // Dispatcher no longer needs service lookup for registration
             _dispatcher = new Dispatcher();

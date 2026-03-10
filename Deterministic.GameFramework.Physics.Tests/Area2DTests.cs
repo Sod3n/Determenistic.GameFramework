@@ -61,7 +61,7 @@ public class Area2DTests
 
         // 3. Move Character Inside (0, 0)
         ref var charTransform = ref state.GetComponent<Transform2D>(charEntity);
-        charTransform.LocalPosition = Vector2.Zero; // Update LocalPosition!
+        charTransform.Position = Vector2.Zero; // Update LocalPosition!
         // TransformSystem will update Position next frame. 
         // PhysicsSystem will update Body position from Transform next frame.
         
@@ -133,7 +133,7 @@ public class Area2DTests
 
         // Move Character Away (10, 0)
         ref var charTransform = ref state.GetComponent<Transform2D>(charEntity);
-        charTransform.LocalPosition = new Vector2(10, 0); // Update LocalPosition!
+        charTransform.Position = new Vector2(10, 0); // Update LocalPosition!
 
         // Tick 2: Exit
         gameLoop.RunSingleTick();
