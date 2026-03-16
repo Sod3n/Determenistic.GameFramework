@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using FixedMathSharp;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -40,6 +41,10 @@ public struct Vector3 : IParam, IEquatable<Vector3>
 
     public static bool operator ==(Vector3 a, Vector3 b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
     public static bool operator !=(Vector3 a, Vector3 b) => !(a == b);
+    
+    // Implicit casts to/from FixedMathSharp.Vector3d
+    public static implicit operator Vector3d(Vector3 v) => new Vector3d(v.X.Value, v.Y.Value, v.Z.Value);
+    public static implicit operator Vector3(Vector3d v) => new Vector3(new Float(v.x), new Float(v.y), new Float(v.z));
 
     public override bool Equals(object? obj) => obj is Vector3 other && Equals(other);
     public bool Equals(Vector3 other) => X == other.X && Y == other.Y && Z == other.Z;

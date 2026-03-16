@@ -284,12 +284,14 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 ref var transform = ref state.GetComponent<Transform2D>(entity);
 
                 // Check for Teleport (Logic moved Transform)
-                // If ECS position differs from Physics position, we assume logic moved it.
+                // If ECS position or rotation differs from Physics position/rotation, we assume logic moved it.
                 var rapierPos = _world.BodyGetTranslation(bodyHandle);
+                var rapierRot = _world.BodyGetRotation(bodyHandle);
                 float dx = (float)transform.GlobalPosition.X - rapierPos.x;
                 float dy = (float)transform.GlobalPosition.Y - rapierPos.y;
+                float dr = (float)transform.GlobalRotation - rapierRot.angle;
                 
-                if (dx * dx + dy * dy > 0.0001f) // Epsilon squared (0.01 * 0.01 = 0.0001)
+                if (dx * dx + dy * dy > 0.0001f || Math.Abs(dr) > 0.0001f) // Epsilon squared or rotation diff
                 {
                     _world.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
                     _world.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
@@ -321,10 +323,12 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                  // Check for Teleport
                  ref var transform = ref state.GetComponent<Transform2D>(entity);
                  var rapierPos = _world.BodyGetTranslation(bodyHandle);
+                 var rapierRot = _world.BodyGetRotation(bodyHandle);
                  float dx = (float)transform.GlobalPosition.X - rapierPos.x;
                  float dy = (float)transform.GlobalPosition.Y - rapierPos.y;
+                 float dr = (float)transform.GlobalRotation - rapierRot.angle;
                  
-                 if (dx * dx + dy * dy > 0.0001f)
+                 if (dx * dx + dy * dy > 0.0001f || Math.Abs(dr) > 0.0001f)
                  {
                      _world.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
                      // Characters usually handle rotation differently (upright), but we sync it anyway if changed
@@ -481,15 +485,6 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             ref var transform = ref state.GetComponent<Transform2D>(entity);
             transform.GlobalPosition = new Vector2(rapierPos.x, rapierPos.y);
             transform.GlobalRotation = rapierRot.angle;
-
-            // Sync World -> Local if root
-            // If it has a parent, we would need to calculate local from world (Inverse Transform),
-            // but usually physics bodies are roots or independent.
-            if (transform.Parent == Entity.Null)
-            {
-                transform.Position = transform.GlobalPosition;
-                transform.Rotation = transform.GlobalRotation;
-            }
 
             // Get Velocity for Dynamic Bodies
             if (state.HasComponent<RigidBody2D>(entity))

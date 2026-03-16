@@ -10,14 +10,74 @@ public struct Transform2D : IComponent
     public bool DestroyOnUnparent;
     
     // Local Space (Relative to Parent)
-    public Vector2 Position;
-    public Float Rotation;
-    public Vector2 Scale;
+    private Vector2 _position;
+    private Float _rotation;
+    private Vector2 _scale;
+    
+    public Vector2 Position
+    {
+        get => _position;
+        set
+        {
+            _position = value;
+            if (Parent == Entity.Null) _globalPosition = value;
+        }
+    }
+
+    public Float Rotation
+    {
+        get => _rotation;
+        set
+        {
+            _rotation = value;
+            if (Parent == Entity.Null) _globalRotation = value;
+        }
+    }
+
+    public Vector2 Scale
+    {
+        get => _scale;
+        set
+        {
+            _scale = value;
+            if (Parent == Entity.Null) _globalScale = value;
+        }
+    }
     
     // World Space
-    public Vector2 GlobalPosition;
-    public Float GlobalRotation;
-    public Vector2 GlobalScale;
+    private Vector2 _globalPosition;
+    private Float _globalRotation;
+    private Vector2 _globalScale;
+
+    public Vector2 GlobalPosition
+    {
+        get => _globalPosition;
+        set
+        {
+            _globalPosition = value;
+            if (Parent == Entity.Null) _position = value;
+        }
+    }
+
+    public Float GlobalRotation
+    {
+        get => _globalRotation;
+        set
+        {
+            _globalRotation = value;
+            if (Parent == Entity.Null) _rotation = value;
+        }
+    }
+
+    public Vector2 GlobalScale
+    {
+        get => _globalScale;
+        set
+        {
+            _globalScale = value;
+            if (Parent == Entity.Null) _scale = value;
+        }
+    }
     
     // Change Tracking
     internal Vector2 LastGlobalPosition;
@@ -28,14 +88,15 @@ public struct Transform2D : IComponent
     public Transform2D(Vector2 globalPosition, Float globalRotation, Vector2 globalScale)
     {
         Parent = Entity.Null;
+        DestroyOnUnparent = false;
         
-        Position = globalPosition;
-        Rotation = globalRotation;
-        Scale = globalScale;
+        _position = globalPosition;
+        _rotation = globalRotation;
+        _scale = globalScale;
         
-        GlobalPosition = globalPosition;
-        GlobalRotation = globalRotation;
-        GlobalScale = globalScale;
+        _globalPosition = globalPosition;
+        _globalRotation = globalRotation;
+        _globalScale = globalScale;
         
         LastGlobalPosition = globalPosition;
         LastGlobalRotation = globalRotation;

@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using FixedMathSharp;
 
 namespace Deterministic.GameFramework.CoreV2;
 
@@ -36,6 +37,10 @@ public struct Vector2 : IParam, IEquatable<Vector2>
 
     public static bool operator ==(Vector2 a, Vector2 b) => a.X == b.X && a.Y == b.Y;
     public static bool operator !=(Vector2 a, Vector2 b) => !(a == b);
+    
+    // Implicit casts to/from FixedMathSharp.Vector2d
+    public static implicit operator Vector2d(Vector2 v) => new Vector2d(v.X.Value, v.Y.Value);
+    public static implicit operator Vector2(Vector2d v) => new Vector2(new Float(v.x), new Float(v.y));
 
     public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
     public bool Equals(Vector2 other) => X == other.X && Y == other.Y;
@@ -74,4 +79,16 @@ public struct Vector2 : IParam, IEquatable<Vector2>
 
     public static Vector2 Min(Vector2 a, Vector2 b) => new Vector2(Float.Min(a.X, b.X), Float.Min(a.Y, b.Y));
     public static Vector2 Max(Vector2 a, Vector2 b) => new Vector2(Float.Max(a.X, b.X), Float.Max(a.Y, b.Y));
+
+    public void Rotate(Float angle)
+    {
+        Vector2d v = this;
+        v.Rotate(angle.Value);
+        this = v;
+    }
+    
+    public Float ToAngle()
+    {
+        return Float.Atan2(Y, X);
+    }
 }

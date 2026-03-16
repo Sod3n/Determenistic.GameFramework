@@ -166,6 +166,17 @@ public class ComponentModelGenerator : IIncrementalGenerator
             })
             .ToList();
 
+        var properties = symbol.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic && p.GetMethod != null && p.SetMethod != null)
+            .Select(p => new FieldInfo 
+            { 
+                Name = p.Name, 
+                Type = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) 
+            });
+            
+        fields.AddRange(properties);
+
         return new ComponentInfo
         {
             Namespace = namespaceName,
@@ -360,30 +371,64 @@ public class ComponentModelGenerator : IIncrementalGenerator
 
     private string GetTargetType(string type, bool isGodot)
     {
+        // Normalize type name to avoid issues with global:: prefix
+        var normalized = type.StartsWith("global::") ? type.Substring(8) : type;
+        
+        // Always map these types to standard C# primitives/types
+        if (normalized == "Deterministic.GameFramework.CoreV2.Float") return "float";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Int") return "int";
+        if (normalized == "Deterministic.GameFramework.CoreV2.FixedString32") return "string";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Ref") return "int";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Entity") return "int";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Guid") return "global::System.Guid";
+
         if (!isGodot) return type;
         
-        if (type == "global::Deterministic.GameFramework.CoreV2.Vector2") return "global::Godot.Vector2";
-        if (type == "global::Deterministic.GameFramework.CoreV2.Vector3") return "global::Godot.Vector3";
-        if (type == "global::Deterministic.GameFramework.CoreV2.Guid") return "global::System.Guid";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Vector2") return "global::Godot.Vector2";
+        if (normalized == "Deterministic.GameFramework.CoreV2.Vector3") return "global::Godot.Vector3";
         
         return type;
     }
 
     private string GetConversion(string varName, string type, bool isGodot)
     {
+        var normalized = type.StartsWith("global::") ? type.Substring(8) : type;
+
+        // Always convert these types
+        if (normalized == "Deterministic.GameFramework.CoreV2.Float")
+        {
+            return $"(float){varName}";
+        }
+        if (normalized == "Deterministic.GameFramework.CoreV2.Int")
+        {
+            return $"(int){varName}";
+        }
+        if (normalized == "Deterministic.GameFramework.CoreV2.FixedString32")
+        {
+            return $"{varName}.ToString()";
+        }
+        if (normalized == "Deterministic.GameFramework.CoreV2.Ref")
+        {
+            return $"(int){varName}";
+        }
+        if (normalized == "Deterministic.GameFramework.CoreV2.Entity")
+        {
+            return $"(int){varName}";
+        }
+        if (normalized == "Deterministic.GameFramework.CoreV2.Guid")
+        {
+            return $"(global::System.Guid){varName}";
+        }
+
         if (!isGodot) return varName;
 
-        if (type == "global::Deterministic.GameFramework.CoreV2.Vector2") 
+        if (normalized == "Deterministic.GameFramework.CoreV2.Vector2") 
         {
             return $"new global::Godot.Vector2((float){varName}.X, (float){varName}.Y)";
         }
-        if (type == "global::Deterministic.GameFramework.CoreV2.Vector3") 
+        if (normalized == "Deterministic.GameFramework.CoreV2.Vector3") 
         {
             return $"new global::Godot.Vector3((float){varName}.X, (float){varName}.Y, (float){varName}.Z)";
-        }
-        if (type == "global::Deterministic.GameFramework.CoreV2.Guid")
-        {
-            return $"(global::System.Guid){varName}";
         }
 
         return varName;

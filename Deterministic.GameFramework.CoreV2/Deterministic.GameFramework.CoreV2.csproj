@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FixedMathSharp" Version="2.1.0" />
     <PackageReference Include="MessagePack" Version="3.1.4" />
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>

@@ -70,11 +70,6 @@ internal class RapierCharacterProcessor
             var newPos = new Vector2(shapePos.x + result.translation.x - (float)shapeComp.Position.X, shapePos.y + result.translation.y - (float)shapeComp.Position.Y);
             transform.GlobalPosition = newPos;
             
-            if (transform.Parent == Entity.Null)
-            {
-                transform.Position = transform.GlobalPosition;
-            }
-            
             // Re-enable body and update position
             if (hasBody)
             {
