@@ -10,7 +10,7 @@ using Microsoft.Build.Utilities;
 
 namespace Deterministic.GameFramework.BuildTasks
 {
-    public class UpdateNetworkIdsTask : Task
+    public class UpdateStableIdsTask : Task
     {
         [Required]
         public string TargetAssembly { get; set; } = string.Empty;
@@ -22,13 +22,13 @@ namespace Deterministic.GameFramework.BuildTasks
         {
             if (!File.Exists(TargetAssembly)) 
             {
-                Log.LogWarning($"[NetworkId] Assembly not found: {TargetAssembly}");
+                Log.LogWarning($"[StableId] Assembly not found: {TargetAssembly}");
                 return true;
             }
 
-            Log.LogMessage(MessageImportance.High, $"[NetworkId] Scanning assembly: {TargetAssembly}");
+            Log.LogMessage(MessageImportance.High, $"[StableId] Scanning assembly: {TargetAssembly}");
 
-            var idsFile = Path.Combine(ProjectDirectory, "NetworkIds.json");
+            var idsFile = Path.Combine(ProjectDirectory, "StableIds.json");
             var currentIds = new Dictionary<string, int>();
 
             if (File.Exists(idsFile))
@@ -40,7 +40,7 @@ namespace Deterministic.GameFramework.BuildTasks
                 }
                 catch (Exception ex)
                 {
-                    Log.LogWarning($"[NetworkId] Failed to read existing NetworkIds.json: {ex.Message}");
+                    Log.LogWarning($"[StableId] Failed to read existing StableIds.json: {ex.Message}");
                 }
             }
 
@@ -56,7 +56,7 @@ namespace Deterministic.GameFramework.BuildTasks
                 foreach (var typeDefHandle in metadataReader.TypeDefinitions)
                 {
                     var typeDef = metadataReader.GetTypeDefinition(typeDefHandle);
-                    int? networkId = null;
+                    int? StableId = null;
 
                     foreach (var attrHandle in typeDef.GetCustomAttributes())
                     {
@@ -76,7 +76,7 @@ namespace Deterministic.GameFramework.BuildTasks
                             }
                         }
 
-                        if (attrName == "NetworkIdAttribute" || attrName == "NetworkId")
+                        if (attrName == "StableIdAttribute" || attrName == "StableId")
                         {
                             var value = attr.Value;
                             var bytes = metadataReader.GetBlobBytes(value);
@@ -84,29 +84,29 @@ namespace Deterministic.GameFramework.BuildTasks
                             // Prolog is 01 00, then the int32
                             if (bytes.Length >= 6 && bytes[0] == 0x01 && bytes[1] == 0x00)
                             {
-                                networkId = BitConverter.ToInt32(bytes, 2);
+                                StableId = BitConverter.ToInt32(bytes, 2);
                             }
                         }
                     }
 
-                    if (networkId.HasValue)
+                    if (StableId.HasValue)
                     {
                         var ns = metadataReader.GetString(typeDef.Namespace);
                         var name = metadataReader.GetString(typeDef.Name);
                         var fullName = string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
 
-                        if (!newIds.TryGetValue(fullName, out int existingId) || existingId != networkId.Value)
+                        if (!newIds.TryGetValue(fullName, out int existingId) || existingId != StableId.Value)
                         {
-                            newIds[fullName] = networkId.Value;
+                            newIds[fullName] = StableId.Value;
                             hasChanges = true;
-                            Log.LogMessage(MessageImportance.High, $"[NetworkId] Added/Updated: {fullName} -> {networkId.Value}");
+                            Log.LogMessage(MessageImportance.High, $"[StableId] Added/Updated: {fullName} -> {StableId.Value}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.LogError($"[NetworkId] Error scanning assembly: {ex.Message}");
+                Log.LogError($"[StableId] Error scanning assembly: {ex.Message}");
                 return false;
             }
 
@@ -115,11 +115,11 @@ namespace Deterministic.GameFramework.BuildTasks
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var outputJson = JsonSerializer.Serialize(newIds.OrderBy(k => k.Key).ToDictionary(k => k.Key, v => v.Value), options);
                 File.WriteAllText(idsFile, outputJson);
-                Log.LogMessage(MessageImportance.High, $"[NetworkId] Updated {idsFile}");
+                Log.LogMessage(MessageImportance.High, $"[StableId] Updated {idsFile}");
             }
             else
             {
-                Log.LogMessage(MessageImportance.Normal, "[NetworkId] No changes detected.");
+                Log.LogMessage(MessageImportance.Normal, "[StableId] No changes detected.");
             }
 
             return true;

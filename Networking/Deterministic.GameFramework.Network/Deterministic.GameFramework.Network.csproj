@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>true</ImplicitUsings>
+    <LangVersion>Latest</LangVersion>
+    <RootNamespace>Deterministic.GameFramework.NetworkV2</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Common\Deterministic.GameFramework.Common.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiteNetLib" Version="2.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

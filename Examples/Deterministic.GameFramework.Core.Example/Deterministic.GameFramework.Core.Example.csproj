@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\2D\Deterministic.GameFramework.TwoD.Physics\Deterministic.GameFramework.TwoD.Physics.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
+    <ProjectReference Include="..\..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Deterministic.GameFramework.CoreV2.Example</RootNamespace>
+    <LangVersion>12.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.1'">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+</Project>

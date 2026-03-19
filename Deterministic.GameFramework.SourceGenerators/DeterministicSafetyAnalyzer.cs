@@ -24,10 +24,55 @@ namespace Deterministic.GameFramework.SourceGenerators
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            
+            context.RegisterCompilationStartAction(compilationContext =>
+            {
+                var allowedTypes = GetAllowedTypes(compilationContext.Options.AdditionalFiles);
+                compilationContext.RegisterSymbolAction(ctx => AnalyzeSymbol(ctx, allowedTypes), SymbolKind.NamedType);
+            });
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static ImmutableHashSet<string> GetAllowedTypes(ImmutableArray<AdditionalText> additionalFiles)
+        {
+            var builder = ImmutableHashSet.CreateBuilder<string>();
+
+            // Internal default whitelist
+            // Note: primitives and IParam types are handled dynamically.
+            // These are for types that might NOT implement IParam but are considered safe
+            // or specific overrides.
+            builder.Add("Guid");
+            builder.Add("System.Guid"); 
+            builder.Add("Vector2");
+            builder.Add("Vector3");
+            builder.Add("Entity");
+            builder.Add("Ref");
+            builder.Add("FixedString32");
+            builder.Add("BitMask128");
+
+            foreach (var file in additionalFiles)
+            {
+                if (file.Path.EndsWith(".Deterministic.Allowed.txt", StringComparison.OrdinalIgnoreCase) || 
+                    file.Path.EndsWith("DeterministicSafety.Allowed.txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    var text = file.GetText();
+                    if (text != null)
+                    {
+                        foreach (var line in text.Lines)
+                        {
+                            var typeName = line.ToString().Trim();
+                            if (!string.IsNullOrEmpty(typeName) && !typeName.StartsWith("#"))
+                            {
+                                builder.Add(typeName);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return builder.ToImmutable();
+        }
+
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableHashSet<string> whitelist)
         {
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
@@ -47,7 +92,7 @@ namespace Deterministic.GameFramework.SourceGenerators
             {
                 if (field.IsStatic || field.IsConst) continue;
 
-                if (!IsDeterministic(field.Type))
+                if (!IsDeterministic(field.Type, whitelist))
                 {
                     var diagnostic = Diagnostic.Create(Rule, field.Locations[0], field.Name, namedTypeSymbol.Name, field.Type.ToDisplayString());
                     context.ReportDiagnostic(diagnostic);
@@ -55,9 +100,9 @@ namespace Deterministic.GameFramework.SourceGenerators
             }
         }
 
-        private static bool IsDeterministic(ITypeSymbol type)
+        private static bool IsDeterministic(ITypeSymbol type, ImmutableHashSet<string> whitelist)
         {
-            // Primitives
+            // 1. Primitives
             switch (type.SpecialType)
             {
                 case SpecialType.System_Boolean:
@@ -71,82 +116,66 @@ namespace Deterministic.GameFramework.SourceGenerators
                 case SpecialType.System_UInt64:
                     return true;
                 
-                // Float/Double are explicitly NOT deterministic
+                // Float/Double/String/Object are explicitly NOT deterministic
                 case SpecialType.System_Single:
                 case SpecialType.System_Double:
-                case SpecialType.System_String: // Strings are refs and allocs
+                case SpecialType.System_String:
                 case SpecialType.System_Object:
                     return false;
             }
 
-            // Enums are safe if their underlying type is safe (int by default)
+            // 2. Enums are safe
             if (type.TypeKind == TypeKind.Enum)
                 return true;
 
-            // Arrays are reference types -> unsafe for this strict struct-only model
+            // 3. Arrays are unsafe
             if (type.TypeKind == TypeKind.Array)
                 return false;
 
-            // Check for IParam implementation
-            if (type.AllInterfaces.Any(i => i.Name == "IParam"))
-            {
-                return true;
-            }
-
-            // Check specific allowed types by name or full path
             string name = type.Name;
             string fullName = type.ToDisplayString();
-            
-            // Robust check for Guid (System or Framework)
-            if (name == "Guid" || fullName.Contains("Guid") || fullName == "System.Guid")
-            {
-                return true;
-            }
 
-            if (name == "Float" || 
-                name == "Int" || 
-                name == "Vector2" || 
-                name == "Vector3" || 
-                name == "Entity" || 
-                name == "Ref" || 
-                name == "FixedString32" || 
-                name == "BitMask128")
-            {
+            // 4. Check Whitelist
+            if (whitelist.Contains(name) || whitelist.Contains(fullName))
                 return true;
-            }
 
-            // Generic types like List8<T>
+            // 5. Special Generics (List8<T>)
             if (type is INamedTypeSymbol namedType && namedType.IsGenericType)
             {
                 if (name == "List8")
                 {
                     // Check generic argument
                     var arg = namedType.TypeArguments[0];
-                    return IsDeterministic(arg);
+                    return IsDeterministic(arg, whitelist);
                 }
             }
 
-            // For other structs, recursively check fields.
-            // Structs form a DAG (no cycles), so recursion is safe.
+            // 6. Check IParam
+            if (type.AllInterfaces.Any(i => i.Name == "IParam"))
+            {
+                return true;
+            }
+
+            // 7. Recursive Struct Check
             if (type.TypeKind == TypeKind.Struct)
             {
                 if (type is INamedTypeSymbol namedStruct)
                 {
-                    return CheckStructFieldsRecursively(namedStruct);
+                    return CheckStructFieldsRecursively(namedStruct, whitelist);
                 }
             }
 
             return false;
         }
 
-        private static bool CheckStructFieldsRecursively(INamedTypeSymbol structType)
+        private static bool CheckStructFieldsRecursively(INamedTypeSymbol structType, ImmutableHashSet<string> whitelist)
         {
             foreach (var field in structType.GetMembers().OfType<IFieldSymbol>())
             {
                 if (field.IsStatic || field.IsConst) continue;
                 
                 // Recursively check each field
-                if (!IsDeterministic(field.Type))
+                if (!IsDeterministic(field.Type, whitelist))
                 {
                     return false;
                 }

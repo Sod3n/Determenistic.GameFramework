@@ -270,7 +270,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
         sb.AppendLine("");
         
         // Constructor
-        sb.AppendLine($"        public {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem reactive, global::Deterministic.GameFramework.CoreV2.Context context)");
+        sb.AppendLine($"        public {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem reactive, global::Deterministic.GameFramework.DAR.Context context)");
         sb.AppendLine("        {");
         
         foreach (var field in info.Fields)
@@ -321,7 +321,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
         }
         
         sb.AppendLine("");
-        sb.AppendLine($"        public {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem reactive, global::Deterministic.GameFramework.CoreV2.Context context)");
+        sb.AppendLine($"        public {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem reactive, global::Deterministic.GameFramework.DAR.Context context)");
         sb.AppendLine("        {");
         foreach (var compName in info.ComponentNames)
         {
@@ -357,7 +357,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
             var modelName = $"{comp.StructName}Model";
             var structFullName = $"global::{comp.Namespace}.{comp.StructName}";
             
-            sb.AppendLine($"        public static {modelName} AsModel(this {structFullName} component, global::Deterministic.GameFramework.CoreV2.Context context)");
+            sb.AppendLine($"        public static {modelName} AsModel(this {structFullName} component, global::Deterministic.GameFramework.DAR.Context context)");
             sb.AppendLine("        {");
             sb.AppendLine($"            return new {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem.Instance, context);");
             sb.AppendLine("        }");
@@ -375,17 +375,28 @@ public class ComponentModelGenerator : IIncrementalGenerator
         var normalized = type.StartsWith("global::") ? type.Substring(8) : type;
         
         // Always map these types to standard C# primitives/types
-        if (normalized == "Deterministic.GameFramework.CoreV2.Float") return "float";
-        if (normalized == "Deterministic.GameFramework.CoreV2.Int") return "int";
-        if (normalized == "Deterministic.GameFramework.CoreV2.FixedString32") return "string";
-        if (normalized == "Deterministic.GameFramework.CoreV2.Ref") return "int";
-        if (normalized == "Deterministic.GameFramework.CoreV2.Entity") return "int";
-        if (normalized == "Deterministic.GameFramework.CoreV2.Guid") return "global::System.Guid";
+        if (normalized == "Deterministic.GameFramework.Types.Float") return "float";
+        if (normalized == "Deterministic.GameFramework.Types.Int") return "int";
+        if (normalized == "Deterministic.GameFramework.Types.FixedString32") return "string";
+        if (normalized == "Deterministic.GameFramework.ECS.Ref") return "int";
+        if (normalized == "Deterministic.GameFramework.ECS.Entity") return "int";
+        if (normalized == "Deterministic.GameFramework.Types.Guid") return "global::System.Guid";
+        
+        // Legacy/Core fallback
+        if (normalized == "Deterministic.GameFramework.Core.Float") return "float";
+        if (normalized == "Deterministic.GameFramework.Core.Int") return "int";
+        if (normalized == "Deterministic.GameFramework.Core.FixedString32") return "string";
+        if (normalized == "Deterministic.GameFramework.Core.Ref") return "int";
+        if (normalized == "Deterministic.GameFramework.Core.Entity") return "int";
+        if (normalized == "Deterministic.GameFramework.Core.Guid") return "global::System.Guid";
 
         if (!isGodot) return type;
         
-        if (normalized == "Deterministic.GameFramework.CoreV2.Vector2") return "global::Godot.Vector2";
-        if (normalized == "Deterministic.GameFramework.CoreV2.Vector3") return "global::Godot.Vector3";
+        if (normalized == "Deterministic.GameFramework.Types.Vector2") return "global::Godot.Vector2";
+        if (normalized == "Deterministic.GameFramework.Types.Vector3") return "global::Godot.Vector3";
+
+        if (normalized == "Deterministic.GameFramework.Core.Vector2") return "global::Godot.Vector2";
+        if (normalized == "Deterministic.GameFramework.Core.Vector3") return "global::Godot.Vector3";
         
         return type;
     }
@@ -395,38 +406,38 @@ public class ComponentModelGenerator : IIncrementalGenerator
         var normalized = type.StartsWith("global::") ? type.Substring(8) : type;
 
         // Always convert these types
-        if (normalized == "Deterministic.GameFramework.CoreV2.Float")
+        if (normalized == "Deterministic.GameFramework.Types.Float" || normalized == "Deterministic.GameFramework.Core.Float")
         {
             return $"(float){varName}";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.Int")
+        if (normalized == "Deterministic.GameFramework.Types.Int" || normalized == "Deterministic.GameFramework.Core.Int")
         {
             return $"(int){varName}";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.FixedString32")
+        if (normalized == "Deterministic.GameFramework.Types.FixedString32" || normalized == "Deterministic.GameFramework.Core.FixedString32")
         {
             return $"{varName}.ToString()";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.Ref")
+        if (normalized == "Deterministic.GameFramework.ECS.Ref" || normalized == "Deterministic.GameFramework.Core.Ref")
         {
             return $"(int){varName}";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.Entity")
+        if (normalized == "Deterministic.GameFramework.ECS.Entity" || normalized == "Deterministic.GameFramework.Core.Entity")
         {
             return $"(int){varName}";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.Guid")
+        if (normalized == "Deterministic.GameFramework.Types.Guid" || normalized == "Deterministic.GameFramework.Core.Guid")
         {
             return $"(global::System.Guid){varName}";
         }
 
         if (!isGodot) return varName;
 
-        if (normalized == "Deterministic.GameFramework.CoreV2.Vector2") 
+        if (normalized == "Deterministic.GameFramework.Types.Vector2" || normalized == "Deterministic.GameFramework.Core.Vector2") 
         {
             return $"new global::Godot.Vector2((float){varName}.X, (float){varName}.Y)";
         }
-        if (normalized == "Deterministic.GameFramework.CoreV2.Vector3") 
+        if (normalized == "Deterministic.GameFramework.Types.Vector3" || normalized == "Deterministic.GameFramework.Core.Vector3") 
         {
             return $"new global::Godot.Vector3((float){varName}.X, (float){varName}.Y, (float){varName}.Z)";
         }
