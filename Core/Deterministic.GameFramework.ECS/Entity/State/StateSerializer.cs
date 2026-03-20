@@ -17,11 +17,17 @@ public static class StateSerializer
 
             // 2. External State
             writer.Write(state.ExternalState.Count);
-            foreach (var kvp in state.ExternalState)
+            
+            // Sort keys for determinism
+            var sortedKeys = new System.Collections.Generic.List<string>(state.ExternalState.Keys);
+            sortedKeys.Sort(StringComparer.Ordinal);
+            
+            foreach (var key in sortedKeys)
             {
-                writer.Write(kvp.Key);
-                writer.Write(kvp.Value.Length);
-                writer.Write(kvp.Value);
+                var val = state.ExternalState[key];
+                writer.Write(key);
+                writer.Write(val.Length);
+                writer.Write(val);
             }
 
             // 3. Mappings

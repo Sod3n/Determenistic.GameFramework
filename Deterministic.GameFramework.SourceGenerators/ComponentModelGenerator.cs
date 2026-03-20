@@ -277,7 +277,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
         {
             var backingName = $"_{char.ToLower(field.Name[0])}{field.Name.Substring(1)}";
             
-            sb.AppendLine($"            reactive.Subscribe(");
+            sb.AppendLine($"            Disposables.Add(reactive.Subscribe(");
             sb.AppendLine($"                context.State,");
             sb.AppendLine($"                (s) => s.GetComponent<{structFullName}>(context.Entity).{field.Name},");
             sb.AppendLine($"                (s, val) =>");
@@ -285,7 +285,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
             
             var valueExpression = GetConversion("val", field.Type, isGodot);
             sb.AppendLine($"                    {backingName}.Value = {valueExpression};");
-            sb.AppendLine($"                }});");
+            sb.AppendLine($"                }}));");
         }
         
         sb.AppendLine("        }");

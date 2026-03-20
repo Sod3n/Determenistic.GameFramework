@@ -15,7 +15,15 @@ internal class RapierAreaProcessor
     {
         if (world == null) return;
 
+        // SORT FOR DETERMINISM
+        var areas = new List<Entity>();
         foreach (var entity in state.Filter<Area2D, CollisionShape2D, Transform2D>())
+        {
+            areas.Add(entity);
+        }
+        areas.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in areas)
         {
             ref var area = ref state.GetComponent<Area2D>(entity);
             if (!area.Monitoring)

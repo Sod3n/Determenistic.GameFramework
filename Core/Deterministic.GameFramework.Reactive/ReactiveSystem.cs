@@ -124,7 +124,7 @@ public class ReactiveSystem : IDisposable
         if (!isResimulating && _wasResimulating)
         {
             _wasResimulating = false;
-            ResetAll();
+            Reset();
             return;
         }
 
@@ -150,7 +150,7 @@ public class ReactiveSystem : IDisposable
         }
     }
 
-    private void ResetAll()
+    public void Reset()
     {
         var node = _head;
         while (node != null)

@@ -410,6 +410,11 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             // This resets EarliestDirtyTick and prevents immediate rollback attempts to the past
             Scheduler.PruneHistory(header.Tick);
             
+            // Critical: Reset Reactive System to re-scan the world.
+            // Deserialization bypasses ECS event hooks, so Observers don't know about added/removed entities.
+            // Reset() forces a FullScan on all registered observers.
+            Reactive.Reset();
+
             Log("Completing sync task...");
             _syncTcs.TrySetResult(true);
             

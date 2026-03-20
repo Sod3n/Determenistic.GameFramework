@@ -200,12 +200,12 @@ public class Dispatcher
 #if DEBUG
             try
             {
-                var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
-                ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}: {json}");
+                // var json = JsonSerializer.Serialize(action, new JsonSerializerOptions { IncludeFields = true });
+                // ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}");
             }
             catch
             {
-                ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}: <serialization failed>");
+                // ILogger.Log($"[ActionSystem] Processing {typeof(TAction).Name} on Entity {entity.Id}: <serialization failed>");
             }
 #endif
             if (ctxState.Dispatcher.ActionDispatcher == null) throw new InvalidOperationException("ActionDispatcher must be set before running systems.");
@@ -214,6 +214,7 @@ public class Dispatcher
 
             if (ctxState.Dispatcher.RunPreReactions(ref action, ref target, ctx, ctxState.PreReactions))
             {
+                // Cleanup
                 ctxState.World.RemoveComponent<TAction>(entity);
                 return;
             }
@@ -221,6 +222,7 @@ public class Dispatcher
             ctxState.Service.InternalExecute(action, ref target, ctx);
             ctxState.Dispatcher.RunPostReactions(ref action, ref target, ctx, ctxState.PostReactions);
 
+            // Cleanup
             ctxState.World.RemoveComponent<TAction>(entity);
         };
 

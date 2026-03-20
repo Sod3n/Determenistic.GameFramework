@@ -53,6 +53,9 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             ResetOrRestoreWorld(state, physicsState, worldEntity);
         }
 
+        // 1.5 Prune Bodies (Remove destroyed entities)
+        PruneBodies(state, physicsState);
+
         // 2. Sync ECS changes to Physics (Creation/Destruction)
         SyncEcsToPhysics(state, physicsState);
 
@@ -131,7 +134,10 @@ public class RapierPhysicsSystem : ISystem, IDisposable
     private void RebuildWorldFromECS(EntityWorld state, RapierPhysicsState physicsState)
     {
         // Rebuild RigidBodies
-        foreach (var entity in state.Filter<RigidBody2D, Transform2D>())
+        var rigidBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) rigidBodies.Add(entity);
+        rigidBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in rigidBodies)
         {
             ref var body = ref state.GetComponent<RigidBody2D>(entity);
             body.BodyId = 0;
@@ -139,7 +145,10 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
         
         // Rebuild StaticBodies
-        foreach (var entity in state.Filter<StaticBody2D, Transform2D>())
+        var staticBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) staticBodies.Add(entity);
+        staticBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in staticBodies)
         {
             ref var body = ref state.GetComponent<StaticBody2D>(entity);
             body.BodyId = 0;
@@ -147,7 +156,10 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
 
         // Rebuild CharacterBodies
-        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>())
+        var charBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) charBodies.Add(entity);
+        charBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in charBodies)
         {
             ref var body = ref state.GetComponent<CharacterBody2D>(entity);
             body.BodyId = 0;
@@ -155,7 +167,10 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
 
         // Rebuild Area2Ds
-        foreach (var entity in state.Filter<Area2D, Transform2D>())
+        var areaBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<Area2D, Transform2D>()) areaBodies.Add(entity);
+        areaBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in areaBodies)
         {
             ref var body = ref state.GetComponent<Area2D>(entity);
             body.BodyId = 0;
@@ -163,12 +178,58 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
     }
     
+    private void PruneBodies(EntityWorld state, RapierPhysicsState physicsState)
+    {
+        if (physicsState.World == null) return;
+
+        var entitiesToRemove = new System.Collections.Generic.List<int>();
+
+        // SORT FOR DETERMINISM: Dictionary iteration is undefined
+        var sortedEntityIds = new List<int>(physicsState.EntityToBody.Keys);
+        sortedEntityIds.Sort();
+
+        foreach (var entityId in sortedEntityIds)
+        {
+            var entity = new Entity(entityId);
+
+            // Check if entity is valid and has relevant components
+            // If entity is deleted, HasComponent will return false for everything
+            bool isValid = state.HasComponent<Transform2D>(entity) &&
+                           (state.HasComponent<RigidBody2D>(entity) ||
+                            state.HasComponent<StaticBody2D>(entity) ||
+                            state.HasComponent<CharacterBody2D>(entity) ||
+                            state.HasComponent<Area2D>(entity));
+
+            if (!isValid)
+            {
+                entitiesToRemove.Add(entityId);
+            }
+        }
+
+        foreach (var entityId in entitiesToRemove)
+        {
+            ulong bodyHandle = physicsState.EntityToBody[entityId];
+            
+            physicsState.World.BodyDestroy(bodyHandle);
+            
+            physicsState.EntityToBody.Remove(entityId);
+            physicsState.BodyToEntity.Remove(bodyHandle);
+            
+            // Clean up character controller if it exists
+            physicsState.CharacterProcessor.RemoveCharacter(entityId);
+        }
+    }
+
     private void SyncEcsToPhysics(EntityWorld state, RapierPhysicsState physicsState)
     {
         if (physicsState.World == null) return;
 
         // 1. Dynamic Bodies
-        foreach (var entity in state.Filter<RigidBody2D, Transform2D>())
+        var rigidBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) rigidBodies.Add(entity);
+        rigidBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in rigidBodies)
         {
             if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
             {
@@ -193,7 +254,11 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
         
         // 2. Static Bodies
-        foreach (var entity in state.Filter<StaticBody2D, Transform2D>())
+        var staticBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) staticBodies.Add(entity);
+        staticBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in staticBodies)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -209,7 +274,11 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
         
         // 3. Character Bodies
-        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>())
+        var charBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) charBodies.Add(entity);
+        charBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in charBodies)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -227,7 +296,11 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         }
 
         // 4. Area2D
-        foreach (var entity in state.Filter<Area2D, Transform2D>())
+        var areaBodies = new System.Collections.Generic.List<Entity>();
+        foreach (var entity in state.Filter<Area2D, Transform2D>()) areaBodies.Add(entity);
+        areaBodies.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in areaBodies)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -387,17 +460,20 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
             if (!state.HasComponent<Transform2D>(entity)) continue;
 
-            // Get Position/Rotation
-            var rapierPos = physicsState.World.BodyGetTranslation(bodyHandle);
-            var rapierRot = physicsState.World.BodyGetRotation(bodyHandle);
-            
-            ref var transform = ref state.GetComponent<Transform2D>(entity);
-            transform.GlobalPosition = new Vector2(rapierPos.x, rapierPos.y);
-            transform.GlobalRotation = rapierRot.angle;
-
-            // Get Velocity for Dynamic Bodies
+            // ONLY update Transform from Physics for Dynamic Bodies (RigidBody2D).
+            // Kinematic (CharacterBody2D, Area2D) and Static bodies are driven by logic/ECS.
+            // Overwriting them with Rapier's float position introduces quantization error/drift.
             if (state.HasComponent<RigidBody2D>(entity))
             {
+                // Get Position/Rotation
+                var rapierPos = physicsState.World.BodyGetTranslation(bodyHandle);
+                var rapierRot = physicsState.World.BodyGetRotation(bodyHandle);
+                
+                ref var transform = ref state.GetComponent<Transform2D>(entity);
+                transform.GlobalPosition = new Vector2(rapierPos.x, rapierPos.y);
+                transform.GlobalRotation = rapierRot.angle;
+
+                // Get Velocity
                 var rapierVel = physicsState.World.BodyGetLinvel(bodyHandle);
                 var rapierAngVel = physicsState.World.BodyGetAngvel(bodyHandle);
                 
@@ -427,8 +503,9 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                     physicsStateComp.Tick = currentTick;
                 }
                 
-                // Also update ExternalState for "current" serialization
-                state.ExternalState[ExternalStateKey] = data;
+                // Remove ExternalState usage to ensure deterministic hashing.
+                // The system rebuilds from ECS components on restore, so this opaque blob is unnecessary.
+                // state.ExternalState[ExternalStateKey] = data;
             }
         }
         

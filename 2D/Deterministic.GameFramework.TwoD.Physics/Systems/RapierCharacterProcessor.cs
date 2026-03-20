@@ -123,4 +123,13 @@ internal class RapierCharacterProcessor
         }
         _entityToController.Clear();
     }
+
+    public void RemoveCharacter(int entityId)
+    {
+        if (_entityToController.TryGetValue(entityId, out var controller))
+        {
+            controller.Dispose();
+            _entityToController.Remove(entityId);
+        }
+    }
 }

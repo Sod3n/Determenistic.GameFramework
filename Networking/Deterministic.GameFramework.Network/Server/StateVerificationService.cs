@@ -34,14 +34,13 @@ public class StateVerificationService : IDisposable
         {
             var hash = StateHasher.Hash(_match.State);
             
-            // Note: OnTick runs *after* simulation but *before* CurrentTick is incremented in GameLoop.
+            // Note: OnTick runs *after* simulation and *after* CurrentTick is incremented in GameLoop.
             // So _match.State is the result of 'currentTick'.
-            // The client stores this state at 'currentTick + 1' in its history.
-            // To align, we send the tick as 'currentTick + 1'.
+            // The client stores this state at 'currentTick' in its history.
             
             var packet = new StateHashPacket
             {
-                Tick = currentTick + 1,
+                Tick = currentTick,
                 Hash = (System.Guid)hash
             };
             

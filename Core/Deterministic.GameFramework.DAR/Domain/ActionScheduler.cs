@@ -104,10 +104,17 @@ public class ActionScheduler
     {
         lock (_lock)
         {
-            // Deduplication
+            // 1. Deduplication (Exact Match)
             if (IsDuplicate(id, targetEntityId, executeTick, data))
             {
                 return ScheduleResult.Duplicate;
+            }
+
+            // 2. Collision Resolution (Same Slot, Different Data) -> Bump Tick
+            // We loop until we find a tick where this (Action, Target) slot is free.
+            while (IsSlotOccupied(id, targetEntityId, executeTick))
+            {
+                executeTick++;
             }
             
             EnsureCapacity();
@@ -157,6 +164,22 @@ public class ActionScheduler
         return false;
     }
 
+    private bool IsSlotOccupied(DenseComponentId id, int targetEntityId, long tick)
+    {
+        for (int i = 0; i < _pendingActionCount; i++)
+        {
+            ref var pending = ref _pendingActions[i];
+            
+            if (pending.ExecuteTick == tick && 
+                pending.Id == id && 
+                pending.TargetEntityId == targetEntityId)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void ExecuteActions(long tick, EntityWorld state, Dispatcher dispatcher)
     {
         int count = 0;
@@ -165,8 +188,6 @@ public class ActionScheduler
         lock (_lock)
         {
             // 1. Identify valid actions STRICTLY for this tick
-            // First pass: count to ensure capacity
-            // Optimization: We can do it in one pass if we ensure capacity conservatively or dynamic resize
             
             // Reset earliest dirty tick if we are processing it
             if (tick >= EarliestDirtyTick)
@@ -175,7 +196,6 @@ public class ActionScheduler
             }
 
             // We iterate all pending actions. 
-            // NOTE: This could be optimized with a different structure if pending count is huge.
             for (int i = 0; i < _pendingActionCount; i++)
             {
                 ref var pending = ref _pendingActions[i];
@@ -197,8 +217,6 @@ public class ActionScheduler
                 }
             }
             
-            // Capture reference to current buffer. 
-            // Even if Schedule resizes _actionDataBuffer later, this reference points to the data valid NOW.
             bufferToUse = _actionDataBuffer;
         }
 
@@ -221,7 +239,17 @@ public class ActionScheduler
                     compare = key.TargetEntityId.CompareTo(other.TargetEntityId);
                     if (compare == 0)
                     {
-                        compare = key.Sequence.CompareTo(other.Sequence);
+                        // Deterministic Tie-Breaker: Compare Content
+                        // This ensures that arrival order (Sequence) doesn't dictate execution order for concurrent actions.
+                        var spanKey = new ReadOnlySpan<byte>(bufferToUse, key.DataOffset, key.DataLength);
+                        var spanOther = new ReadOnlySpan<byte>(bufferToUse, other.DataOffset, other.DataLength);
+                        
+                        compare = spanKey.SequenceCompareTo(spanOther);
+                        
+                        if (compare == 0)
+                        {
+                            compare = key.Sequence.CompareTo(other.Sequence);
+                        }
                     }
                 }
 
@@ -255,7 +283,7 @@ public class ActionScheduler
             int lowestValidOffset = _actionDataBuffer.Length; // Start high
             bool anyKept = false;
             long newMinTick = long.MaxValue;
-
+            
             for (int i = 0; i < _pendingActionCount; i++)
             {
                 ref var pending = ref _pendingActions[i];
@@ -293,7 +321,6 @@ public class ActionScheduler
             }
 
             // Compact Buffer if needed (only if we have significant waste)
-            // Optimization: Only compact if > 4KB waste to avoid frequent memmoves
             if (lowestValidOffset > 0 && lowestValidOffset > 4096) 
             {
                  int lengthToCopy = _actionDataHead - lowestValidOffset;
