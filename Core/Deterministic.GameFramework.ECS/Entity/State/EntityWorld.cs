@@ -10,18 +10,18 @@ public class EntityWorld
     internal Type?[] _componentTypes = new Type?[128];
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
     internal int _nextEntityId = 0;
-    
+
     public int NextEntityId => _nextEntityId;
     public BitMask128[] EntityMasks => _entityMasks;
-    
+
     // Allows systems to store arbitrary state (e.g. Physics World Serialization) that needs to be snapshotted.
     // Key: System Name (e.g. "RapierPhysics"), Value: Serialized Data
     public Dictionary<string, byte[]> ExternalState { get; set; } = new();
-    
+
     // Runtime cache for Systems (not serialized)
     // Allows systems to be stateless and store per-world data here.
     public Dictionary<Type, object?> SystemData { get; } = new();
-    
+
     // Dirty tracking
     internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
     internal List<int> _dirtyEntities = new List<int>(64);
@@ -41,7 +41,7 @@ public class EntityWorld
         }
         return default;
     }
-    
+
     public void ClearCustomData()
     {
         foreach (var value in SystemData.Values)
@@ -53,21 +53,21 @@ public class EntityWorld
         }
         SystemData.Clear();
     }
-    
+
     public Entity CreateEntity()
     {
         var id = _nextEntityId++;
         EnsureEntityCapacity(id);
         return new Entity(id);
     }
-    
+
     public Entity CreateEntity<T>() where T : struct, IComponent
     {
         var entity = CreateEntity();
         AddComponent(entity, default(T));
         return entity;
     }
-    
+
     public void ResetComponents(bool clearCache = false)
     {
         // 1. Clear Entity Masks
@@ -75,7 +75,7 @@ public class EntityWorld
         {
             _entityMasks[i].Clear();
         }
-        
+
         // 2. Clear Component Arrays
         if (clearCache)
         {
@@ -95,16 +95,16 @@ public class EntityWorld
                 }
             }
         }
-        
+
         // 3. Reset Entity Allocator?
         // Deserialization sets _nextEntityId, so strictly speaking we don't need to,
         // but it's good practice.
         _nextEntityId = 0;
-        
+
         // 4. Clear Dirty Tracking
         _dirtyEntitySet.SetAll(false);
         _dirtyEntities.Clear();
-        
+
         // 5. Clear External State
         ExternalState.Clear();
     }
@@ -112,6 +112,8 @@ public class EntityWorld
     public ref T AddComponent<T>(Entity entity, T component) where T : struct, IComponent
     {
         MarkDirty(entity.Id);
+        var typeId = ComponentId<T>.IntId;
+        _entityMasks[entity.Id].Set(typeId);
         ref var storage = ref GetComponent<T>(entity);
         storage = component;
         return ref storage;
@@ -120,17 +122,17 @@ public class EntityWorld
     public void RemoveComponent<T>(Entity entity) where T : struct, IComponent
     {
         if (entity.Id >= _entityMasks.Length) return;
-        
+
         MarkDirty(entity.Id);
         var typeId = ComponentId<T>.IntId;
-        
+
         // Unset mask
         _entityMasks[entity.Id].Unset(typeId);
-        
-        // We don't necessarily need to clear the data array for value types, 
-        // as the mask determines presence. 
-        // But for safety/determinism (to avoid stale data if re-added without init), 
-        // we can default it if we want, or leave it. 
+
+        // We don't necessarily need to clear the data array for value types,
+        // as the mask determines presence.
+        // But for safety/determinism (to avoid stale data if re-added without init),
+        // we can default it if we want, or leave it.
         // In ECS, usually mask is the source of truth.
         // Let's clear it to be safe against partial updates on re-add.
         if (typeId < _componentArrays.Length && _componentArrays[typeId] != null)
@@ -150,7 +152,7 @@ public class EntityWorld
         MarkDirty(entity.Id);
 
         // Clear component data for all components this entity has
-        // This is important to release references if components hold any, 
+        // This is important to release references if components hold any,
         // and to ensure deterministic clean state if the ID is reused (though currently it isn't).
         for (int i = 0; i < 128; i++)
         {
@@ -170,33 +172,53 @@ public class EntityWorld
     public ref T GetComponent<T>(Entity entity) where T : struct, IComponent
     {
         var typeId = ComponentId<T>.IntId;
-        
+
         EnsureTypedCapacity<T>(typeId);
         EnsureEntityCapacity(entity.Id);
 
         var specificArray = (T[])_componentArrays[typeId]!;
-        
+
         if (entity.Id >= specificArray.Length)
         {
             ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
             specificArray = (T[])_componentArrays[typeId]!; // Re-fetch after expansion
         }
 
-        // Mark component as present using bitmask (Fast!)
-        _entityMasks[entity.Id].Set(typeId);
         return ref specificArray[entity.Id];
     }
-    
+
+    /// <summary>
+    /// Returns a reference to the component storage without marking it as present in the mask.
+    /// Use this for safe reading in selectors or when the presence is already verified.
+    /// </summary>
+    public ref T PeekComponent<T>(Entity entity) where T : struct, IComponent
+    {
+        var typeId = ComponentId<T>.IntId;
+
+        EnsureTypedCapacity<T>(typeId);
+        EnsureEntityCapacity(entity.Id);
+
+        var specificArray = (T[])_componentArrays[typeId]!;
+
+        if (entity.Id >= specificArray.Length)
+        {
+            ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
+            specificArray = (T[])_componentArrays[typeId]!;
+        }
+
+        return ref specificArray[entity.Id];
+    }
+
     public T? TryGetComponent<T>(Entity entity) where T : struct, IComponent
     {
         if (!HasComponent<T>(entity)) return null;
         return GetComponent<T>(entity);
     }
-    
+
     public bool HasComponent<T>(Entity entity) where T : struct, IComponent
     {
-        if (entity.Id >= _entityMasks.Length) return false;
-        
+        if (entity.Id < 0 || entity.Id >= _entityMasks.Length) return false;
+
         var typeId = ComponentId<T>.IntId;
         return _entityMasks[entity.Id].IsSet(typeId);
     }
@@ -204,7 +226,7 @@ public class EntityWorld
     public IEnumerable<Entity> Filter<T>() where T : struct, IComponent
     {
         var typeId = ComponentId<T>.IntId;
-        
+
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].IsSet(typeId))
@@ -214,14 +236,14 @@ public class EntityWorld
         }
     }
 
-    public IEnumerable<Entity> Filter<T1, T2>() 
-        where T1 : struct, IComponent 
+    public IEnumerable<Entity> Filter<T1, T2>()
+        where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
         mask.Set(ComponentId<T1>.IntId);
         mask.Set(ComponentId<T2>.IntId);
-        
+
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
@@ -231,8 +253,8 @@ public class EntityWorld
         }
     }
 
-    public IEnumerable<Entity> Filter<T1, T2, T3>() 
-        where T1 : struct, IComponent 
+    public IEnumerable<Entity> Filter<T1, T2, T3>()
+        where T1 : struct, IComponent
         where T2 : struct, IComponent
         where T3 : struct, IComponent
     {
@@ -240,7 +262,7 @@ public class EntityWorld
         mask.Set(ComponentId<T1>.IntId);
         mask.Set(ComponentId<T2>.IntId);
         mask.Set(ComponentId<T3>.IntId);
-        
+
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
@@ -249,17 +271,17 @@ public class EntityWorld
             }
         }
     }
-    
-    
+
+
     public void ForEach<T1>(ComponentAction1<T1> action)
         where T1 : struct, IComponent
     {
         var typeId = ComponentId<T1>.IntId;
-        
+
         EnsureTypedCapacity<T1>(typeId);
 
         var specificArray = (T1[])_componentArrays[typeId]!;
-        
+
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].IsSet(typeId))
@@ -268,7 +290,7 @@ public class EntityWorld
             }
         }
     }
-    
+
     public void ForEach<T1, T2>(ComponentAction2<T1, T2> action)
         where T1 : struct, IComponent
         where T2 : struct, IComponent
@@ -293,7 +315,7 @@ public class EntityWorld
             }
         }
     }
-    
+
     public void ForEach<T1>(ComponentActionEntity1<T1> action)
         where T1 : struct, IComponent
     {
@@ -363,7 +385,7 @@ public class EntityWorld
             }
         }
     }
-    
+
     public void RegisterComponent<T>() where T : struct, IComponent
     {
         var typeId = ComponentId<T>.IntId;
@@ -409,7 +431,7 @@ public class EntityWorld
             _componentTypes[typeId] = typeof(T);
         }
     }
-    
+
     internal void EnsureEntityCapacity(int entityId)
     {
         if (entityId >= _entityMasks.Length)
@@ -434,7 +456,7 @@ public class EntityWorld
         // Fast clear
         foreach (var id in _dirtyEntities)
         {
-            if (id < _dirtyEntitySet.Length) 
+            if (id < _dirtyEntitySet.Length)
                 _dirtyEntitySet[id] = false;
         }
         _dirtyEntities.Clear();

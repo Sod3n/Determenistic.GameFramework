@@ -1,3 +1,4 @@
+using System.Linq;
 using Deterministic.GameFramework.Types;
 using Deterministic.GameFramework.Utils;
 using Guid = System.Guid;
@@ -8,20 +9,29 @@ public static class StateSerializer
 {
     public static byte[] Serialize(EntityWorld state)
     {
+        // 0. Determine active component types by ORing all entity masks
+        // This ensures the hash only depends on components actually in use.
+        BitMask128 activeTypes = new();
+        for (int i = 0; i < state._nextEntityId; i++)
+        {
+            activeTypes.Or(state._entityMasks[i]);
+        }
+
         using (var ms = new MemoryStream())
         using (var writer = new BinaryWriter(ms))
         {
             // 1. Header
             writer.Write(state._nextEntityId);
-            writer.Write(state._entityMasks.Length); // Capacity
+            // Use nextEntityId as capacity for deterministic hashing (ignores trailing unused masks)
+            writer.Write(state._nextEntityId);
 
             // 2. External State
             writer.Write(state.ExternalState.Count);
-            
+
             // Sort keys for determinism
             var sortedKeys = new System.Collections.Generic.List<string>(state.ExternalState.Keys);
             sortedKeys.Sort(StringComparer.Ordinal);
-            
+
             foreach (var key in sortedKeys)
             {
                 var val = state.ExternalState[key];
@@ -30,53 +40,49 @@ public static class StateSerializer
                 writer.Write(val);
             }
 
-            // 3. Mappings
-            var mappings = ComponentIdSerializer.GetMappingsSnapshot();
-            writer.Write(mappings.Count);
-            foreach (var kvp in mappings)
+            // 3. Mappings (Only for active types to ensure stable hash)
+            var allMappings = ComponentIdSerializer.GetMappingsSnapshot();
+            var activeMappings = allMappings.Where(m => activeTypes.IsSet(m.Value.Value)).ToList();
+            writer.Write(activeMappings.Count);
+            foreach (var kvp in activeMappings)
             {
                 writer.Write(kvp.Key.Value.ToByteArray()); // 16 bytes
                 writer.Write(kvp.Value.Value); // int
             }
 
-            // 4. Entity Masks
-            // Serialize the entire mask array in one go
+            // 4. Entity Masks (Only up to nextEntityId)
             int maskElementSize = 16; // BitMask128 is 2 ulongs (16 bytes)
-            byte[] maskData = MemoryHelper.SerializeArrayUntyped(state._entityMasks, maskElementSize);
+            byte[] maskData = MemoryHelper.SerializeArrayUntyped(state._entityMasks, maskElementSize, state._nextEntityId);
             writer.Write(maskData.Length);
             writer.Write(maskData);
 
-            // 5. Components
-            // Count valid components first
+            // 5. Components (Only active types)
             int validComponents = 0;
-            for (int i = 0; i < state._componentArrays.Length; i++)
+            for (int localId = 0; localId < state._componentArrays.Length; localId++)
             {
-                if (state._componentArrays[i] != null && state._componentElementSizes[i] > 0)
+                if (activeTypes.IsSet(localId) && state._componentArrays[localId] != null && state._componentElementSizes[localId] > 0)
                     validComponents++;
             }
             writer.Write(validComponents);
 
             for (int localId = 0; localId < state._componentArrays.Length; localId++)
             {
+                if (!activeTypes.IsSet(localId)) continue;
+
                 var array = state._componentArrays[localId];
                 if (array == null) continue;
 
                 int elementSize = state._componentElementSizes[localId];
-                if (elementSize == 0) continue; 
-                
-                // Serialize Data
-                byte[] data = MemoryHelper.SerializeArrayUntyped(array, elementSize);
-                
-                // Log large components
-                if (data.Length > 10000)
-                {
-                    // Console.WriteLine($"[StateSerializer] Large Component Array: TypeId {localId}, Size {data.Length} bytes, Count {array.Length}, ElemSize {elementSize}");
-                }
+                if (elementSize == 0) continue;
+
+                // Serialize Data (Only up to nextEntityId for determinism)
+                byte[] data = MemoryHelper.SerializeArrayUntyped(array, elementSize, state._nextEntityId);
 
                 writer.Write(localId);
                 writer.Write(data.Length);
                 writer.Write(data);
-                writer.Write(array.Length); // Write count for array recreation
+                // Write nextEntityId as count for array recreation
+                writer.Write(state._nextEntityId);
             }
 
             return ms.ToArray();
@@ -99,15 +105,11 @@ public static class StateSerializer
             }
 
             state._nextEntityId = nextEntityId;
-            
-            // Ensure EntityMasks capacity
-            if (state._entityMasks == null || state._entityMasks.Length < entityCapacity)
+
+            // Ensure EntityMasks capacity matches exactly for deterministic hashing
+            if (state._entityMasks == null || state._entityMasks.Length != entityCapacity)
             {
                 state._entityMasks = new BitMask128[entityCapacity];
-            }
-            else if (state._entityMasks.Length > entityCapacity)
-            {
-                 // Optional: shrink? usually we just grow.
             }
 
             // 3. External State
@@ -123,7 +125,7 @@ public static class StateSerializer
 
             // 4. Mappings
             int mapCount = reader.ReadInt32();
-            if (syncComponentIds && mapCount > 0)
+            if (syncComponentIds)
             {
                 ComponentId.ClearMappings();
                 for (int i = 0; i < mapCount; i++)
@@ -154,7 +156,7 @@ public static class StateSerializer
                 int maskElementSize = 16;
                 // int count = maskData.Length / maskElementSize;
                 // if (state._entityMasks.Length < count) Array.Resize(ref state._entityMasks, count);
-                
+
                 MemoryHelper.DeserializeArrayUntyped(maskData, state._entityMasks, maskElementSize);
             }
             else

@@ -9,24 +9,25 @@ public static class MemoryHelper
     /// Serializes a managed array of structs to a byte array using raw memory copy.
     /// This avoids GCHandle allocations and uses Unsafe pointer arithmetic.
     /// </summary>
-    public static unsafe byte[] SerializeArrayUntyped(Array array, int elementSize)
+    public static unsafe byte[] SerializeArrayUntyped(Array array, int elementSize, int count = -1)
     {
-        if (array.Length == 0) return Array.Empty<byte>();
+        if (count < 0) count = array.Length;
+        if (count == 0) return Array.Empty<byte>();
 
-        int byteLength = array.Length * elementSize;
+        int byteLength = count * elementSize;
         byte[] data = new byte[byteLength];
-        
+
         // Trick: Unsafe.As<byte[]> gives us a byte[] view of the object to satisfy fixed/GetArrayDataReference.
         // We cast the object reference directly.
         // This relies on all Arrays having the same header layout (MethodTable + Length).
         var fakeByteArr = Unsafe.As<byte[]>(array);
-        
+
         fixed (byte* srcPtr = fakeByteArr)
         fixed (byte* destPtr = data)
         {
              Buffer.MemoryCopy(srcPtr, destPtr, byteLength, byteLength);
         }
-        
+
         return data;
     }
 
@@ -43,7 +44,7 @@ public static class MemoryHelper
         int copyBytes = Math.Min(sourceSpan.Length, destination.Length * elementSize);
 
         var fakeByteArr = Unsafe.As<byte[]>(destination);
-        
+
         fixed (byte* destPtr = fakeByteArr)
         fixed (byte* srcPtr = sourceSpan)
         {

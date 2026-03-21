@@ -6,7 +6,7 @@ namespace Deterministic.GameFramework.Types;
 /// <summary>
 /// A fixed-size string buffer (32 bytes) suitable for deterministic networking.
 /// </summary>
-public struct FixedString32 : IParam, IEquatable<FixedString32>
+public struct FixedString32 : IParam, IEquatable<FixedString32>, IComparable<FixedString32>
 {
     // Using long to pack 8 bytes at a time for 32 bytes total
     private long _part0;
@@ -40,6 +40,9 @@ public struct FixedString32 : IParam, IEquatable<FixedString32>
         encoder.Convert(s.AsSpan(), buffer, true, out int charsUsed, out int bytesUsed, out bool completed);
         
         // Pack into longs
+        // Note: BitConverter.ToInt64 is platform dependent (Little Endian on most systems).
+        // For strict cross-platform determinism between Little/Big Endian systems, we might need BinaryPrimitives.ReadInt64LittleEndian
+        // But assuming homogeneous architecture for now (or consistent endianness).
         _part0 = BitConverter.ToInt64(buffer.Slice(0, 8));
         _part1 = BitConverter.ToInt64(buffer.Slice(8, 8));
         _part2 = BitConverter.ToInt64(buffer.Slice(16, 8));
@@ -80,6 +83,24 @@ public struct FixedString32 : IParam, IEquatable<FixedString32>
     public override int GetHashCode()
     {
         return HashCode.Combine(_part0, _part1, _part2, _part3);
+    }
+
+    public int CompareTo(FixedString32 other)
+    {
+        // Compare parts sequentially
+        // Note: This is a binary comparison of the packed longs, not strictly alphabetical if Endianness varies or if UTF8 encoding boundaries cross long boundaries weirdly.
+        // But it IS deterministic.
+        
+        int c = _part0.CompareTo(other._part0);
+        if (c != 0) return c;
+        
+        c = _part1.CompareTo(other._part1);
+        if (c != 0) return c;
+        
+        c = _part2.CompareTo(other._part2);
+        if (c != 0) return c;
+        
+        return _part3.CompareTo(other._part3);
     }
 
     public static bool operator ==(FixedString32 a, FixedString32 b) => a.Equals(b);

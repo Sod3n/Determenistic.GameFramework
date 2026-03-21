@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDeterministicGameServer(this IServiceCollection services, Action<MatchmakingOptions>? configureOptions = null)
     {
         var options = new MatchmakingOptions();
+        options.MinPlayersPerMatch = 1;
         configureOptions?.Invoke(options);
         services.AddSingleton(options);
 

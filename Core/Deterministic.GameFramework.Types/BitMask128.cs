@@ -45,15 +45,27 @@ public struct BitMask128 : IParam, IEquatable<BitMask128>
 
     public bool IsEmpty => _part0 == 0 && _part1 == 0;
 
+    public void Or(BitMask128 other)
+    {
+        _part0 |= other._part0;
+        _part1 |= other._part1;
+    }
+
+    public void And(BitMask128 other)
+    {
+        _part0 &= other._part0;
+        _part1 &= other._part1;
+    }
+
     public bool HasAll(BitMask128 other)
     {
-        return (_part0 & other._part0) == other._part0 && 
+        return (_part0 & other._part0) == other._part0 &&
                (_part1 & other._part1) == other._part1;
     }
 
     public bool HasAny(BitMask128 other)
     {
-        return (_part0 & other._part0) != 0 || 
+        return (_part0 & other._part0) != 0 ||
                (_part1 & other._part1) != 0;
     }
 
