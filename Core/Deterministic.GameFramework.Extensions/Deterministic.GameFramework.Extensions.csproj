@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+      <ProjectReference Include="..\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
     </ItemGroup>
 
 </Project>

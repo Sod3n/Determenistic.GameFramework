@@ -58,7 +58,43 @@ public class EntityWorld
     {
         var id = _nextEntityId++;
         EnsureEntityCapacity(id);
+
+        // Clear memory garbage
+        for (int i = 0; i < _componentArrays.Length; i++)
+        {
+            var arr = _componentArrays[i];
+            if (arr != null)
+            {
+                // If the array is too small for the new ID, resize it now
+                if (id >= arr.Length)
+                {
+                    int newSize = Math.Max(arr.Length * 2, id + 1);
+                
+                    // We need to use a helper or reflection because _componentArrays is Array?[]
+                    // Let's create a specialized resize-and-clear helper:
+                    _componentArrays[i] = ResizeAndClear(arr, newSize);
+                }
+
+                // Now it is safe to clear
+                Array.Clear(_componentArrays[i]!, id, 1);
+            }
+        }
+
         return new Entity(id);
+    }
+    
+    private Array ResizeAndClear(Array oldArray, int newSize)
+    {
+        Type elementType = oldArray.GetType().GetElementType()!;
+        Array newArray = Array.CreateInstance(elementType, newSize);
+    
+        // Copy old data
+        Array.Copy(oldArray, newArray, oldArray.Length);
+    
+        // Explicitly zero out the new portion (crucial for determinism!)
+        Array.Clear(newArray, oldArray.Length, newSize - oldArray.Length);
+    
+        return newArray;
     }
 
     public Entity CreateEntity<T>() where T : struct, IComponent
@@ -426,8 +462,12 @@ public class EntityWorld
 
         if (_componentArrays[typeId] == null)
         {
-            _componentArrays[typeId] = new T[32]; // Reduced from 256 to 32 to save bandwidth on small states
-            _componentElementSizes[typeId] = Unsafe.SizeOf<T>(); // Use Unsafe.SizeOf for correct managed size
+            int initialSize = Math.Max(32, _entityMasks.Length); 
+            var arr = new T[initialSize];
+            Array.Clear(arr, 0, arr.Length);
+            _componentArrays[typeId] = arr;
+        
+            _componentElementSizes[typeId] = Unsafe.SizeOf<T>();
             _componentTypes[typeId] = typeof(T);
         }
     }
@@ -436,8 +476,13 @@ public class EntityWorld
     {
         if (entityId >= _entityMasks.Length)
         {
-            int newSize = Math.Max(_entityMasks.Length * 2, entityId + 1);
+            int oldSize = _entityMasks.Length;
+            int newSize = Math.Max(oldSize * 2, entityId + 1);
             Array.Resize(ref _entityMasks, newSize);
+
+            // Clear memory garbage
+            for(int i = oldSize; i < newSize; i++) _entityMasks[i].Clear();
+
             _dirtyEntitySet.Length = newSize;
         }
     }
@@ -474,7 +519,12 @@ public class EntityWorld
 
     private void ExpandComponentArrayCapacity<T>(int typeId, T[] specificArray, int entityId) where T : struct, IComponent
     {
-        Array.Resize(ref specificArray, Math.Max(specificArray.Length * 2, entityId + 1));
+        int oldSize = specificArray.Length;
+        int newSize = Math.Max(oldSize * 2, entityId + 1);
+        Array.Resize(ref specificArray, newSize);
+
+        Array.Clear(specificArray, oldSize, newSize - oldSize); // Clear memory from garbage
+
         _componentArrays[typeId] = specificArray;
     }
 

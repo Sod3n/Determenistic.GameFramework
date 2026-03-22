@@ -182,6 +182,19 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             if (localHash != packet.Hash)
             {
                 Log($"[StateHash] MISMATCH at Tick {packet.Tick}! Local: {localHash} != Server: {packet.Hash}");
+                
+                // Debug dump
+                try
+                {
+                    var tempWorld = new EntityWorld();
+                    StateSerializer.Deserialize(tempWorld, snapshotData!);
+                    System.IO.File.WriteAllText($"client_dump_{packet.Tick}.txt", StateDumper.Dump(tempWorld));
+                }
+                catch (Exception ex)
+                {
+                    Log($"Failed to write client dump: {ex.Message}");
+                }
+
                 OnStateMismatch?.Invoke(packet.Tick, (System.Guid)localHash, packet.Hash);
                 
                 if (!_isWaitingForFullState)
@@ -394,7 +407,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
             
             Log("Deserializing state...");
             // Provide mapper to translate Server Component IDs to Local Component IDs
-            StateSerializer.Deserialize(State, stateData);
+            StateSerializer.Deserialize(State, stateData, syncComponentIds: false);
             Log("State deserialized!");
             
             Log($"Setting tick to {header.Tick}...");

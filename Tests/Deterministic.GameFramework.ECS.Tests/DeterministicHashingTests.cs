@@ -44,8 +44,8 @@ public class DeterministicHashingTests : IDisposable
         // 4. Logically, they should now be identical
         clientWorld.NextEntityId.Should().Be(serverWorld.NextEntityId);
 
-        // Verify that capacities match after the fix (this confirms the fix works)
-        clientWorld._entityMasks.Length.Should().Be(serverWorld._entityMasks.Length);
+        // Verify that capacities are normalized to NextEntityId after the fix
+        clientWorld._entityMasks.Length.Should().Be(serverWorld.NextEntityId);
 
         // 5. Calculate hashes
         var serverHash = StateHasher.Hash(serverWorld);
@@ -79,9 +79,9 @@ public class DeterministicHashingTests : IDisposable
         StateSerializer.Deserialize(clientWorld, serverData, syncComponentIds: true, autoReset: true);
 
         // 4. Verify hashes
-        var serverCompArray = (TestComponent1[])serverWorld._componentArrays[ComponentId<TestComponent1>.IntId]!;
         var clientCompArray = (TestComponent1[])clientWorld._componentArrays[ComponentId<TestComponent1>.IntId]!;
-        clientCompArray.Length.Should().Be(serverCompArray.Length);
+        // Component arrays are also normalized to NextEntityId
+        clientCompArray.Length.Should().Be(serverWorld.NextEntityId);
 
         var serverHash = StateHasher.Hash(serverWorld);
         var clientHash = StateHasher.Hash(clientWorld);

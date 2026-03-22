@@ -44,6 +44,16 @@ public class StateVerificationService : IDisposable
                 Hash = (System.Guid)hash
             };
             
+            // Debug dump
+            try
+            {
+                System.IO.File.WriteAllText($"{_match.Id}_{currentTick}.txt", StateDumper.Dump(_match.State));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to write server dump: {ex.Message}");
+            }
+            
             BroadcastHash(packet);
         }
     }

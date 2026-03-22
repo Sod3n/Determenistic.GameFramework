@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.DAR;
 
 namespace Deterministic.GameFramework.CoreV2;
 
 public static class ReactionExtensions
 {
-    
+
     /// <summary>
     /// Syntactic sugar for adding a Reaction Tag component to an entity.
     /// Usage: entity.AddReaction<MyReactionTag>(state);
     /// </summary>
-    public static void AddReaction<T>(this Entity entity, GlobalState state) where T : struct, IComponent
+    public static void AddReaction<T>(this Entity entity, EntityWorld state) where T : struct, IComponent
     {
         state.AddComponent(entity, new T());
     }
@@ -19,7 +21,7 @@ public static class ReactionExtensions
     /// Syntactic sugar for adding a Reaction Tag component with initial data.
     /// Usage: entity.AddReaction(state, new MyReactionTag { ... });
     /// </summary>
-    public static void AddReaction<T>(this Entity entity, GlobalState state, T component) where T : struct, IComponent
+    public static void AddReaction<T>(this Entity entity, EntityWorld state, T component) where T : struct, IComponent
     {
         state.AddComponent(entity, component);
     }
@@ -28,15 +30,15 @@ public static class ReactionExtensions
     /// Syntactic sugar for removing a Reaction Tag component from an entity.
     /// Usage: entity.RemoveReaction<MyReactionTag>(state);
     /// </summary>
-    public static void RemoveReaction<T>(this Entity entity, GlobalState state) where T : struct, IComponent
+    public static void RemoveReaction<T>(this Entity entity, EntityWorld state) where T : struct, IComponent
     {
         state.RemoveComponent<T>(entity);
     }
-    
+
     /// <summary>
     /// Checks if the entity has a component of type T.
     /// </summary>
-    public static bool HasComponent<T>(this Entity entity, GlobalState state) where T : struct, IComponent
+    public static bool HasComponent<T>(this Entity entity, EntityWorld state) where T : struct, IComponent
     {
         return state.HasComponent<T>(entity);
     }
@@ -55,7 +57,7 @@ public static class ReactionExtensions
     public static bool HasComponent<T>(this Entity entity, T expectedValue, Context ctx) where T : struct, IComponent
     {
         if (!ctx.State.HasComponent<T>(entity)) return false;
-        
+
         ref var current = ref ctx.State.GetComponent<T>(entity);
         return EqualityComparer<T>.Default.Equals(current, expectedValue);
     }

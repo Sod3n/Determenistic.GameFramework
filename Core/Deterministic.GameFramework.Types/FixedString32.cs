@@ -34,6 +34,7 @@ public struct FixedString32 : IParam, IEquatable<FixedString32>, IComparable<Fix
         }
 
         Span<byte> buffer = stackalloc byte[MaxLength];
+        buffer.Clear();
         
         // Use Encoder to convert without allocation and handle truncation gracefully
         var encoder = Encoding.UTF8.GetEncoder();

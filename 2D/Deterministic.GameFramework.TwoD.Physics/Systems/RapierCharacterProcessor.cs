@@ -99,7 +99,7 @@ internal class RapierCharacterProcessor
             }
             
             // Update Character State
-            character.IsOnFloor = result.grounded;
+            // character.IsOnFloor = result.grounded;
             
             // Calculate Real Velocity
             if (dt > 0)

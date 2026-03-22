@@ -19,6 +19,12 @@ public struct DeterministicRandom : IParam, IEquatable<DeterministicRandom>
         S2 = (seed << 1) | (seed >> 31);
         S3 = (seed >> 1) | (seed << 31);
         
+        // Prevent all-zero state
+        if (S0 == 0 && S1 == 0 && S2 == 0 && S3 == 0)
+        {
+            S1 = 0x9E3779B9;
+        }
+
         // Warm up the state
         for (int i = 0; i < 20; i++)
         {

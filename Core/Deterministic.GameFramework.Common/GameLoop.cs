@@ -130,7 +130,7 @@ public class GameLoop : IDisposable, IGameTime
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GameLoop] CRITICAL ERROR in frame update: {ex.Message}");
+                Console.WriteLine($"[GameLoop] CRITICAL ERROR in frame update: {ex.ToString()}");
             }
         }
     }

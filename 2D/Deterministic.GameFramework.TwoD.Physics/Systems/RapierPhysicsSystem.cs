@@ -126,9 +126,54 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             physicsState.CharacterProcessor.Clear();
         }
 
+        if (state.ExternalState.TryGetValue(ExternalStateKey, out var snapshotData))
+        {
+            try
+            {
+                physicsState.World = RapierWorld.Deserialize(snapshotData);
+                // We still need to map ECS to Rapier bodies, but since the handles are preserved
+                // in the ECS components, we can reconstruct the EntityToBody mappings
+                RebuildMappingsFromECS(state, physicsState);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Rapier] Failed to deserialize physics state, falling back to rebuild: {ex}");
+            }
+        }
+
         physicsState.World = new RapierWorld();
         // Rebuild from ECS
         RebuildWorldFromECS(state, physicsState);
+    }
+    
+    private void RebuildMappingsFromECS(EntityWorld state, RapierPhysicsState physicsState)
+    {
+        foreach (var entity in state.Filter<RigidBody2D>())
+            AddMapping(physicsState, entity.Id, state.GetComponent<RigidBody2D>(entity).BodyId);
+            
+        foreach (var entity in state.Filter<StaticBody2D>())
+            AddMapping(physicsState, entity.Id, state.GetComponent<StaticBody2D>(entity).BodyId);
+            
+        foreach (var entity in state.Filter<CharacterBody2D>())
+            AddMapping(physicsState, entity.Id, state.GetComponent<CharacterBody2D>(entity).BodyId);
+            
+        // Because of the duplicate issue with Area2D vs CharacterBody2D on Cow, 
+        // we map it if the entity doesn't already have a mapping.
+        foreach (var entity in state.Filter<Area2D>())
+        {
+            if (!physicsState.EntityToBody.ContainsKey(entity.Id))
+            {
+                AddMapping(physicsState, entity.Id, state.GetComponent<Area2D>(entity).BodyId);
+            }
+        }
+    }
+    
+    private void AddMapping(RapierPhysicsState physicsState, int entityId, ulong bodyHandle)
+    {
+        if (bodyHandle == ulong.MaxValue) return; // Uninitialized
+        physicsState.EntityToBody[entityId] = bodyHandle;
+        physicsState.BodyToEntity[bodyHandle] = entityId;
     }
     
     private void RebuildWorldFromECS(EntityWorld state, RapierPhysicsState physicsState)
@@ -503,9 +548,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                     physicsStateComp.Tick = currentTick;
                 }
                 
-                // Remove ExternalState usage to ensure deterministic hashing.
-                // The system rebuilds from ECS components on restore, so this opaque blob is unnecessary.
-                // state.ExternalState[ExternalStateKey] = data;
+                state.ExternalState[ExternalStateKey] = data;
             }
         }
         
