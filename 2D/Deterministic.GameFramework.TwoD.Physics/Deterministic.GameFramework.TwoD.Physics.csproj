@@ -26,7 +26,7 @@
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
       <PackageReference Include="GodotSharp" Version="4.3.0" />
     </ItemGroup>
-    
+
     <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
         <DefineConstants>$(DefineConstants);GODOT</DefineConstants>
     </PropertyGroup>
@@ -42,7 +42,12 @@
             <Pack>true</Pack>
             <PackagePath>runtimes/osx/native/</PackagePath>
         </None>
-        <!-- Add other platforms here if available, e.g. .dll for Windows, .so for Linux -->
+        <None Include="external/rapier_uniffi.dll">
+            <Link>rapier_uniffi.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/win-x64/native/</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>

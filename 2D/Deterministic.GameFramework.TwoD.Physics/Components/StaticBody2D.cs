@@ -19,4 +19,6 @@ public struct StaticBody2D : IComponent
         ConstantLinearVelocityValue = default;
         ConstantAngularVelocityValue = default;
     }
+    
+    public static StaticBody2D Default => new();
 }

@@ -1,17 +1,47 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Deterministic.GameFramework.DAR;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.Common;
 
 public class GameLoop : IDisposable, IGameTime
 {
     public GameSimulation Simulation { get; }
+
+    private bool _isRunning;
+    private readonly Stopwatch _stopwatch = new();
+    private long _lastFrameTicks;
+    
+    // Use double for precision in accumulator math
+    private int _tickRate = 60;
+    private double _fixedDeltaTime = 1.0 / 60.0;
+    private double _accumulator;
+    
+    // Increased safety cap to allow faster catch-up if needed
+    private const int MaxTicksPerFrame = 10; 
+
+    public int TickDelay { get; set; }
+    public float FixedDeltaTime => (float)_fixedDeltaTime;
+    public long CurrentTick => Simulation.CurrentTick;
+    public int TickRate => _tickRate;
+    public bool IsResimulating => Simulation.IsResimulating;
+    
+    // Delegate events
+    public event Action? OnTick
+    {
+        add => Simulation.OnTick += value;
+        remove => Simulation.OnTick -= value;
+    }
+    
+    public event Action? OnRollbackFailed
+    {
+        add => Simulation.OnRollbackFailed += value;
+        remove => Simulation.OnRollbackFailed -= value;
+    }
 
     public GameLoop(GameSimulation simulation)
     {
@@ -43,47 +73,10 @@ public class GameLoop : IDisposable, IGameTime
         }
     }
 
-    // Expose needed properties for compatibility / access
-
-    private bool _isRunning;
-    private readonly Stopwatch _stopwatch = new();
-    private long _lastFrameTicks;
-    
-    private int _tickRate = 60;
-    private float _fixedDeltaTime = 1f / 60f;
-    private float _accumulator;
-    
-    private const int MaxTicksPerFrame = 5;
-
-    public int TickDelay { get; set; }
-    public float FixedDeltaTime => _fixedDeltaTime;
-    
-    public long CurrentTick => Simulation.CurrentTick;
-    public int TickRate => _tickRate;
-    public bool IsResimulating => Simulation.IsResimulating;
-    
-    // Delegate events
-    public event Action? OnTick
-    {
-        add => Simulation.OnTick += value;
-        remove => Simulation.OnTick -= value;
-    }
-    
-    public event Action? OnRollbackFailed
-    {
-        add => Simulation.OnRollbackFailed += value;
-        remove => Simulation.OnRollbackFailed -= value;
-    }
-
-    public void Dispose()
-    {
-        Stop();
-    }
-
     public void SetTickRate(int tickRate)
     {
         _tickRate = tickRate;
-        _fixedDeltaTime = 1f / tickRate;
+        _fixedDeltaTime = 1.0 / tickRate;
     }
 
     public Task Start()
@@ -97,7 +90,7 @@ public class GameLoop : IDisposable, IGameTime
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GameLoop] FATAL ERROR - Loop crashed: {ex.Message}");
+                ILogger.LogError($"[GameLoop] FATAL ERROR - Loop crashed: {ex}");
                 _isRunning = false;
                 throw;
             }
@@ -107,9 +100,8 @@ public class GameLoop : IDisposable, IGameTime
     private void InitializeLoop()
     {
         _isRunning = true;
-        _fixedDeltaTime = 1f / _tickRate;
-        _accumulator = -(TickDelay * _fixedDeltaTime);
-        // CurrentTick = 0; // Don't reset if we want to start from a synced tick
+        _fixedDeltaTime = 1.0 / _tickRate;
+        _accumulator = 0; 
         
         // Store initial state (State at beginning of Tick 0)
         Simulation.History.Store(Simulation.CurrentTick, Simulation.State);
@@ -120,83 +112,65 @@ public class GameLoop : IDisposable, IGameTime
 
     private void RunLoop()
     {
-        int targetFrameTimeMs = 1000 / _tickRate;
+        // Target time for one frame in ticks (Stopwatch frequency dependent)
+        long targetTicksPerFrame = Stopwatch.Frequency / _tickRate;
         
         while (_isRunning)
         {
-            try
+            long frameStartTicks = _stopwatch.ElapsedTicks;
+            
+            // 1. Calculate elapsed seconds with double precision
+            double elapsed = GetElapsedSecondsAndUpdateLastFrameTicks(frameStartTicks);
+            _accumulator += elapsed;
+
+            // 2. Process Fixed Ticks
+            // We run as many ticks as needed to clear the accumulator, up to a safety cap
+            int ticksProcessed = 0;
+            while (_accumulator >= _fixedDeltaTime && ticksProcessed < MaxTicksPerFrame)
             {
-                ProcessFrame(targetFrameTimeMs);
+                Tick();
+                _accumulator -= _fixedDeltaTime;
+                ticksProcessed++;
             }
-            catch (Exception ex)
+
+            // 3. Prevent "Spiral of Death"
+            // Only wipe if we are more than 1 second behind real-time
+            if (_accumulator > 1.0)
             {
-                Console.WriteLine($"[GameLoop] CRITICAL ERROR in frame update: {ex.ToString()}");
+                ILogger.LogWarning("[GameLoop] Performance Warning: Resetting accumulator (Lag > 1s)");
+                _accumulator = 0;
             }
+
+            // 4. Precision Wait
+            YieldUntilNextFrame(frameStartTicks, targetTicksPerFrame);
         }
     }
 
-    private void ProcessFrame(int targetFrameTimeMs)
-    {
-        long currentTicks = _stopwatch.ElapsedTicks;
-        float elapsed = GetElapsedSecondsAndUpdateLastFrameTicks(currentTicks);
-        
-        _accumulator += elapsed;
-        
-        ProcessFixedTicks();
-        
-        PreventAccumulatorSpiralOfDeath();
-        
-        SleepUntilNextFrame(currentTicks, targetFrameTimeMs);
-    }
-
-    private float GetElapsedSecondsAndUpdateLastFrameTicks(long currentTicks)
+    private double GetElapsedSecondsAndUpdateLastFrameTicks(long currentTicks)
     {
         long deltaTicks = currentTicks - _lastFrameTicks;
         _lastFrameTicks = currentTicks;
-        return (float)deltaTicks / Stopwatch.Frequency;
+        return (double)deltaTicks / Stopwatch.Frequency;
     }
 
-    private void ProcessFixedTicks()
+    private void YieldUntilNextFrame(long frameStartTicks, long targetTicksPerFrame)
     {
-        int ticksThisFrame = 0;
-        while (_accumulator >= _fixedDeltaTime && ticksThisFrame < MaxTicksPerFrame)
+        // Thread-safe spin wait that allows other threads to work
+        while (_stopwatch.ElapsedTicks - frameStartTicks < targetTicksPerFrame)
         {
-            Tick();
-            _accumulator -= _fixedDeltaTime;
-            // CurrentTick is handled inside Tick()
-            ticksThisFrame++;
-        }
-    }
-
-    private void PreventAccumulatorSpiralOfDeath()
-    {
-        if (_accumulator > _fixedDeltaTime)
-        {
-            _accumulator = 0f;
-        }
-    }
-
-    private void SleepUntilNextFrame(long frameStartTicks, int targetFrameTimeMs)
-    {
-        long frameEndTicks = _stopwatch.ElapsedTicks;
-        long frameDurationTicks = frameEndTicks - frameStartTicks;
-        int frameDurationMs = (int)(frameDurationTicks * 1000 / Stopwatch.Frequency);
-        
-        int sleepTime = Math.Max(0, targetFrameTimeMs - frameDurationMs);
-        if (sleepTime > 0)
-        {
-            System.Threading.Thread.Sleep(sleepTime);
+            Thread.Yield();
         }
     }
 
     public void Stop() => _isRunning = false;
     
+    public void Dispose() => Stop();
+
     public void AdvanceToTick(long targetTick)
     {
         while (CurrentTick < targetTick)
         {
             Tick();
-            // CurrentTick is handled inside Tick()
         }
     }
 
@@ -210,24 +184,13 @@ public class GameLoop : IDisposable, IGameTime
         Simulation.ScheduleOnTick(tick, action, target);
     }
 
-    /// <summary>
-    /// Manually run a single tick. Useful for testing or manual driving.
-    /// </summary>
-    public void RunSingleTick()
-    {
-        Tick();
-    }
+    public void RunSingleTick() => Tick();
 
     public void ForceSetTick(long tick)
     {
         Simulation.ForceSetTick(tick);
-        // Clear accumulator to avoid immediate catch-up ticks
         _accumulator = 0;
     }
 
-    private void Tick()
-    {
-        Simulation.Tick();
-    }
+    private void Tick() => Simulation.Tick();
 }
-
