@@ -1,8 +1,10 @@
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.TwoD;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [Deterministic.GameFramework.ECS.StableId("aafea77a-2300-4eef-9ffc-071170bb9a26")]
 public struct Transform2D : IComponent
 {

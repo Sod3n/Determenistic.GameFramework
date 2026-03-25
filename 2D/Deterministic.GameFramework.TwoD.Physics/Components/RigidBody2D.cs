@@ -1,8 +1,10 @@
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.Physics2D.Components;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [Deterministic.GameFramework.ECS.StableId("8014592a-3375-4c07-ae29-598114227003")]
 public struct RigidBody2D : IComponent
 {

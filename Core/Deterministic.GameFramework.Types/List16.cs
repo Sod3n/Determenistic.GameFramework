@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.Types;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct List16<T> : IParam, IEnumerable<T>, IEquatable<List16<T>> where T : struct, IEquatable<T>
 {
     public T Item0;

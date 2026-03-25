@@ -1,15 +1,18 @@
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.DAR;
 using Deterministic.GameFramework.ECS;
 
 namespace Deterministic.GameFramework.DAR.Tests;
 
 [StableId("00000000-0000-0000-0000-000000000001")]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct TestComponent : IComponent
 {
     public int Value;
 }
 
 [StableId("00000000-0000-0000-0000-000000000002")]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct TestAction : IAction
 {
     public int Amount;
@@ -21,6 +24,7 @@ public struct TestAction : IAction
 }
 
 [StableId("00000000-0000-0000-0000-000000000003")]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct TestAction2 : IAction
 {
     public int Amount;

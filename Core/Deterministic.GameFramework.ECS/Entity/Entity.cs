@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.ECS;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Entity : IParam, IEquatable<Entity>, IComparable<Entity>
 {
     public static readonly Entity Null = new Entity(-1);

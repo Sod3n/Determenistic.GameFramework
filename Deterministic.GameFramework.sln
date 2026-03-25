@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EF782638
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.TwoD.Tests", "Tests\Deterministic.GameFramework.TwoD.Tests\Deterministic.GameFramework.TwoD.Tests.csproj", "{9EFF9329-7C01-4777-932A-443D5F8BDBBB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Profiler", "Profiler", "{C7DEEA3D-F98F-46D1-85A2-22B3CDF27A72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deterministic.GameFramework.Profiler", "Profiler\Deterministic.GameFramework.Profiler\Deterministic.GameFramework.Profiler.csproj", "{0546A25D-E149-4505-8A15-FC3A786A2D46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,10 @@ Global
 		{9EFF9329-7C01-4777-932A-443D5F8BDBBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EFF9329-7C01-4777-932A-443D5F8BDBBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EFF9329-7C01-4777-932A-443D5F8BDBBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0546A25D-E149-4505-8A15-FC3A786A2D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0546A25D-E149-4505-8A15-FC3A786A2D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0546A25D-E149-4505-8A15-FC3A786A2D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0546A25D-E149-4505-8A15-FC3A786A2D46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B1234567-89AB-CDEF-0123-456789ABCDEF} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
@@ -83,5 +91,6 @@ Global
 		{41D91AE6-7432-41AE-B1A3-376D8F776559} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{7C8D93A1-2B74-4A8C-9A2E-4D6C9B7F5E21} = {EF2F9D45-2585-48FB-8757-0511A05BAD95}
 		{9EFF9329-7C01-4777-932A-443D5F8BDBBB} = {EF782638-51AF-4D22-A8F1-AEA70BFB9A56}
+		{0546A25D-E149-4505-8A15-FC3A786A2D46} = {C7DEEA3D-F98F-46D1-85A2-22B3CDF27A72}
 	EndGlobalSection
 EndGlobal

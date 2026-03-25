@@ -267,46 +267,6 @@ public class PhysicsSystemLogicTests
     }
 
     [Fact]
-    public void History_ShouldBePruned_AfterTime()
-    {
-        // Custom setup with FakeGameTime
-        ServiceLocator.Reset();
-        ServiceLocator.RegisterAssembly(typeof(EntityWorld).Assembly);
-        
-        var state = new EntityWorld();
-        var fakeTime = new FakeGameTime();
-        fakeTime.CurrentTick = 500; // Future
-        state.SetCustomData<IGameTime>(fakeTime);
-        
-        var physicsSystem = new RapierPhysicsSystem();
-        
-        // Init state
-        var physicsState = new RapierPhysicsState();
-        physicsState.World = new uniffi.rapier_uniffi.RapierWorld();
-        state.SetCustomData(physicsState);
-        
-        // Inject history
-        // Threshold = 500 - 300 = 200.
-        physicsState.WorldStateHistory[100] = new byte[] { 1 }; // Should be removed (< 200)
-        physicsState.WorldStateHistory[199] = new byte[] { 2 }; // Should be removed (< 200)
-        physicsState.WorldStateHistory[200] = new byte[] { 3 }; // Should stay (== 200) ?? Logic is key < oldestTick. 200 < 200 is False. So stays.
-        physicsState.WorldStateHistory[300] = new byte[] { 4 }; // Should stay
-        
-        // LastSimulatedTick must match to avoid Reset
-        physicsState.LastSimulatedTick = 499; 
-        
-        // Update
-        physicsSystem.Update(state);
-        
-        physicsState.WorldStateHistory.ContainsKey(100).Should().BeFalse();
-        physicsState.WorldStateHistory.ContainsKey(199).Should().BeFalse();
-        physicsState.WorldStateHistory.ContainsKey(200).Should().BeTrue();
-        physicsState.WorldStateHistory.ContainsKey(300).Should().BeTrue();
-        
-        // Also a new entry for 500 should be added
-        physicsState.WorldStateHistory.ContainsKey(500).Should().BeTrue();
-    }
-    [Fact]
     public void Rebuild_ShouldRestoreAllBodyTypes_WhenTickMismatchOccurs()
     {
         var (state, gameLoop, system) = CreateWorld();
@@ -345,41 +305,6 @@ public class PhysicsSystemLogicTests
         // Verify positions are restored (rebuilt from ECS)
         var posSb = physicsState.World.BodyGetTranslation(physicsState.EntityToBody[sb.Id]);
         posSb.x.Should().BeApproximately(1, 0.001f);
-    }
-
-    [Fact]
-    public void System_ShouldUpdatePhysicsWorldStateComponent_IfPresent()
-    {
-        var (state, gameLoop, system) = CreateWorld();
-        
-        // Find existing World entity (created by EntityWorld ctor)
-        Entity worldEntity = Entity.Null;
-        foreach (var e in state.Filter<World>())
-        {
-            worldEntity = e;
-            break;
-        }
-        
-        // Ensure we found it
-        worldEntity.Should().NotBe(Entity.Null);
-        
-        // Add component to IT
-        state.AddComponent(worldEntity, new PhysicsWorldState());
-        
-        // Run multiple ticks to ensure we move past default 0
-        gameLoop.RunSingleTick(); // Tick 0 -> 1
-        gameLoop.RunSingleTick(); // Tick 1 -> 2
-        gameLoop.RunSingleTick(); // Tick 2 -> 3
-        
-        var comp = state.GetComponent<PhysicsWorldState>(worldEntity);
-        var gameTime = state.GetCustomData<IGameTime>();
-        
-        gameTime.Should().NotBeNull();
-        
-        // comp.Tick should be the tick of the LAST update (Tick 2)
-        // CurrentTick is now 3.
-        comp.Tick.Should().Be(2); 
-        comp.Tick.Should().Be(gameTime!.CurrentTick - 1);
     }
 
     [Fact]

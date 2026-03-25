@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using FixedMathSharp;
 
 #if NETSTANDARD2_1 || NETSTANDARD2_0
@@ -10,6 +11,7 @@ using WideInt = System.Int128;
 
 namespace Deterministic.GameFramework.Types;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Float : IParam, IEquatable<Float>, IComparable<Float>
 {
     public Fixed64 Value;

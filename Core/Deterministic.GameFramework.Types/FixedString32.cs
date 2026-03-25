@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Deterministic.GameFramework.Types;
@@ -6,6 +7,7 @@ namespace Deterministic.GameFramework.Types;
 /// <summary>
 /// A fixed-size string buffer (32 bytes) suitable for deterministic networking.
 /// </summary>
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct FixedString32 : IParam, IEquatable<FixedString32>, IComparable<FixedString32>
 {
     // Using long to pack 8 bytes at a time for 32 bytes total

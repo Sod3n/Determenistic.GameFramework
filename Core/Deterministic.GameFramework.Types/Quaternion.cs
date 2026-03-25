@@ -1,9 +1,11 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using FixedMathSharp;
 
 namespace Deterministic.GameFramework.Types;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Quaternion : IParam, IEquatable<Quaternion>
 {
     public Float X;

@@ -1,9 +1,11 @@
 using  System;
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.Physics2D.Components;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct CollisionShapeType : IEquatable<CollisionShapeType>
 {
     public int Value;
@@ -53,6 +55,7 @@ public struct CollisionShapeType : IEquatable<CollisionShapeType>
     };
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [Deterministic.GameFramework.ECS.StableId("c9075775-7634-45e0-a006-037000784226")]
 public struct CollisionShape2D : IComponent, IEquatable<CollisionShape2D>
 {

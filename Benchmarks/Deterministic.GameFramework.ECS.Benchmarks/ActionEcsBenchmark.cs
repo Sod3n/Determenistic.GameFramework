@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 using Deterministic.GameFramework.DAR;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
-using System.Collections.Generic;
 
 namespace Deterministic.GameFramework.Benchmarks
 {
@@ -82,6 +83,7 @@ namespace Deterministic.GameFramework.Benchmarks
     }
 
     [StableId("00000000-0000-0000-0000-000000000007")]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct BenchmarkActionComponent : IComponent
     {
         public int Value;

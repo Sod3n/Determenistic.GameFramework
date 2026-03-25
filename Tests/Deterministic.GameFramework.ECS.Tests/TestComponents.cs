@@ -1,26 +1,31 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.ECS.Tests;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [StableId("00000000-0000-0000-0000-000000000001")]
 public struct TestComponent1 : IComponent
 {
     public int Value;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [StableId("00000000-0000-0000-0000-000000000002")]
 public struct TestComponent2 : IComponent
 {
     public float Value;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [StableId("00000000-0000-0000-0000-000000000003")]
 public struct TestComponent3 : IComponent
 {
     public int Value;
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [StableId("00000000-0000-0000-0000-000000000004")]
 public struct TestComponentWithFields : IComponent
 {
@@ -38,10 +43,12 @@ public struct TestComponentHigh : IComponent
 {
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct UnregisteredComponent : IComponent
 {
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct ComponentNoAttribute : IComponent { }
 
 [StableId("00000000-0000-0000-0000-000000000099")]

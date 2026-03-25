@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.ECS;
 
@@ -8,16 +9,66 @@ public static class StateDumper
     public static string Dump(EntityWorld state)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"--- State Dump ---");
+        sb.AppendLine("--- State Dump ---");
 
-        // Dump Entities and Components
+        DumpEntities(state, sb);
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Logs a diagnostic diff on state mismatch.
+    /// Distinguishes between logical state differences and memory/garbage (padding) issues.
+    /// </summary>
+    [System.Diagnostics.Conditional("DEBUG")]
+    public static void LogMismatch(string label, long tick, Guid localHash, Guid serverHash, byte[]? snapshotData)
+    {
+        ILogger.LogError($"[{label}] STATE MISMATCH at Tick {tick}! Local: {localHash} != Server: {serverHash}");
+
+        if (snapshotData == null)
+        {
+            ILogger.LogError($"[{label}] No snapshot data available for Tick {tick}");
+            return;
+        }
+
+        // Round-trip test: deserialize → re-serialize → hash
+        // If the round-trip hash matches the server, the original snapshot had garbage bytes (padding/alignment)
+        // If it doesn't match, there's an actual logical state divergence
+        try
+        {
+            var tempWorld = new EntityWorld();
+            StateSerializer.Deserialize(tempWorld, snapshotData);
+            byte[] reserialized = StateSerializer.Serialize(tempWorld);
+            var roundTripHash = StateHasher.Hash(reserialized);
+
+            if (roundTripHash == serverHash)
+            {
+                ILogger.LogWarning($"[{label}] Mismatch is MEMORY GARBAGE (padding/alignment). Round-trip hash matches server.");
+                ILogger.LogWarning($"[{label}] Original bytes: {snapshotData.Length}, Re-serialized bytes: {reserialized.Length}");
+                LogByteDiff(label, snapshotData, reserialized);
+            }
+            else
+            {
+                ILogger.LogError($"[{label}] Mismatch is LOGICAL STATE DIVERGENCE. Round-trip hash: {roundTripHash}");
+                var sb = new StringBuilder();
+                DumpEntities(tempWorld, sb);
+                ILogger.LogError($"[{label}] State at Tick {tick}:\n{sb}");
+            }
+        }
+        catch (Exception ex)
+        {
+            ILogger.LogError($"[{label}] Failed to analyze mismatch: {ex.Message}");
+        }
+    }
+
+    private static void DumpEntities(EntityWorld state, StringBuilder sb)
+    {
         for (int i = 0; i < state.EntityMasks.Length; i++)
         {
             if (state.EntityMasks[i].IsEmpty) continue;
 
             sb.AppendLine($"Entity {i}:");
 
-            // We need to iterate all possible component types.
             for (int typeId = 0; typeId < state._componentArrays.Length; typeId++)
             {
                 if (state.EntityMasks[i].IsSet(typeId) && state._componentArrays[typeId] is { } array)
@@ -30,21 +81,6 @@ public static class StateDumper
                 }
             }
         }
-
-        sb.AppendLine();
-        sb.AppendLine("--- Raw Memory Hex Dump ---");
-        try
-        {
-            byte[] rawData = StateSerializer.Serialize(state);
-            sb.AppendLine($"Total Bytes: {rawData.Length}");
-            sb.AppendLine(ToHexString(rawData));
-        }
-        catch (Exception ex)
-        {
-            sb.AppendLine($"Error generating raw dump: {ex.Message}");
-        }
-
-        return sb.ToString();
     }
 
     private static string DumpComponent(object component)
@@ -66,41 +102,27 @@ public static class StateDumper
         return component.ToString() ?? "null";
     }
 
-    private static string ToHexString(byte[] bytes)
+    private static void LogByteDiff(string label, byte[] a, byte[] b)
     {
+        int diffCount = 0;
+        int maxLen = Math.Max(a.Length, b.Length);
         var sb = new StringBuilder();
-        for (int i = 0; i < bytes.Length; i += 16)
+
+        for (int i = 0; i < maxLen; i++)
         {
-            // 1. Output Offset
-            sb.Append(i.ToString("X8"));
-            sb.Append("  ");
-
-            // 2. Output Hex
-            for (int j = 0; j < 16; j++)
+            byte ba = i < a.Length ? a[i] : (byte)0;
+            byte bb = i < b.Length ? b[i] : (byte)0;
+            if (ba != bb)
             {
-                if (i + j < bytes.Length)
-                    sb.Append(bytes[i + j].ToString("X2") + " ");
-                else
-                    sb.Append("   "); // Padding for partial lines
-
-                if (j == 7) sb.Append(" "); // Extra space for visual grouping
+                diffCount++;
+                if (diffCount <= 32) // Limit output
+                    sb.AppendLine($"  Offset 0x{i:X4}: 0x{ba:X2} vs 0x{bb:X2}");
             }
-
-            sb.Append(" |");
-
-            // 3. Output ASCII
-            for (int j = 0; j < 16; j++)
-            {
-                if (i + j < bytes.Length)
-                {
-                    char c = (char)bytes[i + j];
-                    // Only print printable chars, otherwise dot
-                    sb.Append((c >= 32 && c <= 126) ? c : '.');
-                }
-            }
-            sb.Append("|");
-            sb.AppendLine();
         }
-        return sb.ToString();
+
+        if (diffCount > 32)
+            sb.AppendLine($"  ... and {diffCount - 32} more differing bytes");
+
+        ILogger.LogWarning($"[{label}] {diffCount} byte(s) differ:\n{sb}");
     }
 }

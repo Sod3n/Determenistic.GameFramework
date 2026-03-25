@@ -100,6 +100,7 @@ namespace Deterministic.GameFramework.Benchmarks
     }
 
     [StableId("00000000-0000-0000-0000-000000000003")]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SerTransformComponent : IComponent
     {
         public Float X;
@@ -108,6 +109,7 @@ namespace Deterministic.GameFramework.Benchmarks
     }
 
     [StableId("00000000-0000-0000-0000-000000000004")]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SerVelocityComponent : IComponent
     {
         public Float X;

@@ -1,9 +1,11 @@
 using System;
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.Physics2D.Components;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct PlatformOnLeave : IEquatable<PlatformOnLeave>
 {
     public int Value;
@@ -49,6 +51,7 @@ public struct PlatformOnLeave : IEquatable<PlatformOnLeave>
     };
 }
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [Deterministic.GameFramework.ECS.StableId("1f3b7788-2947-4d66-9d33-1275d2757278")]
 public struct CharacterBody2D : IComponent
 {

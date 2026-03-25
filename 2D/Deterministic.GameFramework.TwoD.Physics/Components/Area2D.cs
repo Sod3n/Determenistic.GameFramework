@@ -1,8 +1,10 @@
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.Physics2D.Components;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 [Deterministic.GameFramework.ECS.StableId("42ac8ac3-53d6-40ca-9f7e-5daee2548ba6")]
 public struct Area2D : IComponent
 {

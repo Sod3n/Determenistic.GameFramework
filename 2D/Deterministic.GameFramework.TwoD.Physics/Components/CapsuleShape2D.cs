@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 using Deterministic.GameFramework.Types;
 
 namespace Deterministic.GameFramework.Physics2D.Components;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct CapsuleShape2D : IEquatable<CapsuleShape2D>
 {
     public Float Radius;

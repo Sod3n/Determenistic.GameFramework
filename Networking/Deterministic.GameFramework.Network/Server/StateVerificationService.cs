@@ -26,34 +26,20 @@ public class StateVerificationService : IDisposable
     private void OnTick()
     {
         if (_disposed) return;
-        
+
         long currentTick = _match.Loop.CurrentTick;
 
         // Verify every N ticks
         if (currentTick % _intervalTicks == 0)
         {
             var hash = StateHasher.Hash(_match.State);
-            
-            // Note: OnTick runs *after* simulation and *after* CurrentTick is incremented in GameLoop.
-            // So _match.State is the result of 'currentTick'.
-            // The client stores this state at 'currentTick' in its history.
-            
+
             var packet = new StateHashPacket
             {
                 Tick = currentTick,
                 Hash = (System.Guid)hash
             };
-            
-            // Debug dump
-            try
-            {
-                System.IO.File.WriteAllText($"{_match.Id}_{currentTick}.txt", StateDumper.Dump(_match.State));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to write server dump: {ex.Message}");
-            }
-            
+
             BroadcastHash(packet);
         }
     }
@@ -63,10 +49,10 @@ public class StateVerificationService : IDisposable
         ILogger.Log($"[StateVerification] Broadcasting Hash for Tick {packet.Tick}: {packet.Hash}");
         int size = Marshal.SizeOf<StateHashPacket>();
         byte[] data = new byte[size];
-        
+
         var span = new Span<byte>(data);
         MemoryMarshal.Write(span, ref packet);
-        
+
         // Fire and forget
         _ = _networkServer.BroadcastToGroupAsync(_match.Id.ToString(), data, PacketType.StateHash);
     }

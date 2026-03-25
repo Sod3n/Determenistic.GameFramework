@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Types;
@@ -62,6 +63,7 @@ namespace Deterministic.GameFramework.Benchmarks
     }
 
     [StableId("00000000-0000-0000-0000-000000000001")]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TransformComponent : IComponent
     {
         public Float X;
@@ -69,6 +71,7 @@ namespace Deterministic.GameFramework.Benchmarks
     }
 
     [StableId("00000000-0000-0000-0000-000000000002")]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VelocityComponent : IComponent
     {
         public Float X;

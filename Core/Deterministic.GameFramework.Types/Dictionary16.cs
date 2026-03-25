@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.Types;
 
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct Dictionary16<TKey, TValue> : IParam, IEquatable<Dictionary16<TKey, TValue>>
     where TKey : struct, IEquatable<TKey>, IComparable<TKey>
     where TValue : struct, IEquatable<TValue>

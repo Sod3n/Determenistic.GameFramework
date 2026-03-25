@@ -181,19 +181,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 
             if (localHash != packet.Hash)
             {
-                Log($"[StateHash] MISMATCH at Tick {packet.Tick}! Local: {localHash} != Server: {packet.Hash}");
-                
-                // Debug dump
-                try
-                {
-                    var tempWorld = new EntityWorld();
-                    StateSerializer.Deserialize(tempWorld, snapshotData!);
-                    System.IO.File.WriteAllText($"client_dump_{packet.Tick}.txt", StateDumper.Dump(tempWorld));
-                }
-                catch (Exception ex)
-                {
-                    Log($"Failed to write client dump: {ex.Message}");
-                }
+                StateDumper.LogMismatch("Client", packet.Tick, localHash, packet.Hash, snapshotData);
 
                 OnStateMismatch?.Invoke(packet.Tick, (System.Guid)localHash, packet.Hash);
                 

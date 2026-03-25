@@ -7,7 +7,7 @@ namespace Deterministic.GameFramework.Types;
 /// A 128-bit mask used to track component presence on entities efficiently.
 /// Replaces HashSets for O(1) checks.
 /// </summary>
-[StructLayout(LayoutKind.Sequential, Size = 16)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 public struct BitMask128 : IParam, IEquatable<BitMask128>
 {
     public ulong _part0; // Bits 0-63

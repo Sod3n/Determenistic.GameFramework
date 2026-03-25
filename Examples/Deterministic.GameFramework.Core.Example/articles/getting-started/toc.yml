@@ -1,6 +1,0 @@
-- name: Hello World
-  href: 01-hello-world.md
-- name: Reactions
-  href: 02-reactions.md
-- name: Rollback Networking
-  href: 03-rollback.md

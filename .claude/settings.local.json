@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework -name \"*.cs\" -type f -exec grep -l \"namespace Deterministic.GameFramework.CoreV2\" {})",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet stash:*)",
+      "Bash(git stash:*)",
+      "Bash(ls /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Core/Deterministic.GameFramework.ECS/*.csproj)"
+    ]
+  }
+}

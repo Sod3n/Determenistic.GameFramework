@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Deterministic.GameFramework.Types;
 
 // TODO: Refactor to use FixedMathSharp deterministic random
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct DeterministicRandom : IParam, IEquatable<DeterministicRandom>
 {
     // 128-bit state

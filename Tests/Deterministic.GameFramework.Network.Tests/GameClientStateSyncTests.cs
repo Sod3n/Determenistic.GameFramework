@@ -15,6 +15,7 @@ using Xunit;
 namespace Deterministic.GameFramework.Network.Tests;
 
 [StableId("00000000-0000-0000-0000-000000000001")]
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct TestComponent : IComponent
 {
     public int Value;
@@ -35,6 +36,8 @@ public class GameClientStateSyncTests
         public event Action<byte[]>? OnComponentMappingReceived;
         public event Action<byte[]>? OnStateHashReceived;
         public event Action<System.Guid>? OnLobbyCreated;
+        public event Action<Guid>? OnLobbyJoined;
+        public event Action<Guid>? OnMatchAssigned;
         public event Action<System.Guid, System.Guid>? OnMatchJoined;
         public event Action? OnConnected;
         public event Action? OnDisconnected;
@@ -57,6 +60,21 @@ public class GameClientStateSyncTests
         public void SendBatch(byte[] data)
         {
             SentBatches.Add(data);
+        }
+
+        public Task EnqueuePlayerAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateLobbyAsync(string lobbyName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task JoinLobbyAsync(Guid lobbyId)
+        {
+            throw new NotImplementedException();
         }
 
         public Task EnqueuePlayerAsync(string? token = null) => Task.CompletedTask;
