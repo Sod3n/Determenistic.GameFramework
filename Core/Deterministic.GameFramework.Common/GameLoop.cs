@@ -31,12 +31,18 @@ public class GameLoop : IDisposable, IGameTime
     public bool IsResimulating => Simulation.IsResimulating;
     
     // Delegate events
+    public event Action? OnBeforeTick
+    {
+        add => Simulation.OnBeforeTick += value;
+        remove => Simulation.OnBeforeTick -= value;
+    }
+
     public event Action? OnTick
     {
         add => Simulation.OnTick += value;
         remove => Simulation.OnTick -= value;
     }
-    
+
     public event Action? OnRollbackFailed
     {
         add => Simulation.OnRollbackFailed += value;

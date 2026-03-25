@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.ECS;
 
@@ -14,7 +15,7 @@ public class SystemRunnerDisposable(SystemRunner runner, IEnumerable<ISystem>? s
     public void Dispose()
     {
         if (_systemsToDisable == null) return;
-        
+
         runner.DisableSystems(_systemsToDisable);
         _systemsToDisable = null;
     }
@@ -36,10 +37,10 @@ public class SystemRunner
     {
         var enumerable = systems.ToList();
         var systemsToAdd = enumerable.Where(s => !_systems.Contains(s)).ToList();
-        
+
         _systems.AddRange(systemsToAdd);
         SortSystems();
-        
+
         return new SystemRunnerDisposable(this, systemsToAdd);
     }
 
@@ -73,8 +74,6 @@ public class SystemRunner
 
     public void Update(EntityWorld state)
     {
-        // Collect async systems and run their SyncFrom + Step in parallel,
-        // while regular systems wait for all async work to finish first.
         var asyncSystems = new List<IAsyncSystem>();
         var asyncTasks = new List<Task>();
 
@@ -84,14 +83,17 @@ public class SystemRunner
             {
                 try
                 {
-                    asyncSystem.SyncFrom(state);
-                    var task = Task.Run(() => asyncSystem.Step());
-                    asyncSystems.Add(asyncSystem);
-                    asyncTasks.Add(task);
+                    var action = asyncSystem.PrepareStep(state);
+                    if (action != null)
+                    {
+                        var task = Task.Run(action);
+                        asyncSystems.Add(asyncSystem);
+                        asyncTasks.Add(task);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[SystemRunner] Error in system {system.GetType().Name} SyncFrom: {ex}");
+                    ILogger.LogError($"[SystemRunner] Error in system {system.GetType().Name} PrepareStep: {ex}");
                 }
             }
             else
@@ -105,7 +107,7 @@ public class SystemRunner
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[SystemRunner] Error in system {system.GetType().Name}: {ex}");
+                    ILogger.LogError($"[SystemRunner] Error in system {system.GetType().Name}: {ex}");
                 }
             }
         }
@@ -126,20 +128,20 @@ public class SystemRunner
         {
             foreach (var inner in ex.InnerExceptions)
             {
-                Console.WriteLine($"[SystemRunner] Error in async system Step: {inner}");
+                ILogger.LogError($"[SystemRunner] Error in async system Step: {inner}");
             }
         }
 
-        // SyncTo in deterministic order (same order they were registered)
+        // ApplyStep in deterministic order (same order they were registered)
         for (int i = 0; i < asyncSystems.Count; i++)
         {
             try
             {
-                asyncSystems[i].SyncTo(state);
+                asyncSystems[i].ApplyStep(state);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SystemRunner] Error in system {asyncSystems[i].GetType().Name} SyncTo: {ex}");
+                ILogger.LogError($"[SystemRunner] Error in system {asyncSystems[i].GetType().Name} ApplyStep: {ex}");
             }
         }
 

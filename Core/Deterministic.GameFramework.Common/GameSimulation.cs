@@ -16,7 +16,11 @@ public class GameSimulation
 
     public long CurrentTick { get; private set; }
     public bool IsResimulating { get; private set; }
-    
+
+    /// <summary>Fires at the start of each tick, before rollback check and simulation.
+    /// Used by GameClient to drain inbound network queues on the game loop thread.</summary>
+    public event Action? OnBeforeTick;
+
     public event Action? OnTick;
     public event Action? OnRollbackFailed;
 
@@ -39,7 +43,7 @@ public class GameSimulation
         var denseId = ComponentId<TAction>.DenseId;
         Scheduler.Schedule(action, denseId, target, CurrentTick);
     }
-    
+
     public void ScheduleOnTick<TAction>(long tick, TAction action, Entity target) where TAction : struct, IAction
     {
         var denseId = ComponentId<TAction>.DenseId;
@@ -48,25 +52,32 @@ public class GameSimulation
 
     public void Tick()
     {
+        // Drain inbound network data on the game loop thread (single-threaded, no lock needed)
+        try
+        {
+            OnBeforeTick?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[GameSimulation] Error in OnBeforeTick listener: {ex.Message}");
+        }
+
         long dirtyTick = Scheduler.EarliestDirtyTick;
         if (dirtyTick < CurrentTick)
         {
             // Rollback required!
             long originalTick = CurrentTick;
             long restoreTick = dirtyTick;
-            
-            // Try to find snapshot
-            // Note: StateHistory now works with EntityWorld, but GlobalState delegates to it.
-            // We need to pass EntityWorld to Retrieve.
+
             if (History.Retrieve(restoreTick, State))
             {
                 Console.WriteLine($"[Rollback] Rolling back from {CurrentTick} to {restoreTick} (Input at {dirtyTick})");
-                
+
                 // Truncate the "False Future"
                 History.DiscardFuture(restoreTick);
-                
+
                 CurrentTick = restoreTick;
-                
+
                 // RESIMULATION LOOP (Catch up to where we were)
                 IsResimulating = true;
                 while (CurrentTick < originalTick)
@@ -87,9 +98,9 @@ public class GameSimulation
 
         // 1. Simulate (Normal Step)
         SimulateStep();
-        
+
         CurrentTick++;
-        
+
         // 2. Save State to History
         History.Store(CurrentTick, State);
 
@@ -102,14 +113,14 @@ public class GameSimulation
         {
             Console.WriteLine($"[GameSimulation] Error in OnTick listener: {ex.Message}");
         }
-        
+
         // 4. Prune Old Data
         long oldestTick = History.GetOldestTick();
         if (oldestTick > 0)
         {
             Scheduler.PruneHistory(oldestTick);
         }
-        
+
         // 5. Clear Dirty State
         State.ClearDirty();
     }

@@ -8,24 +8,19 @@ using uniffi.rapier_uniffi;
 
 namespace Deterministic.GameFramework.Physics2D.Systems;
 
-public class RapierPhysicsSystem : IAsyncSystem, IDisposable
+public class RapierPhysicsSystem : ISystem, IDisposable
 {
-    // State held between SyncFrom → Step → SyncTo within a single tick
-    private RapierPhysicsState? _currentPhysicsState;
-    private IGameTime? _currentGameTime;
-    private EntityWorld? _currentState;
+    // Scratch lists are ThreadStatic so concurrent game loops don't clobber each other
+    [ThreadStatic] private static List<Entity>? _entityBuffer;
+    [ThreadStatic] private static List<int>? _intBuffer;
 
-    // Reusable scratch lists to avoid per-tick allocations
-    private readonly List<Entity> _entityBuffer = new();
-    private readonly List<int> _intBuffer = new();
+    private static List<Entity> EntityBuffer => _entityBuffer ??= new();
+    private static List<int> IntBuffer => _intBuffer ??= new();
 
     static RapierPhysicsSystem()
     {
         RapierNativeLoader.Initialize();
     }
-
-#if NETCOREAPP3_0_OR_GREATER
-#endif
 
     public RapierPhysicsSystem()
     {
@@ -33,103 +28,104 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
 
     public void Update(EntityWorld state)
     {
-        SyncFrom(state);
-        Step();
-        SyncTo(state);
+        var action = PrepareStep(state);
+        action?.Invoke();
+        ApplyStep(state);
     }
 
-    public void SyncFrom(EntityWorld state)
+    public Action? PrepareStep(EntityWorld state)
     {
-        _currentState = state;
-        _currentPhysicsState = state.GetCustomData<RapierPhysicsState>();
-        if (_currentPhysicsState == null)
+        var physicsState = state.GetCustomData<RapierPhysicsState>();
+        if (physicsState == null)
         {
-            _currentPhysicsState = new RapierPhysicsState();
-            state.SetCustomData(_currentPhysicsState);
-            _currentPhysicsState.World = new RapierWorld();
+            physicsState = new RapierPhysicsState();
+            state.SetCustomData(physicsState);
+            physicsState.World = new RapierWorld();
         }
 
-        _currentGameTime = state.GetCustomData<IGameTime>();
-        if (_currentGameTime == null)
+        var gameTime = state.GetCustomData<IGameTime>();
+        if (gameTime == null) return null;
+
+        // Dispose any old world deferred from the previous tick
+        if (physicsState.PendingDispose != null)
         {
-            _currentPhysicsState = null;
-            return;
+            physicsState.PendingDispose.Dispose();
+            physicsState.PendingDispose = null;
         }
 
         // Detect Rollback / Initialization / Jump Forward
-        if (_currentPhysicsState.World == null || _currentGameTime.CurrentTick != _currentPhysicsState.LastSimulatedTick + 1)
+        if (physicsState.World == null || gameTime.CurrentTick != physicsState.LastSimulatedTick + 1)
         {
-            RebuildWorld(state, _currentPhysicsState);
+            RebuildWorld(state, physicsState);
         }
 
         // Prune Bodies (Remove destroyed entities)
-        PruneBodies(state, _currentPhysicsState);
+        PruneBodies(state, physicsState);
 
         // Sync ECS changes to Physics (Creation/Destruction)
-        SyncEcsToPhysics(state, _currentPhysicsState);
+        SyncEcsToPhysics(state, physicsState);
 
         // Step Characters (Kinematic Movement) before physics step — needs ECS access
-        if (_currentPhysicsState.World != null)
+        if (physicsState.World != null)
         {
-            var dt = (float)_currentGameTime.FixedDeltaTime;
-            _currentPhysicsState.CharacterProcessor.StepCharacters(state, _currentPhysicsState.World, _currentPhysicsState.EntityToBody, dt);
+            var dt = (float)gameTime.FixedDeltaTime;
+            physicsState.CharacterProcessor.StepCharacters(state, physicsState.World, physicsState.EntityToBody, dt);
         }
+
+        // Capture what Step needs into the closure — no instance fields involved
+        var world = physicsState.World;
+        if (world == null) return null;
+
+        var stepDt = (float)gameTime.FixedDeltaTime;
+        return () =>
+        {
+            var gravity = new RVector(0.0f, 0.0f);
+            var integrationParams = new RIntegrationParameters(
+                dt: stepDt,
+                minCcdDt: stepDt / 100.0f,
+                lengthUnit: 1.0f,
+                warmstartCoefficient: 0.5f,
+                contactNaturalFrequency: 30.0f,
+                contactDampingRatio: 1.0f,
+                normalizedAllowedLinearError: 0.001f,
+                normalizedMaxCorrectiveVelocity: 10.0f,
+                normalizedPredictionDistance: 0.002f,
+                numSolverIterations: 4,
+                numInternalPgsIterations: 1,
+                numInternalStabilizationIterations: 1,
+                minIslandSize: 128,
+                maxCcdSubsteps: 1
+            );
+
+            world.Step(gravity, integrationParams);
+        };
     }
 
-    public void Step()
+    public void ApplyStep(EntityWorld state)
     {
-        if (_currentPhysicsState?.World == null || _currentGameTime == null) return;
-
-        var dt = (float)_currentGameTime.FixedDeltaTime;
-        var gravity = new RVector(0.0f, 0.0f);
-
-        var integrationParams = new RIntegrationParameters(
-            dt: dt,
-            minCcdDt: dt / 100.0f,
-            lengthUnit: 1.0f,
-            warmstartCoefficient: 0.5f,
-            contactNaturalFrequency: 30.0f,
-            contactDampingRatio: 1.0f,
-            normalizedAllowedLinearError: 0.001f,
-            normalizedMaxCorrectiveVelocity: 10.0f,
-            normalizedPredictionDistance: 0.002f,
-            numSolverIterations: 4,
-            numInternalPgsIterations: 1,
-            numInternalStabilizationIterations: 1,
-            minIslandSize: 128,
-            maxCcdSubsteps: 1
-        );
-
-        _currentPhysicsState.World.Step(gravity, integrationParams);
-    }
-
-    public void SyncTo(EntityWorld state)
-    {
-        if (_currentPhysicsState == null || _currentGameTime == null) return;
+        var physicsState = state.GetCustomData<RapierPhysicsState>();
+        var gameTime = state.GetCustomData<IGameTime>();
+        if (physicsState == null || gameTime == null) return;
 
         // Update Area2D Overlaps (needs both Rapier world and ECS)
-        if (_currentPhysicsState.World != null)
+        if (physicsState.World != null)
         {
-            _currentPhysicsState.AreaProcessor.UpdateAreaOverlaps(state, _currentPhysicsState.World, _currentPhysicsState.BodyToEntity);
+            physicsState.AreaProcessor.UpdateAreaOverlaps(state, physicsState.World, physicsState.BodyToEntity);
         }
 
         // Sync Physics to ECS
-        SyncPhysicsToEcs(state, _currentPhysicsState);
+        SyncPhysicsToEcs(state, physicsState);
 
-        _currentPhysicsState.LastSimulatedTick = _currentGameTime.CurrentTick;
-
-        // Clear per-tick references
-        _currentState = null;
-        _currentPhysicsState = null;
-        _currentGameTime = null;
+        physicsState.LastSimulatedTick = gameTime.CurrentTick;
     }
 
-    private void RebuildWorld(EntityWorld state, RapierPhysicsState physicsState)
+    private static void RebuildWorld(EntityWorld state, RapierPhysicsState physicsState)
     {
-        // Dispose existing world
+        // Defer disposal of the old world until next PrepareStep (after the async Step completes).
         if (physicsState.World != null)
         {
-            physicsState.World.Dispose();
+            physicsState.PendingDispose?.Dispose();
+            physicsState.PendingDispose = physicsState.World;
             physicsState.World = null;
             physicsState.EntityToBody.Clear();
             physicsState.BodyToEntity.Clear();
@@ -141,42 +137,44 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         RebuildWorldFromECS(state, physicsState);
     }
 
-    private void RebuildWorldFromECS(EntityWorld state, RapierPhysicsState physicsState)
+    private static void RebuildWorldFromECS(EntityWorld state, RapierPhysicsState physicsState)
     {
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
-        foreach (var entity in _entityBuffer)
+        var entityBuffer = EntityBuffer;
+
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in entityBuffer)
         {
             ref var body = ref state.GetComponent<RigidBody2D>(entity);
             body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
         }
 
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
-        foreach (var entity in _entityBuffer)
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in entityBuffer)
         {
             ref var body = ref state.GetComponent<StaticBody2D>(entity);
             body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
         }
 
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
-        foreach (var entity in _entityBuffer)
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in entityBuffer)
         {
             ref var body = ref state.GetComponent<CharacterBody2D>(entity);
             body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
         }
 
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<Area2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
-        foreach (var entity in _entityBuffer)
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<Area2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (var entity in entityBuffer)
         {
             ref var body = ref state.GetComponent<Area2D>(entity);
             body.BodyId = 0;
@@ -184,21 +182,20 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
     }
 
-    private void PruneBodies(EntityWorld state, RapierPhysicsState physicsState)
+    private static void PruneBodies(EntityWorld state, RapierPhysicsState physicsState)
     {
         if (physicsState.World == null) return;
 
-        // SORT FOR DETERMINISM: Dictionary iteration is undefined
-        _intBuffer.Clear();
-        _intBuffer.AddRange(physicsState.EntityToBody.Keys);
-        _intBuffer.Sort();
+        var intBuffer = IntBuffer;
 
-        // Collect entities to remove (reuse _longBuffer as int-compatible scratch — use _entityBuffer instead)
-        // We need a second buffer here; use _entityBuffer.Count as a trick — but simplest is just to
-        // remove in reverse after collecting indices. We'll collect into _longBuffer reinterpreted.
+        // SORT FOR DETERMINISM: Dictionary iteration is undefined
+        intBuffer.Clear();
+        intBuffer.AddRange(physicsState.EntityToBody.Keys);
+        intBuffer.Sort();
+
         int removeCount = 0;
 
-        foreach (var entityId in _intBuffer)
+        foreach (var entityId in intBuffer)
         {
             var entity = new Entity(entityId);
 
@@ -210,16 +207,14 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
 
             if (!isValid)
             {
-                // Mark for removal by swapping to front of _intBuffer
-                // Actually, just overwrite from the start since we won't iterate _intBuffer again
-                _intBuffer[removeCount] = entityId;
+                intBuffer[removeCount] = entityId;
                 removeCount++;
             }
         }
 
         for (int i = 0; i < removeCount; i++)
         {
-            int entityId = _intBuffer[i];
+            int entityId = intBuffer[i];
             ulong bodyHandle = physicsState.EntityToBody[entityId];
 
             physicsState.World.BodyDestroy(bodyHandle);
@@ -231,16 +226,18 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
     }
 
-    private void SyncEcsToPhysics(EntityWorld state, RapierPhysicsState physicsState)
+    private static void SyncEcsToPhysics(EntityWorld state, RapierPhysicsState physicsState)
     {
         if (physicsState.World == null) return;
 
-        // 1. Dynamic Bodies
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        var entityBuffer = EntityBuffer;
 
-        foreach (var entity in _entityBuffer)
+        // 1. Dynamic Bodies
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var entity in entityBuffer)
         {
             if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
             {
@@ -261,11 +258,11 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
 
         // 2. Static Bodies
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-        foreach (var entity in _entityBuffer)
+        foreach (var entity in entityBuffer)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -280,11 +277,11 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
 
         // 3. Character Bodies
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-        foreach (var entity in _entityBuffer)
+        foreach (var entity in entityBuffer)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -300,11 +297,11 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
 
         // 4. Area2D
-        _entityBuffer.Clear();
-        foreach (var entity in state.Filter<Area2D, Transform2D>()) _entityBuffer.Add(entity);
-        _entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
+        entityBuffer.Clear();
+        foreach (var entity in state.Filter<Area2D, Transform2D>()) entityBuffer.Add(entity);
+        entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-        foreach (var entity in _entityBuffer)
+        foreach (var entity in entityBuffer)
         {
              if (!physicsState.EntityToBody.TryGetValue(entity.Id, out ulong bodyHandle))
              {
@@ -319,7 +316,7 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
     }
 
-    private void CreateBodyForEntity(EntityWorld state, RapierPhysicsState physicsState, Entity entity)
+    private static void CreateBodyForEntity(EntityWorld state, RapierPhysicsState physicsState, Entity entity)
     {
         if (physicsState.World == null) return;
 
@@ -439,16 +436,18 @@ public class RapierPhysicsSystem : IAsyncSystem, IDisposable
         }
     }
 
-    private void SyncPhysicsToEcs(EntityWorld state, RapierPhysicsState physicsState)
+    private static void SyncPhysicsToEcs(EntityWorld state, RapierPhysicsState physicsState)
     {
         if (physicsState.World == null) return;
 
-        // SORT FOR DETERMINISM: Dictionary iteration is undefined, so we must sort by ID.
-        _intBuffer.Clear();
-        _intBuffer.AddRange(physicsState.EntityToBody.Keys);
-        _intBuffer.Sort();
+        var intBuffer = IntBuffer;
 
-        foreach (var entityId in _intBuffer)
+        // SORT FOR DETERMINISM: Dictionary iteration is undefined, so we must sort by ID.
+        intBuffer.Clear();
+        intBuffer.AddRange(physicsState.EntityToBody.Keys);
+        intBuffer.Sort();
+
+        foreach (var entityId in intBuffer)
         {
             ulong bodyHandle = physicsState.EntityToBody[entityId];
             var entity = new Entity(entityId);
