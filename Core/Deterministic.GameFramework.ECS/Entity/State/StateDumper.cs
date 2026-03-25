@@ -69,11 +69,11 @@ public static class StateDumper
 
             sb.AppendLine($"Entity {i}:");
 
-            for (int typeId = 0; typeId < state._componentArrays.Length; typeId++)
+            for (int typeId = 0; typeId < state._componentStores.Length; typeId++)
             {
-                if (state.EntityMasks[i].IsSet(typeId) && state._componentArrays[typeId] is { } array)
+                if (state.EntityMasks[i].IsSet(typeId) && state._componentStores[typeId] is { } store)
                 {
-                    var component = array.GetValue(i);
+                    var component = store.GetValue(i);
                     if (component != null)
                     {
                         sb.AppendLine($"  {component.GetType().Name}: {DumpComponent(component)}");
@@ -88,18 +88,132 @@ public static class StateDumper
         var type = component.GetType();
         if (type.IsValueType)
         {
-            var sb = new StringBuilder();
-            sb.Append("{ ");
-            foreach (var field in type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            // Use raw byte dump instead of field.GetValue() to avoid
+            // SIGBUS (EXC_ARM_DA_ALIGN) on Apple Silicon when Pack=1
+            // structs have misaligned long fields — FieldDesc::GetInstanceField
+            // uses aligned reads that crash on ARM.
+            int size = System.Runtime.InteropServices.Marshal.SizeOf(type);
+            var bytes = new byte[size];
+            var handle = System.Runtime.InteropServices.GCHandle.Alloc(component, System.Runtime.InteropServices.GCHandleType.Pinned);
+            try
             {
-                sb.Append($"{field.Name}: {field.GetValue(component)}, ");
+                System.Runtime.InteropServices.Marshal.Copy(handle.AddrOfPinnedObject(), bytes, 0, size);
             }
-            if (sb.Length > 2) sb.Length -= 2; // Remove trailing comma
-            sb.Append(" }");
-            return sb.ToString();
+            finally
+            {
+                handle.Free();
+            }
+            return $"[{size}B] {BitConverter.ToString(bytes)}";
         }
 
         return component.ToString() ?? "null";
+    }
+
+    /// <summary>
+    /// Diffs two serialized states (local vs server) and logs only the differences.
+    /// </summary>
+    public static void LogStateDiff(string label, long tick, byte[] localData, byte[] serverData)
+    {
+        try
+        {
+            var localWorld = new EntityWorld();
+            StateSerializer.Deserialize(localWorld, localData);
+
+            var serverWorld = new EntityWorld();
+            StateSerializer.Deserialize(serverWorld, serverData);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"[{label}] State diff at Tick {tick}:");
+
+            int maxEntities = Math.Max(localWorld._nextEntityId, serverWorld._nextEntityId);
+            int maxTypes = Math.Max(localWorld._componentStores.Length, serverWorld._componentStores.Length);
+            int diffCount = 0;
+
+            for (int i = 0; i < maxEntities; i++)
+            {
+                var localMask = i < localWorld.EntityMasks.Length ? localWorld.EntityMasks[i] : default;
+                var serverMask = i < serverWorld.EntityMasks.Length ? serverWorld.EntityMasks[i] : default;
+
+                bool localExists = !localMask.IsEmpty;
+                bool serverExists = !serverMask.IsEmpty;
+
+                if (!localExists && !serverExists) continue;
+
+                if (localExists != serverExists)
+                {
+                    sb.AppendLine($"  Entity {i}: {(localExists ? "LOCAL only" : "SERVER only")}");
+                    diffCount++;
+                    continue;
+                }
+
+                // Both exist — compare components
+                for (int typeId = 0; typeId < maxTypes; typeId++)
+                {
+                    bool localHas = localMask.IsSet(typeId);
+                    bool serverHas = serverMask.IsSet(typeId);
+
+                    if (!localHas && !serverHas) continue;
+
+                    string typeName = ComponentId.TryGetType(new DenseComponentId(typeId), out var type) && type != null
+                        ? type.Name
+                        : $"TypeId({typeId})";
+
+                    if (localHas != serverHas)
+                    {
+                        sb.AppendLine($"  Entity {i}.{typeName}: {(localHas ? "LOCAL only" : "SERVER only")}");
+                        diffCount++;
+                        continue;
+                    }
+
+                    // Both have component — compare bytes
+                    var localStore = typeId < localWorld._componentStores.Length ? localWorld._componentStores[typeId] : null;
+                    var serverStore = typeId < serverWorld._componentStores.Length ? serverWorld._componentStores[typeId] : null;
+
+                    if (localStore == null || serverStore == null) continue;
+
+                    byte[] localBytes = localStore.SerializePacked(i + 1);
+                    byte[] serverBytes = serverStore.SerializePacked(i + 1);
+
+                    int elemSize = localStore.ElementSize;
+                    int localOffset = i * elemSize;
+                    int serverOffset = i * elemSize;
+
+                    if (localOffset + elemSize > localBytes.Length || serverOffset + elemSize > serverBytes.Length)
+                        continue;
+
+                    bool same = true;
+                    for (int b = 0; b < elemSize; b++)
+                    {
+                        if (localBytes[localOffset + b] != serverBytes[serverOffset + b])
+                        {
+                            same = false;
+                            break;
+                        }
+                    }
+
+                    if (!same)
+                    {
+                        var localHex = BitConverter.ToString(localBytes, localOffset, elemSize);
+                        var serverHex = BitConverter.ToString(serverBytes, serverOffset, elemSize);
+                        sb.AppendLine($"  Entity {i}.{typeName}:");
+                        sb.AppendLine($"    LOCAL:  {localHex}");
+                        sb.AppendLine($"    SERVER: {serverHex}");
+                        diffCount++;
+                    }
+                }
+            }
+
+            if (diffCount == 0)
+            {
+                sb.AppendLine("  No component-level differences found (diff may be in entity masks or metadata)");
+            }
+
+            ILogger.LogWarning(sb.ToString());
+        }
+        catch (Exception ex)
+        {
+            ILogger.LogError($"[{label}] Failed to diff states at Tick {tick}: {ex.Message}");
+        }
     }
 
     private static void LogByteDiff(string label, byte[] a, byte[] b)

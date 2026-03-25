@@ -37,7 +37,7 @@ public interface IEntityWorld
     void ForEach<T1, T2, TState>(TState state, ComponentActionEntity2<T1, T2, TState> action) where T1 : struct, IComponent where T2 : struct, IComponent;
     
     void RegisterComponent<T>() where T : struct, IComponent;
-    T[] GetRawArray<T>() where T : struct, IComponent;
+    AlignedComponentStore<T> GetComponentStore<T>() where T : struct, IComponent;
     
     void ClearDirty();
     IReadOnlyList<int> GetDirtyEntities();

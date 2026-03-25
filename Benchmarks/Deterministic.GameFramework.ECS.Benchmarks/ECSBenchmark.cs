@@ -39,10 +39,10 @@ namespace Deterministic.GameFramework.Benchmarks
         [Benchmark]
         public void Manual_Iteration()
         {
-            var transforms = _state.GetRawArray<TransformComponent>();
-            var velocities = _state.GetRawArray<VelocityComponent>();
+            var transforms = _state.GetComponentStore<TransformComponent>();
+            var velocities = _state.GetComponentStore<VelocityComponent>();
             var masks = _state.EntityMasks;
-            
+
             // Reconstruct mask logic for fair comparison
             var tMask = new BitMask128();
             tMask.Set(ComponentId<TransformComponent>.IntId);
@@ -53,8 +53,8 @@ namespace Deterministic.GameFramework.Benchmarks
             {
                 if (masks[i].HasAll(tMask))
                 {
-                    ref var pos = ref transforms[i];
-                    ref var vel = ref velocities[i];
+                    ref var pos = ref transforms.Get(i);
+                    ref var vel = ref velocities.Get(i);
                     pos.X += vel.X;
                     pos.Y += vel.Y;
                 }

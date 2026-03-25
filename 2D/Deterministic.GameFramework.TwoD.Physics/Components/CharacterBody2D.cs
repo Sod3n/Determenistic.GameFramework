@@ -68,8 +68,6 @@ public struct CharacterBody2D : IComponent
     public uint CollisionLayer;
     public uint CollisionMask;
 
-    public ulong BodyId; // Internal Rapier Handle for the Kinematic Body representing this character
-    
     // State (Output from simulation)
     // public bool IsOnFloor;
     // public bool IsOnCeiling;
@@ -90,7 +88,6 @@ public struct CharacterBody2D : IComponent
         FloorConstantSpeed = false,
         CollisionLayer = 1,
         CollisionMask = uint.MaxValue,
-        BodyId = ulong.MaxValue,
         Velocity = Vector2.Zero,
         RealVelocity = Vector2.Zero
     };

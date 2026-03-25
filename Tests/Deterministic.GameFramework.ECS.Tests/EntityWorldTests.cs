@@ -301,15 +301,15 @@ public class EntityWorldTests : IDisposable
     }
 
     [Fact]
-    public void GetRawArray_ShouldReturnArray()
+    public void GetComponentStore_ShouldReturnStore()
     {
         var e1 = _world.CreateEntity<TestComponent1>();
-        
-        var array = _world.GetRawArray<TestComponent1>();
-        
-        array.Should().NotBeNull();
-        array.Length.Should().BeGreaterThanOrEqualTo(e1.Id + 1);
-        array[e1.Id].Value.Should().Be(0);
+
+        var store = _world.GetComponentStore<TestComponent1>();
+
+        store.Should().NotBeNull();
+        store.Length.Should().BeGreaterThanOrEqualTo(e1.Id + 1);
+        store.Get(e1.Id).Value.Should().Be(0);
     }
     
     [Fact]
@@ -320,8 +320,8 @@ public class EntityWorldTests : IDisposable
         world.RegisterComponent<TestComponent1>();
         
         // Check if array exists (via GetRawArray)
-        var array = world.GetRawArray<TestComponent1>();
-        array.Should().NotBeNull();
+        var store = world.GetComponentStore<TestComponent1>();
+        store.Should().NotBeNull();
     }
     
     [Fact]
@@ -356,20 +356,20 @@ public class EntityWorldTests : IDisposable
     {
         var world = new EntityWorld();
         var typeField = typeof(EntityWorld).GetField("_componentTypes", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
         var sizeField = typeof(EntityWorld).GetField("_componentElementSizes", BindingFlags.Instance | BindingFlags.NonPublic);
 
         typeField.SetValue(world, new Type?[1]);
-        arrayField.SetValue(world, new Array?[1]);
+        arrayField.SetValue(world, new AlignedComponentStore?[1]);
         sizeField.SetValue(world, new int[1]);
         
         typeField.SetValue(world, new Type?[0]);
-        arrayField.SetValue(world, new Array?[0]);
+        arrayField.SetValue(world, new AlignedComponentStore?[0]);
         sizeField.SetValue(world, new int[0]);
         
         world.CreateEntity<TestComponent1>();
         
-        var arrays = (Array?[])arrayField.GetValue(world);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
         arrays.Length.Should().BeGreaterThan(0);
     }
 
@@ -380,7 +380,7 @@ public class EntityWorldTests : IDisposable
         var method = typeof(EntityWorld).GetMethod("EnsureTypedCapacity", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             ?.MakeGenericMethod(typeof(TestComponent1));
         method.Invoke(world, new object[] { ComponentId<TestComponent1>.IntId });
-        world.GetRawArray<TestComponent1>().Should().NotBeNull();
+        world.GetComponentStore<TestComponent1>().Should().NotBeNull();
     }
 
     [Fact]
@@ -388,11 +388,11 @@ public class EntityWorldTests : IDisposable
     {
         var world = new EntityWorld();
         world.CreateEntity<TestComponent1>();
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
         
         world.ResetComponents(clearCache: true);
         
-        var arrays = (Array?[])arrayField.GetValue(world);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
         arrays[ComponentId<TestComponent1>.IntId].Should().BeNull();
     }
 
@@ -426,8 +426,8 @@ public class EntityWorldTests : IDisposable
     {
         var world = new EntityWorld();
         var e = world.CreateEntity();
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        arrayField.SetValue(world, new Array?[0]);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        arrayField.SetValue(world, new AlignedComponentStore?[0]);
         world.RemoveComponent<TestComponent1>(e);
     }
 
@@ -436,17 +436,17 @@ public class EntityWorldTests : IDisposable
     {
         var world = new EntityWorld();
         var typeField = typeof(EntityWorld).GetField("_componentTypes", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
         var sizeField = typeof(EntityWorld).GetField("_componentElementSizes", BindingFlags.Instance | BindingFlags.NonPublic);
 
         typeField.SetValue(world, new Type?[1]);
-        arrayField.SetValue(world, new Array?[1]);
+        arrayField.SetValue(world, new AlignedComponentStore?[1]);
         sizeField.SetValue(world, new int[1]);
         
         var method = typeof(EntityWorld).GetMethod("EnsureTypedCapacityInternal", BindingFlags.Instance | BindingFlags.NonPublic);
         method.Invoke(world, new object[] { 5 });
         
-        var arrays = (Array?[])arrayField.GetValue(world);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
         arrays.Length.Should().BeGreaterThan(5);
     }
 
@@ -461,8 +461,8 @@ public class EntityWorldTests : IDisposable
         var world = new EntityWorld();
         world.RegisterComponent<TestComponentHigh>();
         
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrays = (Array?[])arrayField.GetValue(world);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
         arrays.Length.Should().BeGreaterThan(500);
     }
 
@@ -495,8 +495,8 @@ public class EntityWorldTests : IDisposable
         var id = ComponentId<TestComponent1>.IntId;
         world.EnsureTypedCapacity<TestComponent1>(id);
         world.EnsureTypedCapacity<TestComponent1>(id);
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrays = (Array?[])arrayField.GetValue(world);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
         arrays[id].Should().NotBeNull();
     }
 
@@ -537,8 +537,8 @@ public class EntityWorldTests : IDisposable
         int highId = 100;
         world.EntityMasks[entity.Id].Set(highId);
         
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        arrayField.SetValue(world, new Array?[10]);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        arrayField.SetValue(world, new AlignedComponentStore?[10]);
         
         world.DeleteEntity(entity);
         world.EntityMasks[entity.Id].IsEmpty.Should().BeTrue();
@@ -552,9 +552,9 @@ public class EntityWorldTests : IDisposable
         var id = ComponentId<TestComponent1>.IntId;
         world.EnsureTypedCapacity<TestComponent1>(id);
         
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrays = (Array?[])arrayField.GetValue(world);
-        arrays[id] = new int[128];
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
+        arrays[id] = null; // Simulate missing/corrupt store
         
         world.EnsureEntityCapacity(entity.Id);
         world.RemoveComponent<TestComponent1>(entity);
@@ -569,9 +569,9 @@ public class EntityWorldTests : IDisposable
         world.EnsureTypedCapacity<TestComponent1>(id);
         world.EntityMasks[entity.Id].Set(id);
         
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        var arrays = (Array?[])arrayField.GetValue(world);
-        arrays[id] = new int[128];
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        var arrays = (AlignedComponentStore?[])arrayField.GetValue(world);
+        arrays[id] = null; // Simulate missing/corrupt store
         
         world.DeleteEntity(entity);
     }
@@ -581,8 +581,8 @@ public class EntityWorldTests : IDisposable
     {
         var world = new EntityWorld();
         var entity = world.CreateEntity();
-        var arrayField = typeof(EntityWorld).GetField("_componentArrays", BindingFlags.Instance | BindingFlags.NonPublic);
-        arrayField.SetValue(world, new Array?[10]);
+        var arrayField = typeof(EntityWorld).GetField("_componentStores", BindingFlags.Instance | BindingFlags.NonPublic);
+        arrayField.SetValue(world, new AlignedComponentStore?[10]);
         
         world.EntityMasks[entity.Id].Set(20);
         world.DeleteEntity(entity);

@@ -47,7 +47,7 @@ namespace Deterministic.GameFramework.SourceGenerators
                 return;
 
             // Find which required interface this struct implements
-            string? matchedInterface = null;
+            string matchedInterface = null;
             foreach (var iface in namedType.AllInterfaces)
             {
                 foreach (var required in RequiredInterfaces)

@@ -39,7 +39,7 @@ public readonly struct Context(EntityWorld state, Entity entity, IActionDispatch
     public void ForEach<T1, T2>(ComponentActionEntity2<T1, T2> action) where T1 : struct, IComponent where T2 : struct, IComponent => State.ForEach(action);
     public void ForEach<T1, T2, TState>(TState state, ComponentActionEntity2<T1, T2, TState> action) where T1 : struct, IComponent where T2 : struct, IComponent => State.ForEach(state, action);
     public void RegisterComponent<T>() where T : struct, IComponent => State.RegisterComponent<T>();
-    public T[] GetRawArray<T>() where T : struct, IComponent => State.GetRawArray<T>();
+    public AlignedComponentStore<T> GetComponentStore<T>() where T : struct, IComponent => State.GetComponentStore<T>();
     public void ClearDirty() => State.ClearDirty();
     public IReadOnlyList<int> GetDirtyEntities() => State.GetDirtyEntities();
 }

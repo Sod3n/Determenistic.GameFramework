@@ -8,8 +8,6 @@ namespace Deterministic.GameFramework.Physics2D.Components;
 [Deterministic.GameFramework.ECS.StableId("8014592a-3375-4c07-ae29-598114227003")]
 public struct RigidBody2D : IComponent
 {
-    public ulong BodyId = ulong.MaxValue; // Internal Rapier Handle
-    
     public Float Mass;
     public Float GravityScale;
     public Float Inertia;

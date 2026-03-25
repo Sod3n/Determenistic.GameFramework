@@ -71,13 +71,11 @@ public class PhysicsComponentTests
         body.RealVelocity = new Vector2(2, 2);
         body.CollisionLayer = 1;
         body.CollisionMask = 2;
-        body.BodyId = 123;
 
         body.Velocity.Should().Be(new Vector2(1, 1));
         body.UpDirection.Should().Be(Vector2.Up);
         //body.IsOnFloor.Should().BeTrue();
         body.RealVelocity.Should().Be(new Vector2(2, 2));
-        body.BodyId.Should().Be(123);
         
         var def = CharacterBody2D.Default;
         def.UpDirection.Should().Be(Vector2.Up);
@@ -87,7 +85,6 @@ public class PhysicsComponentTests
     public void RigidBody2D_Properties_Work()
     {
         var body = new RigidBody2D();
-        body.BodyId = 100;
         body.Mass = 10;
         body.GravityScale = 2;
         body.LinearVelocity = new Vector2(1, 0);
@@ -98,7 +95,6 @@ public class PhysicsComponentTests
         body.CollisionLayer = 1;
         body.CollisionMask = 2;
 
-        body.BodyId.Should().Be(100);
         body.Mass.Should().Be(10);
         body.CcdEnabled.Should().BeTrue();
         
@@ -110,21 +106,19 @@ public class PhysicsComponentTests
     public void StaticBody2D_Properties_Work()
     {
         var body = new StaticBody2D();
-        body.BodyId = 200;
-        body.BodyId.Should().Be(200);
+        body.CollisionLayer.Should().Be(1); // default
+        body.CollisionMask.Should().Be(1); // default
     }
 
     [Fact]
     public void Area2D_Properties_Work()
     {
         var area = new Area2D();
-        area.BodyId = 300;
         area.Monitoring = true;
         area.CollisionLayer = 1;
         area.CollisionMask = 2;
         area.HasOverlappingBodies = true;
-        
-        area.BodyId.Should().Be(300);
+
         area.Monitoring.Should().BeTrue();
         area.HasOverlappingBodies.Should().BeTrue();
     }

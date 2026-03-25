@@ -145,41 +145,25 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         foreach (var entity in state.Filter<RigidBody2D, Transform2D>()) entityBuffer.Add(entity);
         entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
         foreach (var entity in entityBuffer)
-        {
-            ref var body = ref state.GetComponent<RigidBody2D>(entity);
-            body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
-        }
 
         entityBuffer.Clear();
         foreach (var entity in state.Filter<StaticBody2D, Transform2D>()) entityBuffer.Add(entity);
         entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
         foreach (var entity in entityBuffer)
-        {
-            ref var body = ref state.GetComponent<StaticBody2D>(entity);
-            body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
-        }
 
         entityBuffer.Clear();
         foreach (var entity in state.Filter<CharacterBody2D, Transform2D>()) entityBuffer.Add(entity);
         entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
         foreach (var entity in entityBuffer)
-        {
-            ref var body = ref state.GetComponent<CharacterBody2D>(entity);
-            body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
-        }
 
         entityBuffer.Clear();
         foreach (var entity in state.Filter<Area2D, Transform2D>()) entityBuffer.Add(entity);
         entityBuffer.Sort((a, b) => a.Id.CompareTo(b.Id));
         foreach (var entity in entityBuffer)
-        {
-            ref var body = ref state.GetComponent<Area2D>(entity);
-            body.BodyId = 0;
             CreateBodyForEntity(state, physicsState, entity);
-        }
     }
 
     private static void PruneBodies(EntityWorld state, RapierPhysicsState physicsState)
@@ -194,9 +178,11 @@ public class RapierPhysicsSystem : ISystem, IDisposable
         intBuffer.Sort();
 
         int removeCount = 0;
+        int bufferCount = intBuffer.Count;
 
-        foreach (var entityId in intBuffer)
+        for (int idx = 0; idx < bufferCount; idx++)
         {
+            int entityId = intBuffer[idx];
             var entity = new Entity(entityId);
 
             bool isValid = state.HasComponent<Transform2D>(entity) &&
@@ -221,6 +207,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
             physicsState.EntityToBody.Remove(entityId);
             physicsState.BodyToEntity.Remove(bodyHandle);
+            physicsState.EntityToCollider.Remove(entityId);
 
             physicsState.CharacterProcessor.RemoveCharacter(entityId);
         }
@@ -254,6 +241,8 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
                 physicsState.World.BodySetLinvel(bodyHandle, new RVector((float)body.LinearVelocity.X, (float)body.LinearVelocity.Y), true);
                 physicsState.World.BodySetAngvel(bodyHandle, new RVector((float)body.AngularVelocity, 0), true);
+
+                SyncCollisionGroups(physicsState, entity.Id, body.CollisionLayer, body.CollisionMask);
             }
         }
 
@@ -270,9 +259,12 @@ public class RapierPhysicsSystem : ISystem, IDisposable
              }
              else
              {
+                 ref var body = ref state.GetComponent<StaticBody2D>(entity);
                  ref var transform = ref state.GetComponent<Transform2D>(entity);
                  physicsState.World.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
                  physicsState.World.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
+
+                 SyncCollisionGroups(physicsState, entity.Id, body.CollisionLayer, body.CollisionMask);
              }
         }
 
@@ -289,10 +281,13 @@ public class RapierPhysicsSystem : ISystem, IDisposable
              }
              else
              {
+                 ref var body = ref state.GetComponent<CharacterBody2D>(entity);
                  ref var transform = ref state.GetComponent<Transform2D>(entity);
 
                  physicsState.World.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
                  physicsState.World.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
+
+                 SyncCollisionGroups(physicsState, entity.Id, body.CollisionLayer, body.CollisionMask);
              }
         }
 
@@ -309,9 +304,12 @@ public class RapierPhysicsSystem : ISystem, IDisposable
              }
              else
              {
+                 ref var area = ref state.GetComponent<Area2D>(entity);
                  ref var transform = ref state.GetComponent<Transform2D>(entity);
                  physicsState.World?.BodySetTranslation(bodyHandle, new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y), true);
                  physicsState.World?.BodySetRotation(bodyHandle, new RRotation((float)transform.GlobalRotation), true);
+
+                 SyncCollisionGroups(physicsState, entity.Id, area.CollisionLayer, area.CollisionMask);
              }
         }
     }
@@ -341,34 +339,27 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             physicsState.World.BodySetAngularDamping(bodyHandle, (float)body.AngularDamping);
             physicsState.World.BodySetCcdEnabled(bodyHandle, body.CcdEnabled);
 
-            body.BodyId = bodyHandle;
         }
         else if (state.HasComponent<StaticBody2D>(entity))
         {
-            ref var body = ref state.GetComponent<StaticBody2D>(entity);
             var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
             var rotation = new RRotation((float)transform.GlobalRotation);
 
             bodyHandle = physicsState.World.BodyCreate(RRigidBodyType.Fixed, translation, rotation);
-            body.BodyId = bodyHandle;
         }
         else if (state.HasComponent<CharacterBody2D>(entity))
         {
-            ref var body = ref state.GetComponent<CharacterBody2D>(entity);
             var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
             var rotation = new RRotation((float)transform.GlobalRotation);
 
             bodyHandle = physicsState.World.BodyCreate(RRigidBodyType.KinematicPositionBased, translation, rotation);
-            body.BodyId = bodyHandle;
         }
         else if (state.HasComponent<Area2D>(entity))
         {
-            ref var body = ref state.GetComponent<Area2D>(entity);
             var translation = new RVector((float)transform.GlobalPosition.X, (float)transform.GlobalPosition.Y);
             var rotation = new RRotation((float)transform.GlobalRotation);
 
             bodyHandle = physicsState.World.BodyCreate(RRigidBodyType.KinematicPositionBased, translation, rotation);
-            body.BodyId = bodyHandle;
         }
 
         physicsState.EntityToBody[entity.Id] = bodyHandle;
@@ -399,6 +390,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 var colRotation = new RRotation((float)shapeComp.Rotation);
 
                 ulong colliderHandle = physicsState.World.ColliderCreate(shape, bodyHandle, colTranslation, colRotation, 0.5f, 0.0f);
+                physicsState.EntityToCollider[entity.Id] = colliderHandle;
                 shape.Dispose();
 
                 // Special handling for Area2D
@@ -428,6 +420,9 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                      }
                      else if (state.HasComponent<StaticBody2D>(entity))
                      {
+                         ref var sb = ref state.GetComponent<StaticBody2D>(entity);
+                         layer = sb.CollisionLayer;
+                         mask = sb.CollisionMask;
                      }
 
                      physicsState.World.ColliderSetCollisionGroups(colliderHandle, layer, mask);
@@ -470,6 +465,14 @@ public class RapierPhysicsSystem : ISystem, IDisposable
                 body.LinearVelocity = new Vector2(rapierVel.x, rapierVel.y);
                 body.AngularVelocity = rapierAngVel.x;
             }
+        }
+    }
+
+    private static void SyncCollisionGroups(RapierPhysicsState physicsState, int entityId, uint layer, uint mask)
+    {
+        if (physicsState.World != null && physicsState.EntityToCollider.TryGetValue(entityId, out ulong colliderHandle))
+        {
+            physicsState.World.ColliderSetCollisionGroups(colliderHandle, layer, mask);
         }
     }
 

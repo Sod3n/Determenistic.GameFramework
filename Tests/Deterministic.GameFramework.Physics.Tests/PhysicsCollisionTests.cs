@@ -156,7 +156,7 @@ public class PhysicsCollisionTests
         state.AddComponent(charA, CollisionShape2D.CreateCircle(0.5f));
 
         var checkA = state.GetComponent<CharacterBody2D>(charA);
-        Console.WriteLine($"[Test] Init A: Vel={checkA.Velocity.X:F2} BodyId={checkA.BodyId}");
+        Console.WriteLine($"[Test] Init A: Vel={checkA.Velocity.X:F2}");
 
         // Char B at (4, 0), moving Left (-X)
         state.AddComponent(charB, new Transform2D(new Vector2(4, 0), 0, Vector2.One));
@@ -166,7 +166,7 @@ public class PhysicsCollisionTests
         state.AddComponent(charB, CollisionShape2D.CreateCircle(0.5f));
 
         var checkB = state.GetComponent<CharacterBody2D>(charB);
-        Console.WriteLine($"[Test] Init B: Vel={checkB.Velocity.X:F2} BodyId={checkB.BodyId}");
+        Console.WriteLine($"[Test] Init B: Vel={checkB.Velocity.X:F2}");
 
         // Run for 1 second (60 ticks)
         for (int i = 0; i < 60; i++)

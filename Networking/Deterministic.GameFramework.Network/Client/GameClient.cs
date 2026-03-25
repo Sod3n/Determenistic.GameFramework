@@ -190,6 +190,20 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 
             Log($"Received Full State for Tick {header.Tick}. Size: {stateData.Length} bytes");
 
+            // If this is a resync (not initial sync), diff local vs server state
+            if (_isWaitingForFullState)
+            {
+                try
+                {
+                    byte[] localData = StateSerializer.Serialize(State);
+                    StateDumper.LogStateDiff("Client", header.Tick, localData, stateData);
+                }
+                catch (Exception ex)
+                {
+                    Log($"[StateDiff] Failed to diff states: {ex.Message}");
+                }
+            }
+
             Log("Deserializing state...");
             StateSerializer.Deserialize(State, stateData, syncComponentIds: false);
             Log("State deserialized!");

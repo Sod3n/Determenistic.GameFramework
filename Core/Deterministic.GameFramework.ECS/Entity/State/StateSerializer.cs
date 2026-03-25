@@ -10,7 +10,6 @@ public static class StateSerializer
     public static byte[] Serialize(EntityWorld state)
     {
         // 0. Determine active component types by ORing all entity masks
-        // This ensures the hash only depends on components actually in use.
         BitMask128 activeTypes = new();
         for (int i = 0; i < state._nextEntityId; i++)
         {
@@ -22,13 +21,11 @@ public static class StateSerializer
         {
             // 1. Header
             writer.Write(state._nextEntityId);
-            // Use nextEntityId as capacity for deterministic hashing (ignores trailing unused masks)
             writer.Write(state._nextEntityId);
 
             // 2. External State
             writer.Write(state.ExternalState.Count);
 
-            // Sort keys for determinism
             var sortedKeys = new System.Collections.Generic.List<string>(state.ExternalState.Keys);
             sortedKeys.Sort(StringComparer.Ordinal);
 
@@ -56,32 +53,31 @@ public static class StateSerializer
             writer.Write(maskData.Length);
             writer.Write(maskData);
 
-            // 5. Components (Only active types)
+            // 5. Components (Only active types) — serialized tightly packed (no alignment padding)
             int validComponents = 0;
-            for (int localId = 0; localId < state._componentArrays.Length; localId++)
+            for (int localId = 0; localId < state._componentStores.Length; localId++)
             {
-                if (activeTypes.IsSet(localId) && state._componentArrays[localId] != null && state._componentElementSizes[localId] > 0)
+                if (activeTypes.IsSet(localId) && state._componentStores[localId] != null && state._componentElementSizes[localId] > 0)
                     validComponents++;
             }
             writer.Write(validComponents);
 
-            for (int localId = 0; localId < state._componentArrays.Length; localId++)
+            for (int localId = 0; localId < state._componentStores.Length; localId++)
             {
                 if (!activeTypes.IsSet(localId)) continue;
 
-                var array = state._componentArrays[localId];
-                if (array == null) continue;
+                var store = state._componentStores[localId];
+                if (store == null) continue;
 
                 int elementSize = state._componentElementSizes[localId];
                 if (elementSize == 0) continue;
 
-                // Serialize Data (Only up to nextEntityId for determinism)
-                byte[] data = MemoryHelper.SerializeArrayUntyped(array, elementSize, state._nextEntityId);
+                // Serialize tightly packed (strip alignment padding)
+                byte[] data = store.SerializePacked(state._nextEntityId);
 
                 writer.Write(localId);
                 writer.Write(data.Length);
                 writer.Write(data);
-                // Write nextEntityId as count for array recreation
                 writer.Write(state._nextEntityId);
             }
 
@@ -106,7 +102,6 @@ public static class StateSerializer
 
             state._nextEntityId = nextEntityId;
 
-            // Ensure EntityMasks capacity matches exactly for deterministic hashing
             if (state._entityMasks == null || state._entityMasks.Length != entityCapacity)
             {
                 state._entityMasks = new BitMask128[entityCapacity];
@@ -139,12 +134,11 @@ public static class StateSerializer
             }
             else
             {
-                 // Skip mappings if not syncing
-                 for (int i = 0; i < mapCount; i++)
-                 {
-                     reader.ReadBytes(16);
-                     reader.ReadInt32();
-                 }
+                for (int i = 0; i < mapCount; i++)
+                {
+                    reader.ReadBytes(16);
+                    reader.ReadInt32();
+                }
             }
 
             // 5. Entity Masks
@@ -152,11 +146,7 @@ public static class StateSerializer
             byte[] maskData = reader.ReadBytes(maskDataLen);
             if (maskData.Length > 0)
             {
-                // Ensure array size matches data if possible, or just copy what fits
                 int maskElementSize = 16;
-                // int count = maskData.Length / maskElementSize;
-                // if (state._entityMasks.Length < count) Array.Resize(ref state._entityMasks, count);
-
                 MemoryHelper.DeserializeArrayUntyped(maskData, state._entityMasks, maskElementSize);
             }
             else
@@ -164,7 +154,7 @@ public static class StateSerializer
                 Array.Clear(state._entityMasks, 0, state._entityMasks.Length);
             }
 
-            // 6. Components
+            // 6. Components — deserialize from tightly packed format into aligned stores
             int compCount = reader.ReadInt32();
             for (int i = 0; i < compCount; i++)
             {
@@ -180,12 +170,8 @@ public static class StateSerializer
                      throw new Exception($"Cannot deserialize Component LocalId {localId}: Type is unknown.");
                 }
 
-                if (state._componentArrays[localId] == null || state._componentArrays[localId]!.Length != elemCount)
-                {
-                     state._componentArrays[localId] = Array.CreateInstance(type, elemCount);
-                }
-
-                MemoryHelper.DeserializeArrayUntyped(data, state._componentArrays[localId]!, state._componentElementSizes[localId]);
+                state.EnsureStoreFromType(localId, type, elemCount);
+                state._componentStores[localId]!.DeserializePacked(data, elemCount);
             }
         }
     }

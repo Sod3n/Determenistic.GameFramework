@@ -79,7 +79,7 @@ public class DeterministicHashingTests : IDisposable
         StateSerializer.Deserialize(clientWorld, serverData, syncComponentIds: true, autoReset: true);
 
         // 4. Verify hashes
-        var clientCompArray = (TestComponent1[])clientWorld._componentArrays[ComponentId<TestComponent1>.IntId]!;
+        var clientCompArray = clientWorld._componentStores[ComponentId<TestComponent1>.IntId]!;
         // Component arrays are also normalized to NextEntityId
         clientCompArray.Length.Should().Be(serverWorld.NextEntityId);
 

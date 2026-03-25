@@ -165,9 +165,9 @@ namespace Deterministic.GameFramework.ECS.Tests
             
             world.RegisterComponent<PositionComponent>();
             
-            var array = world.GetRawArray<PositionComponent>();
-            array.Should().NotBeNull();
-            array.Length.Should().BeGreaterThan(0);
+            var store = world.GetComponentStore<PositionComponent>();
+            store.Should().NotBeNull();
+            store.Length.Should().BeGreaterThan(0);
         }
 
         [Fact]

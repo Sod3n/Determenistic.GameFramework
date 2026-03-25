@@ -5,7 +5,7 @@ namespace Deterministic.GameFramework.ECS;
 
 public class EntityWorld
 {
-    internal Array?[] _componentArrays = new Array?[128];
+    internal AlignedComponentStore?[] _componentStores = new AlignedComponentStore?[128];
     internal int[] _componentElementSizes = new int[128];
     internal Type?[] _componentTypes = new Type?[128];
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
@@ -21,6 +21,7 @@ public class EntityWorld
     // Runtime cache for Systems (not serialized)
     // Allows systems to be stateless and store per-world data here.
     public Dictionary<Type, object?> SystemData { get; } = new();
+
 
     // Dirty tracking
     internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
@@ -60,41 +61,22 @@ public class EntityWorld
         EnsureEntityCapacity(id);
 
         // Clear memory garbage
-        for (int i = 0; i < _componentArrays.Length; i++)
+        for (int i = 0; i < _componentStores.Length; i++)
         {
-            var arr = _componentArrays[i];
-            if (arr != null)
+            var store = _componentStores[i];
+            if (store != null)
             {
-                // If the array is too small for the new ID, resize it now
-                if (id >= arr.Length)
+                if (id >= store.Length)
                 {
-                    int newSize = Math.Max(arr.Length * 2, id + 1);
-                
-                    // We need to use a helper or reflection because _componentArrays is Array?[]
-                    // Let's create a specialized resize-and-clear helper:
-                    _componentArrays[i] = ResizeAndClear(arr, newSize);
+                    int newSize = Math.Max(store.Length * 2, id + 1);
+                    store.Resize(newSize);
                 }
 
-                // Now it is safe to clear
-                Array.Clear(_componentArrays[i]!, id, 1);
+                store.Clear(id, 1);
             }
         }
 
         return new Entity(id);
-    }
-    
-    private Array ResizeAndClear(Array oldArray, int newSize)
-    {
-        Type elementType = oldArray.GetType().GetElementType()!;
-        Array newArray = Array.CreateInstance(elementType, newSize);
-    
-        // Copy old data
-        Array.Copy(oldArray, newArray, oldArray.Length);
-    
-        // Explicitly zero out the new portion (crucial for determinism!)
-        Array.Clear(newArray, oldArray.Length, newSize - oldArray.Length);
-    
-        return newArray;
     }
 
     public Entity CreateEntity<T>() where T : struct, IComponent
@@ -112,29 +94,26 @@ public class EntityWorld
             _entityMasks[i].Clear();
         }
 
-        // 2. Clear Component Arrays
+        // 2. Clear Component Stores
         if (clearCache)
         {
-            // Hard reset: drop everything to force re-resolution of types
             Array.Clear(_componentTypes, 0, _componentTypes.Length);
             Array.Clear(_componentElementSizes, 0, _componentElementSizes.Length);
-            Array.Clear(_componentArrays, 0, _componentArrays.Length);
+            Array.Clear(_componentStores, 0, _componentStores.Length);
         }
         else
         {
-            // Soft reset: keep arrays, just clear content
-            for (int i = 0; i < _componentArrays.Length; i++)
+            for (int i = 0; i < _componentStores.Length; i++)
             {
-                if (_componentArrays[i] != null)
+                var store = _componentStores[i];
+                if (store != null)
                 {
-                    Array.Clear(_componentArrays[i]!, 0, _componentArrays[i]!.Length);
+                    store.Clear(0, store.Length);
                 }
             }
         }
 
-        // 3. Reset Entity Allocator?
-        // Deserialization sets _nextEntityId, so strictly speaking we don't need to,
-        // but it's good practice.
+        // 3. Reset Entity Allocator
         _nextEntityId = 0;
 
         // 4. Clear Dirty Tracking
@@ -147,6 +126,7 @@ public class EntityWorld
 
     public ref T AddComponent<T>(Entity entity, T component) where T : struct, IComponent
     {
+        EnsureEntityCapacity(entity.Id);
         MarkDirty(entity.Id);
         var typeId = ComponentId<T>.IntId;
         _entityMasks[entity.Id].Set(typeId);
@@ -162,22 +142,11 @@ public class EntityWorld
         MarkDirty(entity.Id);
         var typeId = ComponentId<T>.IntId;
 
-        // Unset mask
         _entityMasks[entity.Id].Unset(typeId);
 
-        // We don't necessarily need to clear the data array for value types,
-        // as the mask determines presence.
-        // But for safety/determinism (to avoid stale data if re-added without init),
-        // we can default it if we want, or leave it.
-        // In ECS, usually mask is the source of truth.
-        // Let's clear it to be safe against partial updates on re-add.
-        if (typeId < _componentArrays.Length && _componentArrays[typeId] != null)
+        if (typeId < _componentStores.Length && _componentStores[typeId] is AlignedComponentStore<T> store && entity.Id < store.Length)
         {
-             var specificArray = _componentArrays[typeId] as T[];
-             if (specificArray != null && entity.Id < specificArray.Length)
-             {
-                 specificArray[entity.Id] = default;
-             }
+            store.Get(entity.Id) = default;
         }
     }
 
@@ -187,21 +156,17 @@ public class EntityWorld
 
         MarkDirty(entity.Id);
 
-        // Clear component data for all components this entity has
-        // This is important to release references if components hold any,
-        // and to ensure deterministic clean state if the ID is reused (though currently it isn't).
         for (int i = 0; i < 128; i++)
         {
             if (_entityMasks[entity.Id].IsSet(i))
             {
-                if (i < _componentArrays.Length && _componentArrays[i] != null)
+                if (i < _componentStores.Length && _componentStores[i] != null)
                 {
-                    Array.Clear(_componentArrays[i]!, entity.Id, 1);
+                    _componentStores[i]!.Clear(entity.Id, 1);
                 }
             }
         }
 
-        // Clear the mask, effectively removing the entity from all queries
         _entityMasks[entity.Id].Clear();
     }
 
@@ -212,15 +177,15 @@ public class EntityWorld
         EnsureTypedCapacity<T>(typeId);
         EnsureEntityCapacity(entity.Id);
 
-        var specificArray = (T[])_componentArrays[typeId]!;
+        var store = (AlignedComponentStore<T>)_componentStores[typeId]!;
 
-        if (entity.Id >= specificArray.Length)
+        if (entity.Id >= store.Length)
         {
-            ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
-            specificArray = (T[])_componentArrays[typeId]!; // Re-fetch after expansion
+            ExpandStoreCapacity<T>(typeId, store, entity.Id);
+            store = (AlignedComponentStore<T>)_componentStores[typeId]!;
         }
 
-        return ref specificArray[entity.Id];
+        return ref store.Get(entity.Id);
     }
 
     /// <summary>
@@ -234,15 +199,15 @@ public class EntityWorld
         EnsureTypedCapacity<T>(typeId);
         EnsureEntityCapacity(entity.Id);
 
-        var specificArray = (T[])_componentArrays[typeId]!;
+        var store = (AlignedComponentStore<T>)_componentStores[typeId]!;
 
-        if (entity.Id >= specificArray.Length)
+        if (entity.Id >= store.Length)
         {
-            ExpandComponentArrayCapacity<T>(typeId, specificArray, entity.Id);
-            specificArray = (T[])_componentArrays[typeId]!;
+            ExpandStoreCapacity<T>(typeId, store, entity.Id);
+            store = (AlignedComponentStore<T>)_componentStores[typeId]!;
         }
 
-        return ref specificArray[entity.Id];
+        return ref store.Get(entity.Id);
     }
 
     public T? TryGetComponent<T>(Entity entity) where T : struct, IComponent
@@ -316,13 +281,13 @@ public class EntityWorld
 
         EnsureTypedCapacity<T1>(typeId);
 
-        var specificArray = (T1[])_componentArrays[typeId]!;
+        var store = (AlignedComponentStore<T1>)_componentStores[typeId]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].IsSet(typeId))
             {
-                action(ref specificArray[i]);
+                action(ref store.Get(i));
             }
         }
     }
@@ -340,14 +305,14 @@ public class EntityWorld
         EnsureTypedCapacity<T1>(t1Id);
         EnsureTypedCapacity<T2>(t2Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id]!;
-        var t2Array = (T2[])_componentArrays[t2Id]!;
+        var store1 = (AlignedComponentStore<T1>)_componentStores[t1Id]!;
+        var store2 = (AlignedComponentStore<T2>)_componentStores[t2Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
             {
-                action(ref t1Array[i], ref t2Array[i]);
+                action(ref store1.Get(i), ref store2.Get(i));
             }
         }
     }
@@ -361,13 +326,13 @@ public class EntityWorld
 
         EnsureTypedCapacity<T1>(t1Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id]!;
+        var store = (AlignedComponentStore<T1>)_componentStores[t1Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
             {
-                action(new Entity(i), ref t1Array[i]);
+                action(new Entity(i), ref store.Get(i));
             }
         }
     }
@@ -385,14 +350,14 @@ public class EntityWorld
         EnsureTypedCapacity<T1>(t1Id);
         EnsureTypedCapacity<T2>(t2Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id]!;
-        var t2Array = (T2[])_componentArrays[t2Id]!;
+        var store1 = (AlignedComponentStore<T1>)_componentStores[t1Id]!;
+        var store2 = (AlignedComponentStore<T2>)_componentStores[t2Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
             {
-                action(new Entity(i), ref t1Array[i], ref t2Array[i]);
+                action(new Entity(i), ref store1.Get(i), ref store2.Get(i));
             }
         }
     }
@@ -410,14 +375,14 @@ public class EntityWorld
         EnsureTypedCapacity<T1>(t1Id);
         EnsureTypedCapacity<T2>(t2Id);
 
-        var t1Array = (T1[])_componentArrays[t1Id]!;
-        var t2Array = (T2[])_componentArrays[t2Id]!;
+        var store1 = (AlignedComponentStore<T1>)_componentStores[t1Id]!;
+        var store2 = (AlignedComponentStore<T2>)_componentStores[t2Id]!;
 
         for (int i = 0; i < _entityMasks.Length; i++)
         {
             if (_entityMasks[i].HasAll(mask))
             {
-                action(state, new Entity(i), ref t1Array[i], ref t2Array[i]);
+                action(state, new Entity(i), ref store1.Get(i), ref store2.Get(i));
             }
         }
     }
@@ -428,16 +393,16 @@ public class EntityWorld
         EnsureTypedCapacity<T>(typeId);
     }
 
-    public T[] GetRawArray<T>() where T : struct, IComponent
+    public AlignedComponentStore<T> GetComponentStore<T>() where T : struct, IComponent
     {
         var typeId = ComponentId<T>.IntId;
         EnsureTypedCapacity<T>(typeId);
-        return (T[])_componentArrays[typeId]!;
+        return (AlignedComponentStore<T>)_componentStores[typeId]!;
     }
 
     internal void EnsureTypedCapacityInternal(int typeId)
     {
-        if (typeId >= _componentArrays.Length)
+        if (typeId >= _componentStores.Length)
         {
             ExpandTypeCapacity(typeId);
         }
@@ -449,10 +414,25 @@ public class EntityWorld
                 if (type != null)
                 {
                     _componentTypes[typeId] = type;
-                    // Get managed size using reflection to invoke Unsafe.SizeOf<T>()
                     _componentElementSizes[typeId] = GetManagedSize(type);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Creates an AlignedComponentStore for the given type ID if not already present.
+    /// Called from deserialization when we only have the runtime Type.
+    /// </summary>
+    internal void EnsureStoreFromType(int typeId, Type componentType, int capacity)
+    {
+        if (typeId >= _componentStores.Length)
+            ExpandTypeCapacity(typeId);
+
+        if (_componentStores[typeId] == null || _componentStores[typeId]!.Length != capacity)
+        {
+            var storeType = typeof(AlignedComponentStore<>).MakeGenericType(componentType);
+            _componentStores[typeId] = (AlignedComponentStore)Activator.CreateInstance(storeType, capacity)!;
         }
     }
 
@@ -460,13 +440,10 @@ public class EntityWorld
     {
         EnsureTypedCapacityInternal(typeId);
 
-        if (_componentArrays[typeId] == null)
+        if (_componentStores[typeId] == null)
         {
-            int initialSize = Math.Max(32, _entityMasks.Length); 
-            var arr = new T[initialSize];
-            Array.Clear(arr, 0, arr.Length);
-            _componentArrays[typeId] = arr;
-        
+            int initialSize = Math.Max(32, _entityMasks.Length);
+            _componentStores[typeId] = new AlignedComponentStore<T>(initialSize);
             _componentElementSizes[typeId] = Unsafe.SizeOf<T>();
             _componentTypes[typeId] = typeof(T);
         }
@@ -498,7 +475,6 @@ public class EntityWorld
 
     public void ClearDirty()
     {
-        // Fast clear
         foreach (var id in _dirtyEntities)
         {
             if (id < _dirtyEntitySet.Length)
@@ -511,21 +487,16 @@ public class EntityWorld
 
     private void ExpandTypeCapacity(int typeId)
     {
-        int newSize = Math.Max(_componentArrays.Length * 2, typeId + 1);
-        Array.Resize(ref _componentArrays, newSize);
+        int newSize = Math.Max(_componentStores.Length * 2, typeId + 1);
+        Array.Resize(ref _componentStores, newSize);
         Array.Resize(ref _componentElementSizes, newSize);
         Array.Resize(ref _componentTypes, newSize);
     }
 
-    private void ExpandComponentArrayCapacity<T>(int typeId, T[] specificArray, int entityId) where T : struct, IComponent
+    private void ExpandStoreCapacity<T>(int typeId, AlignedComponentStore<T> store, int entityId) where T : struct, IComponent
     {
-        int oldSize = specificArray.Length;
-        int newSize = Math.Max(oldSize * 2, entityId + 1);
-        Array.Resize(ref specificArray, newSize);
-
-        Array.Clear(specificArray, oldSize, newSize - oldSize); // Clear memory from garbage
-
-        _componentArrays[typeId] = specificArray;
+        int newSize = Math.Max(store.Length * 2, entityId + 1);
+        store.Resize(newSize);
     }
 
     private static int GetManagedSize(Type type)

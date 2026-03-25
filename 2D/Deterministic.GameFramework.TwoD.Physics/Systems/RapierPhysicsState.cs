@@ -17,6 +17,8 @@ internal class RapierPhysicsState
     public Dictionary<int, ulong> EntityToBody { get; } = new();
     // BodyHandle -> EntityId
     public Dictionary<ulong, int> BodyToEntity { get; } = new();
+    // EntityId -> ColliderHandle (first collider per entity)
+    public Dictionary<int, ulong> EntityToCollider { get; } = new();
 
     // Processors
     public RapierCharacterProcessor CharacterProcessor { get; } = new();
@@ -31,5 +33,6 @@ internal class RapierPhysicsState
         CharacterProcessor.Clear();
         EntityToBody.Clear();
         BodyToEntity.Clear();
+        EntityToCollider.Clear();
     }
 }

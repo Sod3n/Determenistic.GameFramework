@@ -45,8 +45,8 @@ public class ContextPassthroughTests
         
         // 3. Register/RawArray
         context.RegisterComponent<TestComponent>();
-        var array = context.GetRawArray<TestComponent>();
-        array.Should().NotBeNull();
+        var store = context.GetComponentStore<TestComponent>();
+        store.Should().NotBeNull();
         
         // 4. Filters
         // Create matching entities
