@@ -380,7 +380,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 
     public async Task RequestFullState()
     {
-         await _networkClient.RequestFullStateAsync(_currentMatchId);
+        await _networkClient.RequestFullStateAsync(_currentMatchId);
     }
 
     public Task WaitForSyncAsync()
