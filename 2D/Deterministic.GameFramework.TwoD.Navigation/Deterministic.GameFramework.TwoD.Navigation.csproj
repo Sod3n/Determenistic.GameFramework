@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
@@ -6,23 +6,19 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
-        <RootNamespace>Deterministic.GameFramework.Physics</RootNamespace>
+        <RootNamespace>Deterministic.GameFramework.Navigation2D</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
-        <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
         <ProjectReference Include="..\..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\Deterministic.GameFramework.TwoD\Deterministic.GameFramework.TwoD.csproj" />
+        <ProjectReference Include="..\Deterministic.GameFramework.TwoD.Physics\Deterministic.GameFramework.TwoD.Physics.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-        <_Parameter1>Deterministic.GameFramework.Physics.Tests</_Parameter1>
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-        <_Parameter1>Deterministic.GameFramework.TwoD.Navigation</_Parameter1>
+        <_Parameter1>Deterministic.GameFramework.Navigation.Tests</_Parameter1>
       </AssemblyAttribute>
     </ItemGroup>
 
@@ -36,21 +32,6 @@
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="external/librapier_uniffi.dylib">
-            <Link>librapier_uniffi.dylib</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Pack>true</Pack>
-            <PackagePath>runtimes/osx/native/</PackagePath>
-        </None>
-        <None Include="external/rapier_uniffi.dll">
-            <Link>rapier_uniffi.dll</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Pack>true</Pack>
-            <PackagePath>runtimes/win-x64/native/</PackagePath>
-        </None>
     </ItemGroup>
 
 </Project>

@@ -111,16 +111,26 @@ public record struct ComponentId : IComparable<ComponentId>
     
     public static void RegisterAssembly(Assembly assembly)
     {
-        // No sorting needed as we rely on Stable -> Local mapping sync
+        // Collect all IComponent types with StableId, then sort by StableId
+        // to ensure deterministic LocalId assignment regardless of GetTypes() order
+        // (which can vary across .NET runtimes — e.g. Godot mono vs server .NET 8)
+        var components = new List<(Type type, Guid stableId)>();
+
         foreach (var type in assembly.GetTypes())
         {
-            // Only process IComponent structs
             if (!type.IsValueType || !typeof(IComponent).IsAssignableFrom(type)) continue;
 
             var attr = type.GetCustomAttribute<StableIdAttribute>();
             if (attr == null) continue;
-            
-            RegisterType(type, new StableComponentId(attr.Id));
+
+            components.Add((type, attr.Id));
+        }
+
+        components.Sort((a, b) => a.stableId.CompareTo(b.stableId));
+
+        foreach (var (type, stableId) in components)
+        {
+            RegisterType(type, new StableComponentId(stableId));
         }
     }
     

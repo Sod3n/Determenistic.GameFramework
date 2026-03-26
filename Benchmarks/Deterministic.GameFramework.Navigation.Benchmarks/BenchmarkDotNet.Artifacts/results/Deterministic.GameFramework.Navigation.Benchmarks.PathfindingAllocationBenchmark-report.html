@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark-20260326-133435</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.12, macOS 26.3 (25D125) [Darwin 25.3.0]
+Apple M2 Pro, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 10.0.105
+  [Host]     : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+  Job-FYCHTZ : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code>Runtime=.NET 8.0  IterationCount=5  WarmupCount=2  
+</code></pre>
+
+<table>
+<thead><tr><th>Method   </th><th>AgentCount</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>AllAgentsRepath</td><td>1</td><td>5.367 &mu;s</td><td>0.0321 &mu;s</td><td>0.0050 &mu;s</td><td>0.0381</td><td>328 B</td>
+</tr><tr><td>AllAgentsRepath</td><td>10</td><td>8.338 &mu;s</td><td>0.0708 &mu;s</td><td>0.0184 &mu;s</td><td>0.0305</td><td>328 B</td>
+</tr><tr><td>AllAgentsRepath</td><td>50</td><td>23.137 &mu;s</td><td>0.3030 &mu;s</td><td>0.0469 &mu;s</td><td>0.0305</td><td>328 B</td>
+</tr></tbody></table>
+</body>
+</html>

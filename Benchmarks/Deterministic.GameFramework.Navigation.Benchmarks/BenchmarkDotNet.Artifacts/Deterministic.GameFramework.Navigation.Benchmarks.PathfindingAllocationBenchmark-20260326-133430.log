@@ -1,0 +1,397 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 3 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/da8234fa-9a01-4706-a62f-a0663ece5189
+// command took 1.48 sec and exited with 0
+// start dotnet  build -c Release --no-restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/da8234fa-9a01-4706-a62f-a0663ece5189
+// command took 3.1 sec and exited with 0
+// ***** Done, took 00:00:04 (4.66 sec)   *****
+// Found 3 benchmarks:
+//   PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=1]
+//   PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=10]
+//   PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=50]
+
+// **************************
+// Benchmark: PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet da8234fa-9a01-4706-a62f-a0663ece5189.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark.AllAgentsRepath(AgentCount: 1)" --job "Runtime=.NET 8.0, IterationCount=5, WarmupCount=2" --benchmarkId 0 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/da8234fa-9a01-4706-a62f-a0663ece5189/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: Job-BFRRWZ(IterationCount=5, WarmupCount=2)
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered NavigationRegion2D -> Local(2) Stable(Stable(b7e2a1c3-4d56-4f89-a012-3e4f5a6b7c8d))
+[ComponentId] Registered NavigationAgent2D -> Local(3) Stable(Stable(c8f3b2d4-5e67-4a90-b123-4f5a6b7c8d9e))
+[ComponentId] Registered NavigationObstacle2D -> Local(4) Stable(Stable(d9a4c3e5-6f78-4b01-c234-5a6b7c8d9e0f))
+[ComponentId] Registered NavigationWorld2D -> Local(5) Stable(Stable(ea5b4d6c-7f89-4012-d345-6a7b8c9d0e1f))
+[ComponentId] Registered CharacterBody2D -> Local(6) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered Area2D -> Local(7) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered StaticBody2D -> Local(8) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+[ComponentId] Registered RigidBody2D -> Local(9) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered CollisionShape2D -> Local(10) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(11) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+OverheadJitting  1: 1 op, 109542.00 ns, 109.5420 us/op
+WorkloadJitting  1: 1 op, 2656167.00 ns, 2.6562 ms/op
+
+OverheadJitting  2: 16 op, 110334.00 ns, 6.8959 us/op
+WorkloadJitting  2: 16 op, 927458.00 ns, 57.9661 us/op
+
+WorkloadPilot    1: 16 op, 688500.00 ns, 43.0312 us/op
+WorkloadPilot    2: 32 op, 1332750.00 ns, 41.6484 us/op
+WorkloadPilot    3: 64 op, 2519125.00 ns, 39.3613 us/op
+WorkloadPilot    4: 128 op, 5101458.00 ns, 39.8551 us/op
+WorkloadPilot    5: 256 op, 9978500.00 ns, 38.9785 us/op
+WorkloadPilot    6: 512 op, 19638375.00 ns, 38.3562 us/op
+WorkloadPilot    7: 1024 op, 39139417.00 ns, 38.2221 us/op
+WorkloadPilot    8: 2048 op, 98265291.00 ns, 47.9811 us/op
+WorkloadPilot    9: 4096 op, 177014750.00 ns, 43.2165 us/op
+WorkloadPilot   10: 8192 op, 115820250.00 ns, 14.1382 us/op
+WorkloadPilot   11: 16384 op, 88777542.00 ns, 5.4186 us/op
+WorkloadPilot   12: 32768 op, 177286167.00 ns, 5.4103 us/op
+WorkloadPilot   13: 65536 op, 355787375.00 ns, 5.4289 us/op
+WorkloadPilot   14: 131072 op, 707488250.00 ns, 5.3977 us/op
+
+OverheadWarmup   1: 131072 op, 256834.00 ns, 1.9595 ns/op
+OverheadWarmup   2: 131072 op, 270750.00 ns, 2.0657 ns/op
+OverheadWarmup   3: 131072 op, 259125.00 ns, 1.9770 ns/op
+OverheadWarmup   4: 131072 op, 263417.00 ns, 2.0097 ns/op
+OverheadWarmup   5: 131072 op, 280667.00 ns, 2.1413 ns/op
+OverheadWarmup   6: 131072 op, 258958.00 ns, 1.9757 ns/op
+
+OverheadActual   1: 131072 op, 260041.00 ns, 1.9840 ns/op
+OverheadActual   2: 131072 op, 260792.00 ns, 1.9897 ns/op
+OverheadActual   3: 131072 op, 262625.00 ns, 2.0037 ns/op
+OverheadActual   4: 131072 op, 282792.00 ns, 2.1575 ns/op
+OverheadActual   5: 131072 op, 258625.00 ns, 1.9732 ns/op
+OverheadActual   6: 131072 op, 258791.00 ns, 1.9744 ns/op
+OverheadActual   7: 131072 op, 253042.00 ns, 1.9306 ns/op
+OverheadActual   8: 131072 op, 274542.00 ns, 2.0946 ns/op
+OverheadActual   9: 131072 op, 256584.00 ns, 1.9576 ns/op
+OverheadActual  10: 131072 op, 272625.00 ns, 2.0800 ns/op
+OverheadActual  11: 131072 op, 257833.00 ns, 1.9671 ns/op
+OverheadActual  12: 131072 op, 278000.00 ns, 2.1210 ns/op
+OverheadActual  13: 131072 op, 267000.00 ns, 2.0370 ns/op
+OverheadActual  14: 131072 op, 256791.00 ns, 1.9592 ns/op
+OverheadActual  15: 131072 op, 256750.00 ns, 1.9588 ns/op
+
+WorkloadWarmup   1: 131072 op, 706232625.00 ns, 5.3881 us/op
+WorkloadWarmup   2: 131072 op, 706067291.00 ns, 5.3869 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 131072 op, 703040458.00 ns, 5.3638 us/op
+WorkloadActual   2: 131072 op, 704471709.00 ns, 5.3747 us/op
+WorkloadActual   3: 131072 op, 703295792.00 ns, 5.3657 us/op
+WorkloadActual   4: 131072 op, 703973958.00 ns, 5.3709 us/op
+WorkloadActual   5: 131072 op, 706405625.00 ns, 5.3894 us/op
+
+// AfterActualRun
+WorkloadResult   1: 131072 op, 702780417.00 ns, 5.3618 us/op
+WorkloadResult   2: 131072 op, 704211668.00 ns, 5.3727 us/op
+WorkloadResult   3: 131072 op, 703035751.00 ns, 5.3637 us/op
+WorkloadResult   4: 131072 op, 703713917.00 ns, 5.3689 us/op
+// GC:  5 0 0 42992352 131072
+// Threading:  0 0 131072
+
+// AfterAll
+// Benchmark Process 21117 has exited with code 0.
+
+Mean = 5.367 μs, StdErr = 0.002 μs (0.05%), N = 4, StdDev = 0.005 μs
+Min = 5.362 μs, Q1 = 5.363 μs, Median = 5.366 μs, Q3 = 5.370 μs, Max = 5.373 μs
+IQR = 0.007 μs, LowerFence = 5.353 μs, UpperFence = 5.380 μs
+ConfidenceInterval = [5.335 μs; 5.399 μs] (CI 99.9%), Margin = 0.032 μs (0.60% of Mean)
+Skewness = 0.13, Kurtosis = 0.81, MValue = 2
+
+// ** Remained 2 (66,7 %) benchmark(s) to run. Estimated finish 2026-03-26 13:34 (0h 0m from now) **
+// **************************
+// Benchmark: PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=10]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet da8234fa-9a01-4706-a62f-a0663ece5189.dll --anonymousPipes 121 122 --benchmarkName "Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark.AllAgentsRepath(AgentCount: 10)" --job "Runtime=.NET 8.0, IterationCount=5, WarmupCount=2" --benchmarkId 1 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/da8234fa-9a01-4706-a62f-a0663ece5189/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: Job-YWJNKS(IterationCount=5, WarmupCount=2)
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered NavigationRegion2D -> Local(2) Stable(Stable(b7e2a1c3-4d56-4f89-a012-3e4f5a6b7c8d))
+[ComponentId] Registered NavigationAgent2D -> Local(3) Stable(Stable(c8f3b2d4-5e67-4a90-b123-4f5a6b7c8d9e))
+[ComponentId] Registered NavigationObstacle2D -> Local(4) Stable(Stable(d9a4c3e5-6f78-4b01-c234-5a6b7c8d9e0f))
+[ComponentId] Registered NavigationWorld2D -> Local(5) Stable(Stable(ea5b4d6c-7f89-4012-d345-6a7b8c9d0e1f))
+[ComponentId] Registered CharacterBody2D -> Local(6) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered Area2D -> Local(7) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered StaticBody2D -> Local(8) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+[ComponentId] Registered RigidBody2D -> Local(9) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered CollisionShape2D -> Local(10) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(11) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+OverheadJitting  1: 1 op, 108708.00 ns, 108.7080 us/op
+WorkloadJitting  1: 1 op, 5391667.00 ns, 5.3917 ms/op
+
+OverheadJitting  2: 16 op, 133375.00 ns, 8.3359 us/op
+WorkloadJitting  2: 16 op, 1340792.00 ns, 83.7995 us/op
+
+WorkloadPilot    1: 16 op, 1153250.00 ns, 72.0781 us/op
+WorkloadPilot    2: 32 op, 2216208.00 ns, 69.2565 us/op
+WorkloadPilot    3: 64 op, 4397708.00 ns, 68.7142 us/op
+WorkloadPilot    4: 128 op, 8478291.00 ns, 66.2366 us/op
+WorkloadPilot    5: 256 op, 16562459.00 ns, 64.6971 us/op
+WorkloadPilot    6: 512 op, 32415000.00 ns, 63.3105 us/op
+WorkloadPilot    7: 1024 op, 63925709.00 ns, 62.4275 us/op
+WorkloadPilot    8: 2048 op, 140846666.00 ns, 68.7728 us/op
+WorkloadPilot    9: 4096 op, 272983958.00 ns, 66.6465 us/op
+WorkloadPilot   10: 8192 op, 74046000.00 ns, 9.0388 us/op
+WorkloadPilot   11: 16384 op, 139650917.00 ns, 8.5236 us/op
+WorkloadPilot   12: 32768 op, 276418583.00 ns, 8.4356 us/op
+WorkloadPilot   13: 65536 op, 554253542.00 ns, 8.4572 us/op
+
+OverheadWarmup   1: 65536 op, 129667.00 ns, 1.9786 ns/op
+OverheadWarmup   2: 65536 op, 128709.00 ns, 1.9639 ns/op
+OverheadWarmup   3: 65536 op, 128583.00 ns, 1.9620 ns/op
+OverheadWarmup   4: 65536 op, 135291.00 ns, 2.0644 ns/op
+OverheadWarmup   5: 65536 op, 150708.00 ns, 2.2996 ns/op
+OverheadWarmup   6: 65536 op, 128375.00 ns, 1.9588 ns/op
+OverheadWarmup   7: 65536 op, 128333.00 ns, 1.9582 ns/op
+OverheadWarmup   8: 65536 op, 158542.00 ns, 2.4192 ns/op
+OverheadWarmup   9: 65536 op, 135542.00 ns, 2.0682 ns/op
+
+OverheadActual   1: 65536 op, 127917.00 ns, 1.9519 ns/op
+OverheadActual   2: 65536 op, 128250.00 ns, 1.9569 ns/op
+OverheadActual   3: 65536 op, 128417.00 ns, 1.9595 ns/op
+OverheadActual   4: 65536 op, 133583.00 ns, 2.0383 ns/op
+OverheadActual   5: 65536 op, 137041.00 ns, 2.0911 ns/op
+OverheadActual   6: 65536 op, 146208.00 ns, 2.2310 ns/op
+OverheadActual   7: 65536 op, 128417.00 ns, 1.9595 ns/op
+OverheadActual   8: 65536 op, 135375.00 ns, 2.0657 ns/op
+OverheadActual   9: 65536 op, 140916.00 ns, 2.1502 ns/op
+OverheadActual  10: 65536 op, 128334.00 ns, 1.9582 ns/op
+OverheadActual  11: 65536 op, 139042.00 ns, 2.1216 ns/op
+OverheadActual  12: 65536 op, 128125.00 ns, 1.9550 ns/op
+OverheadActual  13: 65536 op, 128666.00 ns, 1.9633 ns/op
+OverheadActual  14: 65536 op, 139666.00 ns, 2.1311 ns/op
+OverheadActual  15: 65536 op, 127583.00 ns, 1.9468 ns/op
+
+WorkloadWarmup   1: 65536 op, 548369417.00 ns, 8.3675 us/op
+WorkloadWarmup   2: 65536 op, 545595458.00 ns, 8.3251 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 65536 op, 547825333.00 ns, 8.3592 us/op
+WorkloadActual   2: 65536 op, 544831333.00 ns, 8.3135 us/op
+WorkloadActual   3: 65536 op, 547214167.00 ns, 8.3498 us/op
+WorkloadActual   4: 65536 op, 547112125.00 ns, 8.3483 us/op
+WorkloadActual   5: 65536 op, 545860875.00 ns, 8.3292 us/op
+
+// AfterActualRun
+WorkloadResult   1: 65536 op, 547696667.00 ns, 8.3572 us/op
+WorkloadResult   2: 65536 op, 544702667.00 ns, 8.3115 us/op
+WorkloadResult   3: 65536 op, 547085501.00 ns, 8.3479 us/op
+WorkloadResult   4: 65536 op, 546983459.00 ns, 8.3463 us/op
+WorkloadResult   5: 65536 op, 545732209.00 ns, 8.3272 us/op
+// GC:  2 0 0 21496544 65536
+// Threading:  0 0 65536
+
+// AfterAll
+// Benchmark Process 21121 has exited with code 0.
+
+Mean = 8.338 μs, StdErr = 0.008 μs (0.10%), N = 5, StdDev = 0.018 μs
+Min = 8.312 μs, Q1 = 8.327 μs, Median = 8.346 μs, Q3 = 8.348 μs, Max = 8.357 μs
+IQR = 0.021 μs, LowerFence = 8.296 μs, UpperFence = 8.379 μs
+ConfidenceInterval = [8.267 μs; 8.409 μs] (CI 99.9%), Margin = 0.071 μs (0.85% of Mean)
+Skewness = -0.36, Kurtosis = 1.15, MValue = 2
+
+// ** Remained 1 (33,3 %) benchmark(s) to run. Estimated finish 2026-03-26 13:34 (0h 0m from now) **
+// **************************
+// Benchmark: PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=50]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet da8234fa-9a01-4706-a62f-a0663ece5189.dll --anonymousPipes 121 122 --benchmarkName "Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark.AllAgentsRepath(AgentCount: 50)" --job "Runtime=.NET 8.0, IterationCount=5, WarmupCount=2" --benchmarkId 2 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/da8234fa-9a01-4706-a62f-a0663ece5189/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: Job-VFZYSH(IterationCount=5, WarmupCount=2)
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered NavigationRegion2D -> Local(2) Stable(Stable(b7e2a1c3-4d56-4f89-a012-3e4f5a6b7c8d))
+[ComponentId] Registered NavigationAgent2D -> Local(3) Stable(Stable(c8f3b2d4-5e67-4a90-b123-4f5a6b7c8d9e))
+[ComponentId] Registered NavigationObstacle2D -> Local(4) Stable(Stable(d9a4c3e5-6f78-4b01-c234-5a6b7c8d9e0f))
+[ComponentId] Registered NavigationWorld2D -> Local(5) Stable(Stable(ea5b4d6c-7f89-4012-d345-6a7b8c9d0e1f))
+[ComponentId] Registered CharacterBody2D -> Local(6) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered Area2D -> Local(7) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered StaticBody2D -> Local(8) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+[ComponentId] Registered RigidBody2D -> Local(9) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered CollisionShape2D -> Local(10) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(11) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+OverheadJitting  1: 1 op, 98375.00 ns, 98.3750 us/op
+WorkloadJitting  1: 1 op, 26401959.00 ns, 26.4020 ms/op
+
+OverheadJitting  2: 16 op, 170542.00 ns, 10.6589 us/op
+WorkloadJitting  2: 16 op, 3305334.00 ns, 206.5834 us/op
+
+WorkloadPilot    1: 16 op, 3058916.00 ns, 191.1823 us/op
+WorkloadPilot    2: 32 op, 6103292.00 ns, 190.7279 us/op
+WorkloadPilot    3: 64 op, 12089500.00 ns, 188.8984 us/op
+WorkloadPilot    4: 128 op, 23986375.00 ns, 187.3936 us/op
+WorkloadPilot    5: 256 op, 46679500.00 ns, 182.3418 us/op
+WorkloadPilot    6: 512 op, 99271959.00 ns, 193.8905 us/op
+WorkloadPilot    7: 1024 op, 117021208.00 ns, 114.2785 us/op
+WorkloadPilot    8: 2048 op, 119560666.00 ns, 58.3792 us/op
+WorkloadPilot    9: 4096 op, 137777042.00 ns, 33.6370 us/op
+WorkloadPilot   10: 8192 op, 192736584.00 ns, 23.5274 us/op
+WorkloadPilot   11: 16384 op, 378856208.00 ns, 23.1235 us/op
+WorkloadPilot   12: 32768 op, 755941375.00 ns, 23.0695 us/op
+
+OverheadWarmup   1: 32768 op, 70458.00 ns, 2.1502 ns/op
+OverheadWarmup   2: 32768 op, 66833.00 ns, 2.0396 ns/op
+OverheadWarmup   3: 32768 op, 67417.00 ns, 2.0574 ns/op
+OverheadWarmup   4: 32768 op, 63500.00 ns, 1.9379 ns/op
+OverheadWarmup   5: 32768 op, 72541.00 ns, 2.2138 ns/op
+OverheadWarmup   6: 32768 op, 70875.00 ns, 2.1629 ns/op
+
+OverheadActual   1: 32768 op, 75125.00 ns, 2.2926 ns/op
+OverheadActual   2: 32768 op, 64292.00 ns, 1.9620 ns/op
+OverheadActual   3: 32768 op, 68917.00 ns, 2.1032 ns/op
+OverheadActual   4: 32768 op, 71416.00 ns, 2.1794 ns/op
+OverheadActual   5: 32768 op, 71792.00 ns, 2.1909 ns/op
+OverheadActual   6: 32768 op, 64250.00 ns, 1.9608 ns/op
+OverheadActual   7: 32768 op, 64416.00 ns, 1.9658 ns/op
+OverheadActual   8: 32768 op, 64166.00 ns, 1.9582 ns/op
+OverheadActual   9: 32768 op, 88125.00 ns, 2.6894 ns/op
+OverheadActual  10: 32768 op, 64166.00 ns, 1.9582 ns/op
+OverheadActual  11: 32768 op, 64583.00 ns, 1.9709 ns/op
+OverheadActual  12: 32768 op, 63875.00 ns, 1.9493 ns/op
+OverheadActual  13: 32768 op, 71916.00 ns, 2.1947 ns/op
+OverheadActual  14: 32768 op, 71000.00 ns, 2.1667 ns/op
+OverheadActual  15: 32768 op, 71291.00 ns, 2.1756 ns/op
+OverheadActual  16: 32768 op, 63209.00 ns, 1.9290 ns/op
+OverheadActual  17: 32768 op, 75500.00 ns, 2.3041 ns/op
+OverheadActual  18: 32768 op, 69166.00 ns, 2.1108 ns/op
+OverheadActual  19: 32768 op, 63667.00 ns, 1.9430 ns/op
+OverheadActual  20: 32768 op, 64292.00 ns, 1.9620 ns/op
+
+WorkloadWarmup   1: 32768 op, 764884417.00 ns, 23.3424 us/op
+WorkloadWarmup   2: 32768 op, 756173750.00 ns, 23.0766 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 32768 op, 762795083.00 ns, 23.2787 us/op
+WorkloadActual   2: 32768 op, 756359250.00 ns, 23.0823 us/op
+WorkloadActual   3: 32768 op, 759655125.00 ns, 23.1828 us/op
+WorkloadActual   4: 32768 op, 759283792.00 ns, 23.1715 us/op
+WorkloadActual   5: 32768 op, 757566417.00 ns, 23.1191 us/op
+
+// AfterActualRun
+WorkloadResult   1: 32768 op, 756292500.00 ns, 23.0802 us/op
+WorkloadResult   2: 32768 op, 759588375.00 ns, 23.1808 us/op
+WorkloadResult   3: 32768 op, 759217042.00 ns, 23.1695 us/op
+WorkloadResult   4: 32768 op, 757499667.00 ns, 23.1171 us/op
+// GC:  1 0 0 10748640 32768
+// Threading:  0 0 32768
+
+// AfterAll
+// Benchmark Process 21125 has exited with code 0.
+
+Mean = 23.137 μs, StdErr = 0.023 μs (0.10%), N = 4, StdDev = 0.047 μs
+Min = 23.080 μs, Q1 = 23.108 μs, Median = 23.143 μs, Q3 = 23.172 μs, Max = 23.181 μs
+IQR = 0.064 μs, LowerFence = 23.011 μs, UpperFence = 23.269 μs
+ConfidenceInterval = [22.834 μs; 23.440 μs] (CI 99.9%), Margin = 0.303 μs (1.31% of Mean)
+Skewness = -0.17, Kurtosis = 0.79, MValue = 2
+
+// ** Remained 0 (0,0 %) benchmark(s) to run. Estimated finish 2026-03-26 13:34 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark-report.csv
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark-report-github.md
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.PathfindingAllocationBenchmark-report.html
+
+// * Detailed results *
+PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=1]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 5.367 μs, StdErr = 0.002 μs (0.05%), N = 4, StdDev = 0.005 μs
+Min = 5.362 μs, Q1 = 5.363 μs, Median = 5.366 μs, Q3 = 5.370 μs, Max = 5.373 μs
+IQR = 0.007 μs, LowerFence = 5.353 μs, UpperFence = 5.380 μs
+ConfidenceInterval = [5.335 μs; 5.399 μs] (CI 99.9%), Margin = 0.032 μs (0.60% of Mean)
+Skewness = 0.13, Kurtosis = 0.81, MValue = 2
+-------------------- Histogram --------------------
+[5.358 μs ; 5.377 μs) | @@@@
+---------------------------------------------------
+
+PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=10]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 8.338 μs, StdErr = 0.008 μs (0.10%), N = 5, StdDev = 0.018 μs
+Min = 8.312 μs, Q1 = 8.327 μs, Median = 8.346 μs, Q3 = 8.348 μs, Max = 8.357 μs
+IQR = 0.021 μs, LowerFence = 8.296 μs, UpperFence = 8.379 μs
+ConfidenceInterval = [8.267 μs; 8.409 μs] (CI 99.9%), Margin = 0.071 μs (0.85% of Mean)
+Skewness = -0.36, Kurtosis = 1.15, MValue = 2
+-------------------- Histogram --------------------
+[8.297 μs ; 8.371 μs) | @@@@@
+---------------------------------------------------
+
+PathfindingAllocationBenchmark.AllAgentsRepath: Job-FYCHTZ(Runtime=.NET 8.0, IterationCount=5, WarmupCount=2) [AgentCount=50]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 23.137 μs, StdErr = 0.023 μs (0.10%), N = 4, StdDev = 0.047 μs
+Min = 23.080 μs, Q1 = 23.108 μs, Median = 23.143 μs, Q3 = 23.172 μs, Max = 23.181 μs
+IQR = 0.064 μs, LowerFence = 23.011 μs, UpperFence = 23.269 μs
+ConfidenceInterval = [22.834 μs; 23.440 μs] (CI 99.9%), Margin = 0.303 μs (1.31% of Mean)
+Skewness = -0.17, Kurtosis = 0.79, MValue = 2
+-------------------- Histogram --------------------
+[23.041 μs ; 23.220 μs) | @@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.13.12, macOS 26.3 (25D125) [Darwin 25.3.0]
+Apple M2 Pro, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 10.0.105
+  [Host]     : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+  Job-FYCHTZ : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+
+Runtime=.NET 8.0  IterationCount=5  WarmupCount=2  
+
+| Method          | AgentCount | Mean      | Error     | StdDev    | Gen0   | Allocated |
+|---------------- |----------- |----------:|----------:|----------:|-------:|----------:|
+| AllAgentsRepath | 1          |  5.367 μs | 0.0321 μs | 0.0050 μs | 0.0381 |     328 B |
+| AllAgentsRepath | 10         |  8.338 μs | 0.0708 μs | 0.0184 μs | 0.0305 |     328 B |
+| AllAgentsRepath | 50         | 23.137 μs | 0.3030 μs | 0.0469 μs | 0.0305 |     328 B |
+
+// * Hints *
+Outliers
+  PathfindingAllocationBenchmark.AllAgentsRepath: Runtime=.NET 8.0, IterationCount=5, WarmupCount=2 -> 1 outlier  was  removed (5.39 μs)
+  PathfindingAllocationBenchmark.AllAgentsRepath: Runtime=.NET 8.0, IterationCount=5, WarmupCount=2 -> 1 outlier  was  removed (23.28 μs)
+
+// * Legends *
+  AgentCount : Value of the 'AgentCount' parameter
+  Mean       : Arithmetic mean of all measurements
+  Error      : Half of 99.9% confidence interval
+  StdDev     : Standard deviation of all measurements
+  Gen0       : GC Generation 0 collects per 1000 operations
+  Allocated  : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  1 μs       : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:22 (22.4 sec), executed benchmarks: 3
+
+Global total time: 00:00:27 (27.34 sec), executed benchmarks: 3
+// * Artifacts cleanup *
+Artifacts cleanup is finished

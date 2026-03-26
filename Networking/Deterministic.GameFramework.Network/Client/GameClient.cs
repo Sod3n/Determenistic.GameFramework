@@ -204,6 +204,13 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
                 }
             }
 
+            // Adopt server's component ID mappings on every full state sync.
+            // The server state may contain newly active components (e.g. HouseComponent
+            // after building, EnterStateComponent during taming) whose LocalIds the
+            // client hasn't seen yet. Overlaying is safe — it only updates LocalIds
+            // for known StableIds without clearing existing registrations.
+            StateSerializer.AdoptMappingsFrom(stateData);
+
             Log("Deserializing state...");
             StateSerializer.Deserialize(State, stateData, syncComponentIds: false);
             Log("State deserialized!");

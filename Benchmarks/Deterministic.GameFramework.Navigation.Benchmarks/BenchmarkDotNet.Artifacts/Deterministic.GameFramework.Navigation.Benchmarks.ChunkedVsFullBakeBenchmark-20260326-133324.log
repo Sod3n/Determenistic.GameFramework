@@ -1,0 +1,286 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 2 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/cdd06400-e075-4f16-9bd8-b0349a4373d7
+// command took 1.36 sec and exited with 0
+// start dotnet  build -c Release --no-restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/cdd06400-e075-4f16-9bd8-b0349a4373d7
+// command took 3.15 sec and exited with 0
+// ***** Done, took 00:00:04 (4.57 sec)   *****
+// Found 2 benchmarks:
+//   ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+//   ChunkedVsFullBakeBenchmark.FullBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+
+// **************************
+// Benchmark: ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet cdd06400-e075-4f16-9bd8-b0349a4373d7.dll --anonymousPipes 117 118 --benchmarkName Deterministic.GameFramework.Navigation.Benchmarks.ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove --job "Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3" --benchmarkId 0 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/cdd06400-e075-4f16-9bd8-b0349a4373d7/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: Job-GHJNYG(InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered NavigationRegion2D -> Local(2) Stable(Stable(b7e2a1c3-4d56-4f89-a012-3e4f5a6b7c8d))
+[ComponentId] Registered NavigationAgent2D -> Local(3) Stable(Stable(c8f3b2d4-5e67-4a90-b123-4f5a6b7c8d9e))
+[ComponentId] Registered NavigationObstacle2D -> Local(4) Stable(Stable(d9a4c3e5-6f78-4b01-c234-5a6b7c8d9e0f))
+[ComponentId] Registered NavigationWorld2D -> Local(5) Stable(Stable(ea5b4d6c-7f89-4012-d345-6a7b8c9d0e1f))
+[ComponentId] Registered CharacterBody2D -> Local(6) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered Area2D -> Local(7) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered StaticBody2D -> Local(8) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+[ComponentId] Registered RigidBody2D -> Local(9) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered CollisionShape2D -> Local(10) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(11) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+OverheadJitting  1: 1 op, 104500.00 ns, 104.5000 us/op
+WorkloadJitting  1: 1 op, 92717458.00 ns, 92.7175 ms/op
+
+OverheadWarmup   1: 1 op, 917.00 ns, 917.0000 ns/op
+OverheadWarmup   2: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadWarmup   3: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadWarmup   4: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadWarmup   5: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadWarmup   6: 1 op, 208.00 ns, 208.0000 ns/op
+
+OverheadActual   1: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadActual   2: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual   3: 1 op, 375.00 ns, 375.0000 ns/op
+OverheadActual   4: 1 op, 417.00 ns, 417.0000 ns/op
+OverheadActual   5: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual   6: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadActual   7: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual   8: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   9: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual  10: 1 op, 167.00 ns, 167.0000 ns/op
+OverheadActual  11: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  12: 1 op, 250.00 ns, 250.0000 ns/op
+OverheadActual  13: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  14: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  15: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  16: 1 op, 292.00 ns, 292.0000 ns/op
+OverheadActual  17: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  18: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual  19: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadActual  20: 1 op, 250.00 ns, 250.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 89880416.00 ns, 89.8804 ms/op
+WorkloadWarmup   2: 1 op, 118040792.00 ns, 118.0408 ms/op
+WorkloadWarmup   3: 1 op, 50087333.00 ns, 50.0873 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 28175625.00 ns, 28.1756 ms/op
+WorkloadActual   2: 1 op, 28040417.00 ns, 28.0404 ms/op
+WorkloadActual   3: 1 op, 27448542.00 ns, 27.4485 ms/op
+WorkloadActual   4: 1 op, 27804625.00 ns, 27.8046 ms/op
+WorkloadActual   5: 1 op, 27833209.00 ns, 27.8332 ms/op
+WorkloadActual   6: 1 op, 27810875.00 ns, 27.8109 ms/op
+WorkloadActual   7: 1 op, 27795208.00 ns, 27.7952 ms/op
+WorkloadActual   8: 1 op, 28124584.00 ns, 28.1246 ms/op
+WorkloadActual   9: 1 op, 27734125.00 ns, 27.7341 ms/op
+WorkloadActual  10: 1 op, 27322667.00 ns, 27.3227 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 28175500.00 ns, 28.1755 ms/op
+WorkloadResult   2: 1 op, 28040292.00 ns, 28.0403 ms/op
+WorkloadResult   3: 1 op, 27448417.00 ns, 27.4484 ms/op
+WorkloadResult   4: 1 op, 27804500.00 ns, 27.8045 ms/op
+WorkloadResult   5: 1 op, 27833084.00 ns, 27.8331 ms/op
+WorkloadResult   6: 1 op, 27810750.00 ns, 27.8107 ms/op
+WorkloadResult   7: 1 op, 27795083.00 ns, 27.7951 ms/op
+WorkloadResult   8: 1 op, 28124459.00 ns, 28.1245 ms/op
+WorkloadResult   9: 1 op, 27734000.00 ns, 27.7340 ms/op
+WorkloadResult  10: 1 op, 27322542.00 ns, 27.3225 ms/op
+// GC:  0 0 0 16432 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 20998 has exited with code 0.
+
+Mean = 27.809 ms, StdErr = 0.086 ms (0.31%), N = 10, StdDev = 0.271 ms
+Min = 27.323 ms, Q1 = 27.749 ms, Median = 27.808 ms, Q3 = 27.988 ms, Max = 28.175 ms
+IQR = 0.239 ms, LowerFence = 27.390 ms, UpperFence = 28.347 ms
+ConfidenceInterval = [27.399 ms; 28.218 ms] (CI 99.9%), Margin = 0.410 ms (1.47% of Mean)
+Skewness = -0.35, Kurtosis = 1.93, MValue = 2
+
+// ** Remained 1 (50,0 %) benchmark(s) to run. Estimated finish 2026-03-26 13:33 (0h 0m from now) **
+// **************************
+// Benchmark: ChunkedVsFullBakeBenchmark.FullBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet cdd06400-e075-4f16-9bd8-b0349a4373d7.dll --anonymousPipes 119 120 --benchmarkName Deterministic.GameFramework.Navigation.Benchmarks.ChunkedVsFullBakeBenchmark.FullBake_ObstacleMove --job "Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3" --benchmarkId 1 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Navigation.Benchmarks/bin/Release/net8.0/cdd06400-e075-4f16-9bd8-b0349a4373d7/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: Job-ABEMKN(InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered NavigationRegion2D -> Local(2) Stable(Stable(b7e2a1c3-4d56-4f89-a012-3e4f5a6b7c8d))
+[ComponentId] Registered NavigationAgent2D -> Local(3) Stable(Stable(c8f3b2d4-5e67-4a90-b123-4f5a6b7c8d9e))
+[ComponentId] Registered NavigationObstacle2D -> Local(4) Stable(Stable(d9a4c3e5-6f78-4b01-c234-5a6b7c8d9e0f))
+[ComponentId] Registered NavigationWorld2D -> Local(5) Stable(Stable(ea5b4d6c-7f89-4012-d345-6a7b8c9d0e1f))
+[ComponentId] Registered CharacterBody2D -> Local(6) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered Area2D -> Local(7) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered StaticBody2D -> Local(8) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+[ComponentId] Registered RigidBody2D -> Local(9) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered CollisionShape2D -> Local(10) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(11) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+OverheadJitting  1: 1 op, 144042.00 ns, 144.0420 us/op
+WorkloadJitting  1: 1 op, 48060417.00 ns, 48.0604 ms/op
+
+OverheadWarmup   1: 1 op, 208.00 ns, 208.0000 ns/op
+OverheadWarmup   2: 1 op, 541.00 ns, 541.0000 ns/op
+OverheadWarmup   3: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadWarmup   4: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadWarmup   5: 1 op, 208.00 ns, 208.0000 ns/op
+OverheadWarmup   6: 1 op, 84.00 ns, 84.0000 ns/op
+
+OverheadActual   1: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual   2: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual   3: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual   4: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual   5: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual   6: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual   7: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual   8: 1 op, 166.00 ns, 166.0000 ns/op
+OverheadActual   9: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual  10: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual  11: 1 op, 333.00 ns, 333.0000 ns/op
+OverheadActual  12: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  13: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual  14: 1 op, 84.00 ns, 84.0000 ns/op
+OverheadActual  15: 1 op, 83.00 ns, 83.0000 ns/op
+OverheadActual  16: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual  17: 1 op, 41.00 ns, 41.0000 ns/op
+OverheadActual  18: 1 op, 125.00 ns, 125.0000 ns/op
+OverheadActual  19: 1 op, 42.00 ns, 42.0000 ns/op
+OverheadActual  20: 1 op, 83.00 ns, 83.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 48533583.00 ns, 48.5336 ms/op
+WorkloadWarmup   2: 1 op, 48244541.00 ns, 48.2445 ms/op
+WorkloadWarmup   3: 1 op, 48652584.00 ns, 48.6526 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 48254667.00 ns, 48.2547 ms/op
+WorkloadActual   2: 1 op, 47994583.00 ns, 47.9946 ms/op
+WorkloadActual   3: 1 op, 60209042.00 ns, 60.2090 ms/op
+WorkloadActual   4: 1 op, 71019834.00 ns, 71.0198 ms/op
+WorkloadActual   5: 1 op, 17254667.00 ns, 17.2547 ms/op
+WorkloadActual   6: 1 op, 14561541.00 ns, 14.5615 ms/op
+WorkloadActual   7: 1 op, 13726834.00 ns, 13.7268 ms/op
+WorkloadActual   8: 1 op, 13772250.00 ns, 13.7722 ms/op
+WorkloadActual   9: 1 op, 13766375.00 ns, 13.7664 ms/op
+WorkloadActual  10: 1 op, 13510041.00 ns, 13.5100 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 48254584.00 ns, 48.2546 ms/op
+WorkloadResult   2: 1 op, 47994500.00 ns, 47.9945 ms/op
+WorkloadResult   3: 1 op, 60208959.00 ns, 60.2090 ms/op
+WorkloadResult   4: 1 op, 71019751.00 ns, 71.0198 ms/op
+WorkloadResult   5: 1 op, 17254584.00 ns, 17.2546 ms/op
+WorkloadResult   6: 1 op, 14561458.00 ns, 14.5615 ms/op
+WorkloadResult   7: 1 op, 13726751.00 ns, 13.7268 ms/op
+WorkloadResult   8: 1 op, 13772167.00 ns, 13.7722 ms/op
+WorkloadResult   9: 1 op, 13766292.00 ns, 13.7663 ms/op
+WorkloadResult  10: 1 op, 13509958.00 ns, 13.5100 ms/op
+// GC:  0 0 0 15552 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 21004 has exited with code 0.
+
+Mean = 31.407 ms, StdErr = 7.224 ms (23.00%), N = 10, StdDev = 22.845 ms
+Min = 13.510 ms, Q1 = 13.768 ms, Median = 15.908 ms, Q3 = 48.190 ms, Max = 71.020 ms
+IQR = 34.422 ms, LowerFence = -37.865 ms, UpperFence = 99.822 ms
+ConfidenceInterval = [-3.131 ms; 65.945 ms] (CI 99.9%), Margin = 34.538 ms (109.97% of Mean)
+Skewness = 0.55, Kurtosis = 1.4, MValue = 3.33
+
+// ** Remained 0 (0,0 %) benchmark(s) to run. Estimated finish 2026-03-26 13:33 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.ChunkedVsFullBakeBenchmark-report.csv
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.ChunkedVsFullBakeBenchmark-report-github.md
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Navigation.Benchmarks.ChunkedVsFullBakeBenchmark-report.html
+
+// * Detailed results *
+ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 27.809 ms, StdErr = 0.086 ms (0.31%), N = 10, StdDev = 0.271 ms
+Min = 27.323 ms, Q1 = 27.749 ms, Median = 27.808 ms, Q3 = 27.988 ms, Max = 28.175 ms
+IQR = 0.239 ms, LowerFence = 27.390 ms, UpperFence = 28.347 ms
+ConfidenceInterval = [27.399 ms; 28.218 ms] (CI 99.9%), Margin = 0.410 ms (1.47% of Mean)
+Skewness = -0.35, Kurtosis = 1.93, MValue = 2
+-------------------- Histogram --------------------
+[27.158 ms ; 28.341 ms) | @@@@@@@@@@
+---------------------------------------------------
+
+ChunkedVsFullBakeBenchmark.FullBake_ObstacleMove: Job-ERAOYW(Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3)
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 31.407 ms, StdErr = 7.224 ms (23.00%), N = 10, StdDev = 22.845 ms
+Min = 13.510 ms, Q1 = 13.768 ms, Median = 15.908 ms, Q3 = 48.190 ms, Max = 71.020 ms
+IQR = 34.422 ms, LowerFence = -37.865 ms, UpperFence = 99.822 ms
+ConfidenceInterval = [-3.131 ms; 65.945 ms] (CI 99.9%), Margin = 34.538 ms (109.97% of Mean)
+Skewness = 0.55, Kurtosis = 1.4, MValue = 3.33
+-------------------- Histogram --------------------
+[-0.407 ms ; 29.299 ms) | @@@@@@
+[29.299 ms ; 45.590 ms) | 
+[45.590 ms ; 73.424 ms) | @@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.13.12, macOS 26.3 (25D125) [Darwin 25.3.0]
+Apple M2 Pro, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 10.0.105
+  [Host]     : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+  Job-ERAOYW : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+
+Runtime=.NET 8.0  InvocationCount=1  IterationCount=10  
+UnrollFactor=1  WarmupCount=3  
+
+| Method                   | Mean     | Error     | StdDev    | Median   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------------------------- |---------:|----------:|----------:|---------:|------:|--------:|----------:|------------:|
+| ChunkedBake_ObstacleMove | 27.81 ms |  0.410 ms |  0.271 ms | 27.81 ms |  1.00 |    0.00 |  16.05 KB |        1.00 |
+| FullBake_ObstacleMove    | 31.41 ms | 34.538 ms | 22.845 ms | 15.91 ms |  1.13 |    0.82 |  15.19 KB |        0.95 |
+
+// * Warnings *
+MinIterationTime
+  ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove: Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3 -> The minimum observed iteration time is 27.3227 ms which is very small. It's recommended to increase it to at least 100.0000 ms using more operations.
+  ChunkedVsFullBakeBenchmark.FullBake_ObstacleMove: Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3    -> The minimum observed iteration time is 13.5100 ms which is very small. It's recommended to increase it to at least 100.0000 ms using more operations.
+
+// * Hints *
+Outliers
+  ChunkedVsFullBakeBenchmark.ChunkedBake_ObstacleMove: Runtime=.NET 8.0, InvocationCount=1, IterationCount=10, UnrollFactor=1, WarmupCount=3 -> 1 outlier  was  detected (27.32 ms)
+
+// * Legends *
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Median      : Value separating the higher half of all measurements (50th percentile)
+  Ratio       : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD     : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 ms        : 1 Millisecond (0.001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:01 (1.95 sec), executed benchmarks: 2
+
+Global total time: 00:00:06 (6.8 sec), executed benchmarks: 2
+// * Artifacts cleanup *
+Artifacts cleanup is finished
