@@ -443,9 +443,6 @@ public class NavigationSystem : ISystem
 
         var physicsState = state.GetCustomData<RapierPhysicsState>();
 
-        // When NavigationWorld2D is present, auto-enable avoidance for all agents
-        bool physicsNavActive = navState.HasPhysicsBakedMesh;
-
         // Prune dead agent paths
         PruneAgentPaths(state, navState);
 
@@ -547,8 +544,10 @@ public class NavigationSystem : ISystem
                     {
                         var desiredVelocity = direction / dist * agent.MaxSpeed;
 
-                        // Avoidance: auto-enabled by NavigationWorld2D unless agent explicitly opts out
-                        bool useAvoidance = agent.AvoidanceEnabled || (physicsNavActive && agent.AvoidanceMask != 0);
+                        // Avoidance: opt-in only. Auto-enabling via NavigationWorld2D caused
+                        // desync because Rapier raycasts (float32) are non-deterministic
+                        // across world rebuilds (state sync / rollback).
+                        bool useAvoidance = agent.AvoidanceEnabled;
                         if (useAvoidance && physicsState?.World != null)
                         {
                             desiredVelocity = ApplyAvoidance(
@@ -607,7 +606,7 @@ public class NavigationSystem : ISystem
                     {
                         agent.Velocity = direction / dist * agent.MaxSpeed;
 
-                        bool useAvoidance = agent.AvoidanceEnabled || physicsNavActive;
+                        bool useAvoidance = agent.AvoidanceEnabled;
                         if (useAvoidance && physicsState?.World != null)
                         {
                             agent.Velocity = ApplyAvoidance(

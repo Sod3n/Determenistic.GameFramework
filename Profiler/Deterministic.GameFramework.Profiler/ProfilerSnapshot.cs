@@ -11,6 +11,10 @@ public sealed class ProfilerSnapshot
     public long GcMemoryDeltaBytes { get; init; }
     public SystemSnapshot[] Systems { get; init; } = Array.Empty<SystemSnapshot>();
     public double TotalSystemsSeconds { get; init; }
+    public double ReactiveSeconds { get; init; }
+    public int ReactiveObserverCount { get; init; }
+    public int ReactiveRegistered { get; init; }
+    public int ReactiveUnregistered { get; init; }
     public List<string> Spikes { get; init; } = new();
 
     public sealed class SystemSnapshot
@@ -33,6 +37,9 @@ public sealed class ProfilerSnapshot
             var spike = sys.IsSpike ? " << SPIKE" : "";
             sb.AppendLine($"  {sys.Name,-30} {sys.LastSeconds * 1000,8:F3}ms  (avg {sys.AvgSeconds * 1000:F3}ms, max {sys.MaxSeconds * 1000:F3}ms){spike}");
         }
+
+        if (ReactiveObserverCount > 0)
+            sb.AppendLine($"  {"Reactive",-30} {ReactiveSeconds * 1000,8:F3}ms  ({ReactiveObserverCount} observers, total reg={ReactiveRegistered}, total unreg={ReactiveUnregistered})");
 
         sb.AppendLine($"  Entities: {EntityCount}  GC Memory: {GcMemoryBytes / 1024.0:F1} KB (delta: {(GcMemoryDeltaBytes >= 0 ? "+" : "")}{GcMemoryDeltaBytes / 1024.0:F1} KB)");
 

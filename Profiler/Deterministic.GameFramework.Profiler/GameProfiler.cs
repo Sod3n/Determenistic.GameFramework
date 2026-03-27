@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.Reactive;
 using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.Profiler;
@@ -27,6 +28,8 @@ public sealed class GameProfiler : IDisposable
 
     private long _prevGcMemory;
     private int _ticksSinceReport;
+    private int _prevRegistered;
+    private int _prevUnregistered;
 
     /// <summary>Rolling window size for statistics (number of ticks).</summary>
     public int WindowSize { get; }
@@ -38,7 +41,7 @@ public sealed class GameProfiler : IDisposable
     public int ReportInterval { get; set; } = 300; // every 5 seconds at 60hz
 
     /// <summary>Also log spikes immediately when detected (not just at report intervals).</summary>
-    public bool LogSpikesImmediately { get; set; } = true;
+    public bool LogSpikesImmediately { get; set; } = false;
 
     /// <summary>Minimum average time (seconds) before spike detection kicks in. Prevents noise on very fast systems.</summary>
     public double SpikeMinThresholdSeconds { get; set; } = 0.0001; // 0.1ms
@@ -256,9 +259,12 @@ public sealed class GameProfiler : IDisposable
     /// </summary>
     public ProfilerSnapshot TakeSnapshot()
     {
+        var reactive = ReactiveSystem.Instance;
         long currentGcMemory = GC.GetTotalMemory(false);
         long gcDelta = currentGcMemory - _prevGcMemory;
         _prevGcMemory = currentGcMemory;
+        _prevRegistered = reactive.TotalRegistered;
+        _prevUnregistered = reactive.TotalUnregistered;
 
         double totalSystems = 0;
         var spikes = new List<string>();
@@ -293,7 +299,7 @@ public sealed class GameProfiler : IDisposable
         }
 
         int entityCount = _simulation?.State.NextEntityId ?? 0;
-
+        
         return new ProfilerSnapshot
         {
             Tick = _simulation?.CurrentTick ?? 0,
@@ -302,6 +308,10 @@ public sealed class GameProfiler : IDisposable
             GcMemoryDeltaBytes = gcDelta,
             Systems = systemSnapshots,
             TotalSystemsSeconds = totalSystems,
+            ReactiveSeconds = reactive.LastTickSeconds,
+            ReactiveObserverCount = reactive.LastObserverCount,
+            ReactiveRegistered = reactive.TotalRegistered,
+            ReactiveUnregistered = reactive.TotalUnregistered,
             Spikes = spikes
         };
     }
