@@ -366,9 +366,9 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         await _networkClient.JoinLobbyAsync(lobbyId);
     }
 
-    public async Task StartLobbyMatchAsync(System.Guid lobbyId)
+    public async Task StartLobbyMatchAsync(System.Guid lobbyId, byte[]? initialState = null)
     {
-        await _networkClient.StartLobbyMatchAsync(lobbyId);
+        await _networkClient.StartLobbyMatchAsync(lobbyId, initialState);
     }
 
     public async Task ConnectAsync(System.Guid matchId)

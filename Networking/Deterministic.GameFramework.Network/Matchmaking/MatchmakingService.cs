@@ -70,13 +70,13 @@ public class MatchmakingService : IMatchmakingService
         return Task.CompletedTask;
     }
 
-    public Task StartLobbyMatchAsync(Guid lobbyId)
+    public Task StartLobbyMatchAsync(Guid lobbyId, byte[]? initialState = null)
     {
         if (_lobbies.TryGetValue(lobbyId, out var lobby))
         {
             // Create Match
             var matchId = Guid.NewGuid();
-            var match = _matchManager.CreateMatch(matchId);
+            var match = _matchManager.CreateMatch(matchId, initialState);
             
             // Assign all players
             foreach (var player in lobby.Players)

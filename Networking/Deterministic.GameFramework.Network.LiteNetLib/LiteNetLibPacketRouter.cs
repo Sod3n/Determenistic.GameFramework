@@ -28,10 +28,29 @@ public class LiteNetLibPacketRouter
         return Task.CompletedTask;
     }
 
-    public Task OnPeerDisconnected(INetworkPeer peer)
+    public async Task OnPeerDisconnected(INetworkPeer peer)
     {
-        _peerSessions.TryRemove(peer.Id, out _);
-        return Task.CompletedTask;
+        if (_peerSessions.TryRemove(peer.Id, out var matchId))
+        {
+            var matchManager = _serviceProvider.GetRequiredService<MatchManager>();
+            var networkServer = _serviceProvider.GetRequiredService<INetworkServer>();
+            var match = matchManager.GetMatch(matchId);
+
+            if (match != null)
+            {
+                var playerId = await _authService.AuthenticateAsync(peer.Id, null);
+                match.RemovePlayer(playerId);
+                await networkServer.LeaveGroupAsync(peer, matchId.ToString());
+
+                Console.WriteLine($"[PacketRouter] Player {playerId} disconnected from match {matchId}. Players remaining: {match.Players.Count}");
+
+                if (match.Players.Count == 0)
+                {
+                    Console.WriteLine($"[PacketRouter] All players left match {matchId}, removing match.");
+                    matchManager.RemoveMatch(matchId);
+                }
+            }
+        }
     }
 
     public async Task OnPacketReceived(INetworkPeer peer, byte[] data)
@@ -136,8 +155,23 @@ public class LiteNetLibPacketRouter
                 byte[] lobbyIdBytes = new byte[16];
                 reader.GetBytes(lobbyIdBytes, 16);
                 var lobbyId = new Guid(lobbyIdBytes);
-                
-                await MatchmakingService.StartLobbyMatchAsync(lobbyId);
+
+                byte[]? initialState = null;
+                if (reader.AvailableBytes >= 1)
+                {
+                    byte hasState = reader.GetByte();
+                    if (hasState == 1 && reader.AvailableBytes >= 4)
+                    {
+                        int stateLength = reader.GetInt();
+                        if (reader.AvailableBytes >= stateLength)
+                        {
+                            initialState = new byte[stateLength];
+                            reader.GetBytes(initialState, stateLength);
+                        }
+                    }
+                }
+
+                await MatchmakingService.StartLobbyMatchAsync(lobbyId, initialState);
                 break;
             }
         }

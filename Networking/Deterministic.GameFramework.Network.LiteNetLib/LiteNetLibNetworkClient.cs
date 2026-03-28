@@ -140,12 +140,22 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         return Task.CompletedTask;
     }
 
-    public Task StartLobbyMatchAsync(Guid lobbyId)
+    public Task StartLobbyMatchAsync(Guid lobbyId, byte[]? initialState = null)
     {
         if (_peer == null) return Task.CompletedTask;
         var writer = new NetDataWriter();
         writer.Put((byte)PacketType.StartLobbyMatch);
         writer.Put(lobbyId.ToByteArray());
+        if (initialState != null)
+        {
+            writer.Put((byte)1);
+            writer.Put(initialState.Length);
+            writer.Put(initialState);
+        }
+        else
+        {
+            writer.Put((byte)0);
+        }
         _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableOrdered);
         return Task.CompletedTask;
     }

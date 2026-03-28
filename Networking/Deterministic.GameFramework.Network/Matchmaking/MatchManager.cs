@@ -5,7 +5,7 @@ namespace Deterministic.GameFramework.Network.Server;
 
 public interface IMatchFactory
 {
-    Match CreateMatch(System.Guid matchId);
+    Match CreateMatch(System.Guid matchId, byte[]? initialState = null);
 }
 
 public class MatchManager
@@ -23,14 +23,14 @@ public class MatchManager
         _networkServer = networkServer;
     }
 
-    public Match CreateMatch(System.Guid matchId)
+    public Match CreateMatch(System.Guid matchId, byte[]? initialState = null)
     {
         if (_matches.ContainsKey(matchId))
         {
             throw new InvalidOperationException($"Match {matchId} already exists.");
         }
 
-        var match = _factory.CreateMatch(matchId);
+        var match = _factory.CreateMatch(matchId, initialState);
         
         // Attach State Verification Service
         var verificationService = new StateVerificationService(match, _networkServer);

@@ -80,7 +80,7 @@ public class GameClientStateSyncTests
         public Task EnqueuePlayerAsync(string? token = null) => Task.CompletedTask;
         public Task CreateLobbyAsync(string name, string? token = null) => Task.CompletedTask;
         public Task JoinLobbyAsync(System.Guid lobbyId, string? token = null) => Task.CompletedTask;
-        public Task StartLobbyMatchAsync(System.Guid lobbyId) => Task.CompletedTask;
+        public Task StartLobbyMatchAsync(System.Guid lobbyId, byte[]? initialState = null) => Task.CompletedTask;
         public Task EnqueueLobbyAsync(System.Guid lobbyId) => Task.CompletedTask;
 
         // Helper to simulate incoming packets

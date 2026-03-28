@@ -24,7 +24,7 @@ public interface INetworkClient : IAsyncDisposable
     Task EnqueuePlayerAsync();
     Task CreateLobbyAsync(string lobbyName);
     Task JoinLobbyAsync(System.Guid lobbyId);
-    Task StartLobbyMatchAsync(System.Guid lobbyId);
+    Task StartLobbyMatchAsync(System.Guid lobbyId, byte[]? initialState = null);
     
     // Events
     event Action<byte[]> OnTickSnapshotReceived;
