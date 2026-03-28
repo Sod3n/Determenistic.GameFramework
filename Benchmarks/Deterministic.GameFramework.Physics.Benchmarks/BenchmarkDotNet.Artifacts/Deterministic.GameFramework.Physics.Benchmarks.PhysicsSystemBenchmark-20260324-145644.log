@@ -1,0 +1,877 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 6 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492
+// command took 1.47 sec and exited with 0
+// start dotnet  build -c Release --no-restore /p:UseSharedCompilation=false /p:BuildInParallel=false /m:1 /p:Deterministic=true /p:Optimize=true in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492
+// command took 3.94 sec and exited with 0
+// ***** Done, took 00:00:05 (5.57 sec)   *****
+// Found 6 benchmarks:
+//   PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=10]
+//   PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=10]
+//   PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=50]
+//   PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=50]
+//   PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=100]
+//   PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=100]
+
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=10]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 117 118 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate(EntityCount: 10)" --job Default --benchmarkId 0 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 162584.00 ns, 162.5840 us/op
+WorkloadJitting  1: 1 op, 1647459.00 ns, 1.6475 ms/op
+
+OverheadJitting  2: 16 op, 112250.00 ns, 7.0156 us/op
+WorkloadJitting  2: 16 op, 1105666.00 ns, 69.1041 us/op
+
+WorkloadPilot    1: 16 op, 1144166.00 ns, 71.5104 us/op
+WorkloadPilot    2: 32 op, 2062916.00 ns, 64.4661 us/op
+WorkloadPilot    3: 64 op, 3771000.00 ns, 58.9219 us/op
+WorkloadPilot    4: 128 op, 7193250.00 ns, 56.1973 us/op
+WorkloadPilot    5: 256 op, 14396667.00 ns, 56.2370 us/op
+WorkloadPilot    6: 512 op, 28755500.00 ns, 56.1631 us/op
+WorkloadPilot    7: 1024 op, 56184708.00 ns, 54.8679 us/op
+WorkloadPilot    8: 2048 op, 114287042.00 ns, 55.8042 us/op
+WorkloadPilot    9: 4096 op, 191234667.00 ns, 46.6882 us/op
+WorkloadPilot   10: 8192 op, 200099083.00 ns, 24.4262 us/op
+WorkloadPilot   11: 16384 op, 398427334.00 ns, 24.3181 us/op
+WorkloadPilot   12: 32768 op, 796697792.00 ns, 24.3133 us/op
+
+OverheadWarmup   1: 32768 op, 69166.00 ns, 2.1108 ns/op
+OverheadWarmup   2: 32768 op, 67542.00 ns, 2.0612 ns/op
+OverheadWarmup   3: 32768 op, 70250.00 ns, 2.1439 ns/op
+OverheadWarmup   4: 32768 op, 66875.00 ns, 2.0409 ns/op
+OverheadWarmup   5: 32768 op, 65584.00 ns, 2.0015 ns/op
+OverheadWarmup   6: 32768 op, 75208.00 ns, 2.2952 ns/op
+OverheadWarmup   7: 32768 op, 66708.00 ns, 2.0358 ns/op
+
+OverheadActual   1: 32768 op, 63667.00 ns, 1.9430 ns/op
+OverheadActual   2: 32768 op, 64583.00 ns, 1.9709 ns/op
+OverheadActual   3: 32768 op, 68583.00 ns, 2.0930 ns/op
+OverheadActual   4: 32768 op, 63209.00 ns, 1.9290 ns/op
+OverheadActual   5: 32768 op, 63000.00 ns, 1.9226 ns/op
+OverheadActual   6: 32768 op, 69375.00 ns, 2.1172 ns/op
+OverheadActual   7: 32768 op, 73708.00 ns, 2.2494 ns/op
+OverheadActual   8: 32768 op, 68541.00 ns, 2.0917 ns/op
+OverheadActual   9: 32768 op, 63875.00 ns, 1.9493 ns/op
+OverheadActual  10: 32768 op, 72459.00 ns, 2.2113 ns/op
+OverheadActual  11: 32768 op, 63834.00 ns, 1.9481 ns/op
+OverheadActual  12: 32768 op, 64291.00 ns, 1.9620 ns/op
+OverheadActual  13: 32768 op, 65709.00 ns, 2.0053 ns/op
+OverheadActual  14: 32768 op, 66375.00 ns, 2.0256 ns/op
+OverheadActual  15: 32768 op, 63000.00 ns, 1.9226 ns/op
+OverheadActual  16: 32768 op, 63084.00 ns, 1.9252 ns/op
+OverheadActual  17: 32768 op, 62833.00 ns, 1.9175 ns/op
+OverheadActual  18: 32768 op, 63125.00 ns, 1.9264 ns/op
+
+WorkloadWarmup   1: 32768 op, 793961833.00 ns, 24.2298 us/op
+WorkloadWarmup   2: 32768 op, 796716292.00 ns, 24.3139 us/op
+WorkloadWarmup   3: 32768 op, 788021875.00 ns, 24.0485 us/op
+WorkloadWarmup   4: 32768 op, 796507333.00 ns, 24.3075 us/op
+WorkloadWarmup   5: 32768 op, 797549625.00 ns, 24.3393 us/op
+WorkloadWarmup   6: 32768 op, 830526333.00 ns, 25.3457 us/op
+WorkloadWarmup   7: 32768 op, 791891250.00 ns, 24.1666 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 32768 op, 890597833.00 ns, 27.1789 us/op
+WorkloadActual   2: 32768 op, 795905917.00 ns, 24.2891 us/op
+WorkloadActual   3: 32768 op, 805015833.00 ns, 24.5671 us/op
+WorkloadActual   4: 32768 op, 799945958.00 ns, 24.4124 us/op
+WorkloadActual   5: 32768 op, 805942458.00 ns, 24.5954 us/op
+WorkloadActual   6: 32768 op, 801318000.00 ns, 24.4543 us/op
+WorkloadActual   7: 32768 op, 803365833.00 ns, 24.5168 us/op
+WorkloadActual   8: 32768 op, 836245250.00 ns, 25.5202 us/op
+WorkloadActual   9: 32768 op, 802758583.00 ns, 24.4982 us/op
+WorkloadActual  10: 32768 op, 804880083.00 ns, 24.5630 us/op
+WorkloadActual  11: 32768 op, 803689458.00 ns, 24.5267 us/op
+WorkloadActual  12: 32768 op, 806564500.00 ns, 24.6144 us/op
+WorkloadActual  13: 32768 op, 800491458.00 ns, 24.4291 us/op
+WorkloadActual  14: 32768 op, 809572792.00 ns, 24.7062 us/op
+WorkloadActual  15: 32768 op, 804577542.00 ns, 24.5538 us/op
+
+// AfterActualRun
+WorkloadResult   1: 32768 op, 795841834.00 ns, 24.2872 us/op
+WorkloadResult   2: 32768 op, 804951750.00 ns, 24.5652 us/op
+WorkloadResult   3: 32768 op, 799881875.00 ns, 24.4105 us/op
+WorkloadResult   4: 32768 op, 805878375.00 ns, 24.5935 us/op
+WorkloadResult   5: 32768 op, 801253917.00 ns, 24.4523 us/op
+WorkloadResult   6: 32768 op, 803301750.00 ns, 24.5148 us/op
+WorkloadResult   7: 32768 op, 802694500.00 ns, 24.4963 us/op
+WorkloadResult   8: 32768 op, 804816000.00 ns, 24.5610 us/op
+WorkloadResult   9: 32768 op, 803625375.00 ns, 24.5247 us/op
+WorkloadResult  10: 32768 op, 806500417.00 ns, 24.6124 us/op
+WorkloadResult  11: 32768 op, 800427375.00 ns, 24.4271 us/op
+WorkloadResult  12: 32768 op, 809508709.00 ns, 24.7042 us/op
+WorkloadResult  13: 32768 op, 804513459.00 ns, 24.5518 us/op
+// GC:  215 0 0 1803813600 32768
+// Threading:  0 0 32768
+
+// AfterAll
+// Benchmark Process 64064 has exited with code 0.
+
+Mean = 24.515 μs, StdErr = 0.029 μs (0.12%), N = 13, StdDev = 0.105 μs
+Min = 24.287 μs, Q1 = 24.452 μs, Median = 24.525 μs, Q3 = 24.565 μs, Max = 24.704 μs
+IQR = 0.113 μs, LowerFence = 24.283 μs, UpperFence = 24.734 μs
+ConfidenceInterval = [24.390 μs; 24.641 μs] (CI 99.9%), Margin = 0.126 μs (0.51% of Mean)
+Skewness = -0.37, Kurtosis = 2.73, MValue = 2
+
+// ** Remained 5 (83,3 %) benchmark(s) to run. Estimated finish 2026-03-24 14:58 (0h 1m from now) **
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=10]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild(EntityCount: 10)" --job Default --benchmarkId 1 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 154958.00 ns, 154.9580 us/op
+WorkloadJitting  1: 1 op, 1461792.00 ns, 1.4618 ms/op
+
+OverheadJitting  2: 16 op, 181000.00 ns, 11.3125 us/op
+WorkloadJitting  2: 16 op, 2048500.00 ns, 128.0312 us/op
+
+WorkloadPilot    1: 16 op, 1635667.00 ns, 102.2292 us/op
+WorkloadPilot    2: 32 op, 3456250.00 ns, 108.0078 us/op
+WorkloadPilot    3: 64 op, 6915750.00 ns, 108.0586 us/op
+WorkloadPilot    4: 128 op, 12489959.00 ns, 97.5778 us/op
+WorkloadPilot    5: 256 op, 25832791.00 ns, 100.9093 us/op
+WorkloadPilot    6: 512 op, 49143500.00 ns, 95.9834 us/op
+WorkloadPilot    7: 1024 op, 116349750.00 ns, 113.6228 us/op
+WorkloadPilot    8: 2048 op, 234807292.00 ns, 114.6520 us/op
+WorkloadPilot    9: 4096 op, 247120333.00 ns, 60.3321 us/op
+WorkloadPilot   10: 8192 op, 386464291.00 ns, 47.1758 us/op
+WorkloadPilot   11: 16384 op, 787270708.00 ns, 48.0512 us/op
+
+OverheadWarmup   1: 16384 op, 39917.00 ns, 2.4363 ns/op
+OverheadWarmup   2: 16384 op, 37834.00 ns, 2.3092 ns/op
+OverheadWarmup   3: 16384 op, 35167.00 ns, 2.1464 ns/op
+OverheadWarmup   4: 16384 op, 35292.00 ns, 2.1541 ns/op
+OverheadWarmup   5: 16384 op, 38084.00 ns, 2.3245 ns/op
+OverheadWarmup   6: 16384 op, 37750.00 ns, 2.3041 ns/op
+OverheadWarmup   7: 16384 op, 37709.00 ns, 2.3016 ns/op
+OverheadWarmup   8: 16384 op, 37750.00 ns, 2.3041 ns/op
+OverheadWarmup   9: 16384 op, 37958.00 ns, 2.3168 ns/op
+OverheadWarmup  10: 16384 op, 37875.00 ns, 2.3117 ns/op
+
+OverheadActual   1: 16384 op, 35416.00 ns, 2.1616 ns/op
+OverheadActual   2: 16384 op, 32000.00 ns, 1.9531 ns/op
+OverheadActual   3: 16384 op, 32083.00 ns, 1.9582 ns/op
+OverheadActual   4: 16384 op, 31625.00 ns, 1.9302 ns/op
+OverheadActual   5: 16384 op, 36167.00 ns, 2.2075 ns/op
+OverheadActual   6: 16384 op, 31875.00 ns, 1.9455 ns/op
+OverheadActual   7: 16384 op, 36625.00 ns, 2.2354 ns/op
+OverheadActual   8: 16384 op, 35917.00 ns, 2.1922 ns/op
+OverheadActual   9: 16384 op, 35083.00 ns, 2.1413 ns/op
+OverheadActual  10: 16384 op, 35458.00 ns, 2.1642 ns/op
+OverheadActual  11: 16384 op, 34125.00 ns, 2.0828 ns/op
+OverheadActual  12: 16384 op, 31792.00 ns, 1.9404 ns/op
+OverheadActual  13: 16384 op, 35875.00 ns, 2.1896 ns/op
+OverheadActual  14: 16384 op, 31708.00 ns, 1.9353 ns/op
+OverheadActual  15: 16384 op, 32084.00 ns, 1.9583 ns/op
+OverheadActual  16: 16384 op, 36625.00 ns, 2.2354 ns/op
+OverheadActual  17: 16384 op, 31834.00 ns, 1.9430 ns/op
+OverheadActual  18: 16384 op, 31750.00 ns, 1.9379 ns/op
+OverheadActual  19: 16384 op, 35291.00 ns, 2.1540 ns/op
+OverheadActual  20: 16384 op, 36000.00 ns, 2.1973 ns/op
+
+WorkloadWarmup   1: 16384 op, 821293542.00 ns, 50.1278 us/op
+WorkloadWarmup   2: 16384 op, 789492333.00 ns, 48.1868 us/op
+WorkloadWarmup   3: 16384 op, 800451459.00 ns, 48.8557 us/op
+WorkloadWarmup   4: 16384 op, 790373916.00 ns, 48.2406 us/op
+WorkloadWarmup   5: 16384 op, 787654667.00 ns, 48.0746 us/op
+WorkloadWarmup   6: 16384 op, 802341750.00 ns, 48.9711 us/op
+WorkloadWarmup   7: 16384 op, 808284875.00 ns, 49.3338 us/op
+WorkloadWarmup   8: 16384 op, 806899292.00 ns, 49.2492 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 16384 op, 798792000.00 ns, 48.7544 us/op
+WorkloadActual   2: 16384 op, 792015208.00 ns, 48.3408 us/op
+WorkloadActual   3: 16384 op, 793404375.00 ns, 48.4256 us/op
+WorkloadActual   4: 16384 op, 802333542.00 ns, 48.9706 us/op
+WorkloadActual   5: 16384 op, 800268917.00 ns, 48.8445 us/op
+WorkloadActual   6: 16384 op, 784163166.00 ns, 47.8615 us/op
+WorkloadActual   7: 16384 op, 805796375.00 ns, 49.1819 us/op
+WorkloadActual   8: 16384 op, 799645833.00 ns, 48.8065 us/op
+WorkloadActual   9: 16384 op, 804664666.00 ns, 49.1128 us/op
+WorkloadActual  10: 16384 op, 797013833.00 ns, 48.6459 us/op
+WorkloadActual  11: 16384 op, 794903375.00 ns, 48.5171 us/op
+WorkloadActual  12: 16384 op, 799494959.00 ns, 48.7973 us/op
+WorkloadActual  13: 16384 op, 798080750.00 ns, 48.7110 us/op
+WorkloadActual  14: 16384 op, 794948292.00 ns, 48.5198 us/op
+WorkloadActual  15: 16384 op, 788651667.00 ns, 48.1355 us/op
+
+// AfterActualRun
+WorkloadResult   1: 16384 op, 798757396.00 ns, 48.7523 us/op
+WorkloadResult   2: 16384 op, 791980604.00 ns, 48.3387 us/op
+WorkloadResult   3: 16384 op, 793369771.00 ns, 48.4234 us/op
+WorkloadResult   4: 16384 op, 802298938.00 ns, 48.9684 us/op
+WorkloadResult   5: 16384 op, 800234313.00 ns, 48.8424 us/op
+WorkloadResult   6: 16384 op, 784128562.00 ns, 47.8594 us/op
+WorkloadResult   7: 16384 op, 805761771.00 ns, 49.1798 us/op
+WorkloadResult   8: 16384 op, 799611229.00 ns, 48.8044 us/op
+WorkloadResult   9: 16384 op, 804630062.00 ns, 49.1107 us/op
+WorkloadResult  10: 16384 op, 796979229.00 ns, 48.6438 us/op
+WorkloadResult  11: 16384 op, 794868771.00 ns, 48.5149 us/op
+WorkloadResult  12: 16384 op, 799460355.00 ns, 48.7952 us/op
+WorkloadResult  13: 16384 op, 798046146.00 ns, 48.7089 us/op
+WorkloadResult  14: 16384 op, 794913688.00 ns, 48.5177 us/op
+WorkloadResult  15: 16384 op, 788617063.00 ns, 48.1334 us/op
+// GC:  193 0 0 1620181728 16384
+// Threading:  0 0 16384
+
+// AfterAll
+// Benchmark Process 64109 has exited with code 0.
+
+Mean = 48.640 μs, StdErr = 0.092 μs (0.19%), N = 15, StdDev = 0.355 μs
+Min = 47.859 μs, Q1 = 48.469 μs, Median = 48.709 μs, Q3 = 48.823 μs, Max = 49.180 μs
+IQR = 0.354 μs, LowerFence = 47.938 μs, UpperFence = 49.355 μs
+ConfidenceInterval = [48.260 μs; 49.019 μs] (CI 99.9%), Margin = 0.380 μs (0.78% of Mean)
+Skewness = -0.49, Kurtosis = 2.5, MValue = 2
+
+// ** Remained 4 (66,7 %) benchmark(s) to run. Estimated finish 2026-03-24 14:58 (0h 1m from now) **
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=50]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate(EntityCount: 50)" --job Default --benchmarkId 2 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 125750.00 ns, 125.7500 us/op
+WorkloadJitting  1: 1 op, 2908459.00 ns, 2.9085 ms/op
+
+OverheadJitting  2: 16 op, 134709.00 ns, 8.4193 us/op
+WorkloadJitting  2: 16 op, 4433000.00 ns, 277.0625 us/op
+
+WorkloadPilot    1: 16 op, 3897750.00 ns, 243.6094 us/op
+WorkloadPilot    2: 32 op, 8572917.00 ns, 267.9037 us/op
+WorkloadPilot    3: 64 op, 14982833.00 ns, 234.1068 us/op
+WorkloadPilot    4: 128 op, 29082042.00 ns, 227.2035 us/op
+WorkloadPilot    5: 256 op, 55397500.00 ns, 216.3965 us/op
+WorkloadPilot    6: 512 op, 117545583.00 ns, 229.5812 us/op
+WorkloadPilot    7: 1024 op, 171525709.00 ns, 167.5056 us/op
+WorkloadPilot    8: 2048 op, 227399166.00 ns, 111.0347 us/op
+WorkloadPilot    9: 4096 op, 441251708.00 ns, 107.7275 us/op
+WorkloadPilot   10: 8192 op, 876281792.00 ns, 106.9680 us/op
+
+OverheadWarmup   1: 8192 op, 20000.00 ns, 2.4414 ns/op
+OverheadWarmup   2: 8192 op, 19792.00 ns, 2.4160 ns/op
+OverheadWarmup   3: 8192 op, 19917.00 ns, 2.4313 ns/op
+OverheadWarmup   4: 8192 op, 17292.00 ns, 2.1108 ns/op
+OverheadWarmup   5: 8192 op, 16125.00 ns, 1.9684 ns/op
+OverheadWarmup   6: 8192 op, 19084.00 ns, 2.3296 ns/op
+OverheadWarmup   7: 8192 op, 16000.00 ns, 1.9531 ns/op
+
+OverheadActual   1: 8192 op, 15833.00 ns, 1.9327 ns/op
+OverheadActual   2: 8192 op, 16542.00 ns, 2.0193 ns/op
+OverheadActual   3: 8192 op, 15917.00 ns, 1.9430 ns/op
+OverheadActual   4: 8192 op, 15875.00 ns, 1.9379 ns/op
+OverheadActual   5: 8192 op, 16000.00 ns, 1.9531 ns/op
+OverheadActual   6: 8192 op, 20125.00 ns, 2.4567 ns/op
+OverheadActual   7: 8192 op, 20584.00 ns, 2.5127 ns/op
+OverheadActual   8: 8192 op, 24334.00 ns, 2.9705 ns/op
+OverheadActual   9: 8192 op, 15875.00 ns, 1.9379 ns/op
+OverheadActual  10: 8192 op, 16208.00 ns, 1.9785 ns/op
+OverheadActual  11: 8192 op, 15833.00 ns, 1.9327 ns/op
+OverheadActual  12: 8192 op, 20083.00 ns, 2.4515 ns/op
+OverheadActual  13: 8192 op, 15875.00 ns, 1.9379 ns/op
+OverheadActual  14: 8192 op, 19791.00 ns, 2.4159 ns/op
+OverheadActual  15: 8192 op, 19750.00 ns, 2.4109 ns/op
+OverheadActual  16: 8192 op, 19708.00 ns, 2.4058 ns/op
+OverheadActual  17: 8192 op, 19709.00 ns, 2.4059 ns/op
+OverheadActual  18: 8192 op, 27250.00 ns, 3.3264 ns/op
+OverheadActual  19: 8192 op, 22333.00 ns, 2.7262 ns/op
+OverheadActual  20: 8192 op, 19750.00 ns, 2.4109 ns/op
+
+WorkloadWarmup   1: 8192 op, 879152625.00 ns, 107.3184 us/op
+WorkloadWarmup   2: 8192 op, 877820958.00 ns, 107.1559 us/op
+WorkloadWarmup   3: 8192 op, 866777750.00 ns, 105.8078 us/op
+WorkloadWarmup   4: 8192 op, 868128250.00 ns, 105.9727 us/op
+WorkloadWarmup   5: 8192 op, 872831458.00 ns, 106.5468 us/op
+WorkloadWarmup   6: 8192 op, 872487292.00 ns, 106.5048 us/op
+WorkloadWarmup   7: 8192 op, 862315458.00 ns, 105.2631 us/op
+WorkloadWarmup   8: 8192 op, 858193375.00 ns, 104.7599 us/op
+WorkloadWarmup   9: 8192 op, 863523542.00 ns, 105.4106 us/op
+WorkloadWarmup  10: 8192 op, 854748458.00 ns, 104.3394 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 8192 op, 868031542.00 ns, 105.9609 us/op
+WorkloadActual   2: 8192 op, 874777500.00 ns, 106.7844 us/op
+WorkloadActual   3: 8192 op, 875868958.00 ns, 106.9176 us/op
+WorkloadActual   4: 8192 op, 870623583.00 ns, 106.2773 us/op
+WorkloadActual   5: 8192 op, 876546834.00 ns, 107.0003 us/op
+WorkloadActual   6: 8192 op, 877731792.00 ns, 107.1450 us/op
+WorkloadActual   7: 8192 op, 877564084.00 ns, 107.1245 us/op
+WorkloadActual   8: 8192 op, 881793125.00 ns, 107.6408 us/op
+WorkloadActual   9: 8192 op, 880877125.00 ns, 107.5289 us/op
+WorkloadActual  10: 8192 op, 877540458.00 ns, 107.1216 us/op
+WorkloadActual  11: 8192 op, 885720125.00 ns, 108.1201 us/op
+WorkloadActual  12: 8192 op, 898294500.00 ns, 109.6551 us/op
+WorkloadActual  13: 8192 op, 876538125.00 ns, 106.9993 us/op
+WorkloadActual  14: 8192 op, 883731834.00 ns, 107.8774 us/op
+WorkloadActual  15: 8192 op, 881983333.00 ns, 107.6640 us/op
+
+// AfterActualRun
+WorkloadResult   1: 8192 op, 868011833.50 ns, 105.9585 us/op
+WorkloadResult   2: 8192 op, 874757791.50 ns, 106.7820 us/op
+WorkloadResult   3: 8192 op, 875849249.50 ns, 106.9152 us/op
+WorkloadResult   4: 8192 op, 870603874.50 ns, 106.2749 us/op
+WorkloadResult   5: 8192 op, 876527125.50 ns, 106.9979 us/op
+WorkloadResult   6: 8192 op, 877712083.50 ns, 107.1426 us/op
+WorkloadResult   7: 8192 op, 877544375.50 ns, 107.1221 us/op
+WorkloadResult   8: 8192 op, 881773416.50 ns, 107.6384 us/op
+WorkloadResult   9: 8192 op, 880857416.50 ns, 107.5265 us/op
+WorkloadResult  10: 8192 op, 877520749.50 ns, 107.1192 us/op
+WorkloadResult  11: 8192 op, 885700416.50 ns, 108.1177 us/op
+WorkloadResult  12: 8192 op, 876518416.50 ns, 106.9969 us/op
+WorkloadResult  13: 8192 op, 883712125.50 ns, 107.8750 us/op
+WorkloadResult  14: 8192 op, 881963624.50 ns, 107.6616 us/op
+// GC:  256 0 0 2148139744 8192
+// Threading:  0 0 8192
+
+// AfterAll
+// Benchmark Process 64146 has exited with code 0.
+
+Mean = 107.152 μs, StdErr = 0.158 μs (0.15%), N = 14, StdDev = 0.590 μs
+Min = 105.958 μs, Q1 = 106.936 μs, Median = 107.121 μs, Q3 = 107.610 μs, Max = 108.118 μs
+IQR = 0.675 μs, LowerFence = 105.923 μs, UpperFence = 108.623 μs
+ConfidenceInterval = [106.486 μs; 107.818 μs] (CI 99.9%), Margin = 0.666 μs (0.62% of Mean)
+Skewness = -0.3, Kurtosis = 2.31, MValue = 2
+
+// ** Remained 3 (50,0 %) benchmark(s) to run. Estimated finish 2026-03-24 14:59 (0h 1m from now) **
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=50]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild(EntityCount: 50)" --job Default --benchmarkId 3 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 107042.00 ns, 107.0420 us/op
+WorkloadJitting  1: 1 op, 2382792.00 ns, 2.3828 ms/op
+
+OverheadJitting  2: 16 op, 110916.00 ns, 6.9322 us/op
+WorkloadJitting  2: 16 op, 6824958.00 ns, 426.5599 us/op
+
+WorkloadPilot    1: 16 op, 5630709.00 ns, 351.9193 us/op
+WorkloadPilot    2: 32 op, 11410959.00 ns, 356.5925 us/op
+WorkloadPilot    3: 64 op, 22691917.00 ns, 354.5612 us/op
+WorkloadPilot    4: 128 op, 46853167.00 ns, 366.0404 us/op
+WorkloadPilot    5: 256 op, 97415625.00 ns, 380.5298 us/op
+WorkloadPilot    6: 512 op, 171512667.00 ns, 334.9857 us/op
+WorkloadPilot    7: 1024 op, 259742792.00 ns, 253.6551 us/op
+WorkloadPilot    8: 2048 op, 394713750.00 ns, 192.7313 us/op
+WorkloadPilot    9: 4096 op, 794874250.00 ns, 194.0611 us/op
+
+OverheadWarmup   1: 4096 op, 11041.00 ns, 2.6956 ns/op
+OverheadWarmup   2: 4096 op, 9708.00 ns, 2.3701 ns/op
+OverheadWarmup   3: 4096 op, 9916.00 ns, 2.4209 ns/op
+OverheadWarmup   4: 4096 op, 9708.00 ns, 2.3701 ns/op
+OverheadWarmup   5: 4096 op, 9791.00 ns, 2.3904 ns/op
+OverheadWarmup   6: 4096 op, 8375.00 ns, 2.0447 ns/op
+
+OverheadActual   1: 4096 op, 8167.00 ns, 1.9939 ns/op
+OverheadActual   2: 4096 op, 8125.00 ns, 1.9836 ns/op
+OverheadActual   3: 4096 op, 8041.00 ns, 1.9631 ns/op
+OverheadActual   4: 4096 op, 8125.00 ns, 1.9836 ns/op
+OverheadActual   5: 4096 op, 8041.00 ns, 1.9631 ns/op
+OverheadActual   6: 4096 op, 8084.00 ns, 1.9736 ns/op
+OverheadActual   7: 4096 op, 10000.00 ns, 2.4414 ns/op
+OverheadActual   8: 4096 op, 9750.00 ns, 2.3804 ns/op
+OverheadActual   9: 4096 op, 9917.00 ns, 2.4211 ns/op
+OverheadActual  10: 4096 op, 9541.00 ns, 2.3293 ns/op
+OverheadActual  11: 4096 op, 8375.00 ns, 2.0447 ns/op
+OverheadActual  12: 4096 op, 8042.00 ns, 1.9634 ns/op
+OverheadActual  13: 4096 op, 8042.00 ns, 1.9634 ns/op
+OverheadActual  14: 4096 op, 7958.00 ns, 1.9429 ns/op
+OverheadActual  15: 4096 op, 8000.00 ns, 1.9531 ns/op
+OverheadActual  16: 4096 op, 9833.00 ns, 2.4006 ns/op
+OverheadActual  17: 4096 op, 9792.00 ns, 2.3906 ns/op
+OverheadActual  18: 4096 op, 9875.00 ns, 2.4109 ns/op
+OverheadActual  19: 4096 op, 12458.00 ns, 3.0415 ns/op
+OverheadActual  20: 4096 op, 9916.00 ns, 2.4209 ns/op
+
+WorkloadWarmup   1: 4096 op, 800368500.00 ns, 195.4025 us/op
+WorkloadWarmup   2: 4096 op, 790593792.00 ns, 193.0161 us/op
+WorkloadWarmup   3: 4096 op, 794058917.00 ns, 193.8620 us/op
+WorkloadWarmup   4: 4096 op, 789093000.00 ns, 192.6497 us/op
+WorkloadWarmup   5: 4096 op, 785920833.00 ns, 191.8752 us/op
+WorkloadWarmup   6: 4096 op, 795737875.00 ns, 194.2719 us/op
+WorkloadWarmup   7: 4096 op, 801391500.00 ns, 195.6522 us/op
+WorkloadWarmup   8: 4096 op, 781596250.00 ns, 190.8194 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 4096 op, 786345375.00 ns, 191.9789 us/op
+WorkloadActual   2: 4096 op, 797326292.00 ns, 194.6597 us/op
+WorkloadActual   3: 4096 op, 784322917.00 ns, 191.4851 us/op
+WorkloadActual   4: 4096 op, 810491250.00 ns, 197.8738 us/op
+WorkloadActual   5: 4096 op, 798178084.00 ns, 194.8677 us/op
+WorkloadActual   6: 4096 op, 795376542.00 ns, 194.1837 us/op
+WorkloadActual   7: 4096 op, 794932000.00 ns, 194.0752 us/op
+WorkloadActual   8: 4096 op, 787061834.00 ns, 192.1538 us/op
+WorkloadActual   9: 4096 op, 783724333.00 ns, 191.3389 us/op
+WorkloadActual  10: 4096 op, 831606542.00 ns, 203.0289 us/op
+WorkloadActual  11: 4096 op, 789034916.00 ns, 192.6355 us/op
+WorkloadActual  12: 4096 op, 786552375.00 ns, 192.0294 us/op
+WorkloadActual  13: 4096 op, 810353125.00 ns, 197.8401 us/op
+WorkloadActual  14: 4096 op, 791895500.00 ns, 193.3339 us/op
+WorkloadActual  15: 4096 op, 785920625.00 ns, 191.8752 us/op
+
+// AfterActualRun
+WorkloadResult   1: 4096 op, 786337104.00 ns, 191.9768 us/op
+WorkloadResult   2: 4096 op, 797318021.00 ns, 194.6577 us/op
+WorkloadResult   3: 4096 op, 784314646.00 ns, 191.4831 us/op
+WorkloadResult   4: 4096 op, 810482979.00 ns, 197.8718 us/op
+WorkloadResult   5: 4096 op, 798169813.00 ns, 194.8657 us/op
+WorkloadResult   6: 4096 op, 795368271.00 ns, 194.1817 us/op
+WorkloadResult   7: 4096 op, 794923729.00 ns, 194.0732 us/op
+WorkloadResult   8: 4096 op, 787053563.00 ns, 192.1517 us/op
+WorkloadResult   9: 4096 op, 783716062.00 ns, 191.3369 us/op
+WorkloadResult  10: 4096 op, 789026645.00 ns, 192.6335 us/op
+WorkloadResult  11: 4096 op, 786544104.00 ns, 192.0274 us/op
+WorkloadResult  12: 4096 op, 810344854.00 ns, 197.8381 us/op
+WorkloadResult  13: 4096 op, 791887229.00 ns, 193.3318 us/op
+WorkloadResult  14: 4096 op, 785912354.00 ns, 191.8731 us/op
+// GC:  217 0 0 1822622432 4096
+// Threading:  0 0 4096
+
+// AfterAll
+// Benchmark Process 64188 has exited with code 0.
+
+Mean = 193.593 μs, StdErr = 0.576 μs (0.30%), N = 14, StdDev = 2.154 μs
+Min = 191.337 μs, Q1 = 191.989 μs, Median = 192.983 μs, Q3 = 194.539 μs, Max = 197.872 μs
+IQR = 2.549 μs, LowerFence = 188.166 μs, UpperFence = 198.363 μs
+ConfidenceInterval = [191.164 μs; 196.022 μs] (CI 99.9%), Margin = 2.429 μs (1.25% of Mean)
+Skewness = 0.86, Kurtosis = 2.45, MValue = 2
+
+// ** Remained 2 (33,3 %) benchmark(s) to run. Estimated finish 2026-03-24 14:59 (0h 0m from now) **
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=100]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate(EntityCount: 100)" --job Default --benchmarkId 4 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 169667.00 ns, 169.6670 us/op
+WorkloadJitting  1: 1 op, 2105833.00 ns, 2.1058 ms/op
+
+OverheadJitting  2: 16 op, 109209.00 ns, 6.8256 us/op
+WorkloadJitting  2: 16 op, 14470250.00 ns, 904.3906 us/op
+
+WorkloadPilot    1: 16 op, 6974541.00 ns, 435.9088 us/op
+WorkloadPilot    2: 32 op, 13587209.00 ns, 424.6003 us/op
+WorkloadPilot    3: 64 op, 28227333.00 ns, 441.0521 us/op
+WorkloadPilot    4: 128 op, 53347083.00 ns, 416.7741 us/op
+WorkloadPilot    5: 256 op, 114525292.00 ns, 447.3644 us/op
+WorkloadPilot    6: 512 op, 166660834.00 ns, 325.5094 us/op
+WorkloadPilot    7: 1024 op, 242421500.00 ns, 236.7397 us/op
+WorkloadPilot    8: 2048 op, 478595208.00 ns, 233.6891 us/op
+WorkloadPilot    9: 4096 op, 925513542.00 ns, 225.9555 us/op
+
+OverheadWarmup   1: 4096 op, 8958.00 ns, 2.1870 ns/op
+OverheadWarmup   2: 4096 op, 8042.00 ns, 1.9634 ns/op
+OverheadWarmup   3: 4096 op, 8083.00 ns, 1.9734 ns/op
+OverheadWarmup   4: 4096 op, 8083.00 ns, 1.9734 ns/op
+OverheadWarmup   5: 4096 op, 8041.00 ns, 1.9631 ns/op
+OverheadWarmup   6: 4096 op, 8000.00 ns, 1.9531 ns/op
+OverheadWarmup   7: 4096 op, 8000.00 ns, 1.9531 ns/op
+
+OverheadActual   1: 4096 op, 7958.00 ns, 1.9429 ns/op
+OverheadActual   2: 4096 op, 7917.00 ns, 1.9329 ns/op
+OverheadActual   3: 4096 op, 8125.00 ns, 1.9836 ns/op
+OverheadActual   4: 4096 op, 8042.00 ns, 1.9634 ns/op
+OverheadActual   5: 4096 op, 10333.00 ns, 2.5227 ns/op
+OverheadActual   6: 4096 op, 9666.00 ns, 2.3599 ns/op
+OverheadActual   7: 4096 op, 10417.00 ns, 2.5432 ns/op
+OverheadActual   8: 4096 op, 8583.00 ns, 2.0955 ns/op
+OverheadActual   9: 4096 op, 8041.00 ns, 1.9631 ns/op
+OverheadActual  10: 4096 op, 10542.00 ns, 2.5737 ns/op
+OverheadActual  11: 4096 op, 9917.00 ns, 2.4211 ns/op
+OverheadActual  12: 4096 op, 7958.00 ns, 1.9429 ns/op
+OverheadActual  13: 4096 op, 10458.00 ns, 2.5532 ns/op
+OverheadActual  14: 4096 op, 9750.00 ns, 2.3804 ns/op
+OverheadActual  15: 4096 op, 8166.00 ns, 1.9937 ns/op
+OverheadActual  16: 4096 op, 8000.00 ns, 1.9531 ns/op
+OverheadActual  17: 4096 op, 7959.00 ns, 1.9431 ns/op
+OverheadActual  18: 4096 op, 10541.00 ns, 2.5735 ns/op
+OverheadActual  19: 4096 op, 8084.00 ns, 1.9736 ns/op
+OverheadActual  20: 4096 op, 9833.00 ns, 2.4006 ns/op
+
+WorkloadWarmup   1: 4096 op, 925125000.00 ns, 225.8606 us/op
+WorkloadWarmup   2: 4096 op, 931974875.00 ns, 227.5329 us/op
+WorkloadWarmup   3: 4096 op, 939706959.00 ns, 229.4206 us/op
+WorkloadWarmup   4: 4096 op, 921284833.00 ns, 224.9231 us/op
+WorkloadWarmup   5: 4096 op, 923505791.00 ns, 225.4653 us/op
+WorkloadWarmup   6: 4096 op, 925154958.00 ns, 225.8679 us/op
+WorkloadWarmup   7: 4096 op, 933089375.00 ns, 227.8050 us/op
+WorkloadWarmup   8: 4096 op, 934871708.00 ns, 228.2402 us/op
+WorkloadWarmup   9: 4096 op, 928349250.00 ns, 226.6478 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 4096 op, 927350041.00 ns, 226.4038 us/op
+WorkloadActual   2: 4096 op, 927785250.00 ns, 226.5101 us/op
+WorkloadActual   3: 4096 op, 933078375.00 ns, 227.8023 us/op
+WorkloadActual   4: 4096 op, 927080000.00 ns, 226.3379 us/op
+WorkloadActual   5: 4096 op, 919553583.00 ns, 224.5004 us/op
+WorkloadActual   6: 4096 op, 923099000.00 ns, 225.3660 us/op
+WorkloadActual   7: 4096 op, 937956500.00 ns, 228.9933 us/op
+WorkloadActual   8: 4096 op, 922124417.00 ns, 225.1280 us/op
+WorkloadActual   9: 4096 op, 922933583.00 ns, 225.3256 us/op
+WorkloadActual  10: 4096 op, 926824000.00 ns, 226.2754 us/op
+WorkloadActual  11: 4096 op, 953609500.00 ns, 232.8148 us/op
+WorkloadActual  12: 4096 op, 925822583.00 ns, 226.0309 us/op
+WorkloadActual  13: 4096 op, 934120625.00 ns, 228.0568 us/op
+WorkloadActual  14: 4096 op, 928195291.00 ns, 226.6102 us/op
+WorkloadActual  15: 4096 op, 922309792.00 ns, 225.1733 us/op
+
+// AfterActualRun
+WorkloadResult   1: 4096 op, 927341666.50 ns, 226.4018 us/op
+WorkloadResult   2: 4096 op, 927776875.50 ns, 226.5080 us/op
+WorkloadResult   3: 4096 op, 933070000.50 ns, 227.8003 us/op
+WorkloadResult   4: 4096 op, 927071625.50 ns, 226.3358 us/op
+WorkloadResult   5: 4096 op, 919545208.50 ns, 224.4983 us/op
+WorkloadResult   6: 4096 op, 923090625.50 ns, 225.3639 us/op
+WorkloadResult   7: 4096 op, 937948125.50 ns, 228.9912 us/op
+WorkloadResult   8: 4096 op, 922116042.50 ns, 225.1260 us/op
+WorkloadResult   9: 4096 op, 922925208.50 ns, 225.3235 us/op
+WorkloadResult  10: 4096 op, 926815625.50 ns, 226.2733 us/op
+WorkloadResult  11: 4096 op, 925814208.50 ns, 226.0289 us/op
+WorkloadResult  12: 4096 op, 934112250.50 ns, 228.0547 us/op
+WorkloadResult  13: 4096 op, 928186916.50 ns, 226.6081 us/op
+WorkloadResult  14: 4096 op, 922301417.50 ns, 225.1712 us/op
+// GC:  256 0 0 2149417696 4096
+// Threading:  0 0 4096
+
+// AfterAll
+// Benchmark Process 64224 has exited with code 0.
+
+Mean = 226.320 μs, StdErr = 0.336 μs (0.15%), N = 14, StdDev = 1.256 μs
+Min = 224.498 μs, Q1 = 225.334 μs, Median = 226.305 μs, Q3 = 226.583 μs, Max = 228.991 μs
+IQR = 1.249 μs, LowerFence = 223.459 μs, UpperFence = 228.457 μs
+ConfidenceInterval = [224.903 μs; 227.738 μs] (CI 99.9%), Margin = 1.417 μs (0.63% of Mean)
+Skewness = 0.59, Kurtosis = 2.33, MValue = 2
+
+// ** Remained 1 (16,7 %) benchmark(s) to run. Estimated finish 2026-03-24 14:59 (0h 0m from now) **
+// **************************
+// Benchmark: PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=100]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet 8500ba1c-d010-4a91-90cc-c957ca7b0492.dll --anonymousPipes 119 120 --benchmarkName "Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild(EntityCount: 100)" --job Default --benchmarkId 5 in /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Benchmarks/Deterministic.GameFramework.Physics.Benchmarks/bin/Release/net8.0/8500ba1c-d010-4a91-90cc-c957ca7b0492/bin/Release/net8.0
+// Failed to set up high priority (Permission denied). In order to run benchmarks with high priority, make sure you have the right permissions.
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.13.12
+// Runtime=.NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AdvSIMD,AES,CRC32,DP,RDM,SHA1,SHA256 VectorSize=128
+// Job: DefaultJob
+
+[ComponentId] Registered World -> Local(0) Stable(Stable(00000000-0000-0000-0000-000072b3622d))
+[ComponentId] Registered Transform2D -> Local(1) Stable(Stable(aafea77a-2300-4eef-9ffc-071170bb9a26))
+[ComponentId] Registered Area2D -> Local(2) Stable(Stable(42ac8ac3-53d6-40ca-9f7e-5daee2548ba6))
+[ComponentId] Registered CharacterBody2D -> Local(3) Stable(Stable(1f3b7788-2947-4d66-9d33-1275d2757278))
+[ComponentId] Registered CollisionShape2D -> Local(4) Stable(Stable(c9075775-7634-45e0-a006-037000784226))
+[ComponentId] Registered PhysicsWorldState -> Local(5) Stable(Stable(fb4fe7e4-2244-48ea-9ec5-0a972a3861d4))
+[ComponentId] Registered RigidBody2D -> Local(6) Stable(Stable(8014592a-3375-4c07-ae29-598114227003))
+[ComponentId] Registered StaticBody2D -> Local(7) Stable(Stable(56221147-3807-449e-8c88-e92544a47833))
+OverheadJitting  1: 1 op, 97625.00 ns, 97.6250 us/op
+WorkloadJitting  1: 1 op, 2020959.00 ns, 2.0210 ms/op
+
+OverheadJitting  2: 16 op, 99625.00 ns, 6.2266 us/op
+WorkloadJitting  2: 16 op, 19680875.00 ns, 1.2301 ms/op
+
+WorkloadPilot    1: 16 op, 11274625.00 ns, 704.6641 us/op
+WorkloadPilot    2: 32 op, 22801417.00 ns, 712.5443 us/op
+WorkloadPilot    3: 64 op, 45193458.00 ns, 706.1478 us/op
+WorkloadPilot    4: 128 op, 97444875.00 ns, 761.2881 us/op
+WorkloadPilot    5: 256 op, 151338834.00 ns, 591.1673 us/op
+WorkloadPilot    6: 512 op, 237292792.00 ns, 463.4625 us/op
+WorkloadPilot    7: 1024 op, 387267333.00 ns, 378.1908 us/op
+WorkloadPilot    8: 2048 op, 775236500.00 ns, 378.5334 us/op
+
+OverheadWarmup   1: 2048 op, 6959.00 ns, 3.3979 ns/op
+OverheadWarmup   2: 2048 op, 4917.00 ns, 2.4009 ns/op
+OverheadWarmup   3: 2048 op, 4916.00 ns, 2.4004 ns/op
+OverheadWarmup   4: 2048 op, 5083.00 ns, 2.4819 ns/op
+OverheadWarmup   5: 2048 op, 5042.00 ns, 2.4619 ns/op
+OverheadWarmup   6: 2048 op, 4916.00 ns, 2.4004 ns/op
+OverheadWarmup   7: 2048 op, 4875.00 ns, 2.3804 ns/op
+OverheadWarmup   8: 2048 op, 4917.00 ns, 2.4009 ns/op
+OverheadWarmup   9: 2048 op, 4958.00 ns, 2.4209 ns/op
+OverheadWarmup  10: 2048 op, 5375.00 ns, 2.6245 ns/op
+
+OverheadActual   1: 2048 op, 5625.00 ns, 2.7466 ns/op
+OverheadActual   2: 2048 op, 4125.00 ns, 2.0142 ns/op
+OverheadActual   3: 2048 op, 4084.00 ns, 1.9941 ns/op
+OverheadActual   4: 2048 op, 4083.00 ns, 1.9937 ns/op
+OverheadActual   5: 2048 op, 4084.00 ns, 1.9941 ns/op
+OverheadActual   6: 2048 op, 4000.00 ns, 1.9531 ns/op
+OverheadActual   7: 2048 op, 3958.00 ns, 1.9326 ns/op
+OverheadActual   8: 2048 op, 5125.00 ns, 2.5024 ns/op
+OverheadActual   9: 2048 op, 4958.00 ns, 2.4209 ns/op
+OverheadActual  10: 2048 op, 4125.00 ns, 2.0142 ns/op
+OverheadActual  11: 2048 op, 3958.00 ns, 1.9326 ns/op
+OverheadActual  12: 2048 op, 5208.00 ns, 2.5430 ns/op
+OverheadActual  13: 2048 op, 5041.00 ns, 2.4614 ns/op
+OverheadActual  14: 2048 op, 4417.00 ns, 2.1567 ns/op
+OverheadActual  15: 2048 op, 5542.00 ns, 2.7061 ns/op
+OverheadActual  16: 2048 op, 4125.00 ns, 2.0142 ns/op
+OverheadActual  17: 2048 op, 4916.00 ns, 2.4004 ns/op
+OverheadActual  18: 2048 op, 5083.00 ns, 2.4819 ns/op
+OverheadActual  19: 2048 op, 4875.00 ns, 2.3804 ns/op
+OverheadActual  20: 2048 op, 4834.00 ns, 2.3604 ns/op
+
+WorkloadWarmup   1: 2048 op, 775257250.00 ns, 378.5436 us/op
+WorkloadWarmup   2: 2048 op, 770438208.00 ns, 376.1905 us/op
+WorkloadWarmup   3: 2048 op, 776136292.00 ns, 378.9728 us/op
+WorkloadWarmup   4: 2048 op, 766718958.00 ns, 374.3745 us/op
+WorkloadWarmup   5: 2048 op, 759540292.00 ns, 370.8693 us/op
+WorkloadWarmup   6: 2048 op, 761779625.00 ns, 371.9627 us/op
+WorkloadWarmup   7: 2048 op, 759486042.00 ns, 370.8428 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 2048 op, 767771042.00 ns, 374.8882 us/op
+WorkloadActual   2: 2048 op, 764083334.00 ns, 373.0876 us/op
+WorkloadActual   3: 2048 op, 753895250.00 ns, 368.1129 us/op
+WorkloadActual   4: 2048 op, 763015375.00 ns, 372.5661 us/op
+WorkloadActual   5: 2048 op, 771030750.00 ns, 376.4799 us/op
+WorkloadActual   6: 2048 op, 768562250.00 ns, 375.2745 us/op
+WorkloadActual   7: 2048 op, 772128417.00 ns, 377.0158 us/op
+WorkloadActual   8: 2048 op, 779121083.00 ns, 380.4302 us/op
+WorkloadActual   9: 2048 op, 762869875.00 ns, 372.4951 us/op
+WorkloadActual  10: 2048 op, 769646625.00 ns, 375.8040 us/op
+WorkloadActual  11: 2048 op, 770654708.00 ns, 376.2962 us/op
+WorkloadActual  12: 2048 op, 768158542.00 ns, 375.0774 us/op
+WorkloadActual  13: 2048 op, 766780834.00 ns, 374.4047 us/op
+WorkloadActual  14: 2048 op, 774092709.00 ns, 377.9750 us/op
+WorkloadActual  15: 2048 op, 766612500.00 ns, 374.3225 us/op
+
+// AfterActualRun
+WorkloadResult   1: 2048 op, 767766416.50 ns, 374.8859 us/op
+WorkloadResult   2: 2048 op, 764078708.50 ns, 373.0853 us/op
+WorkloadResult   3: 2048 op, 753890624.50 ns, 368.1107 us/op
+WorkloadResult   4: 2048 op, 763010749.50 ns, 372.5638 us/op
+WorkloadResult   5: 2048 op, 771026124.50 ns, 376.4776 us/op
+WorkloadResult   6: 2048 op, 768557624.50 ns, 375.2723 us/op
+WorkloadResult   7: 2048 op, 772123791.50 ns, 377.0136 us/op
+WorkloadResult   8: 2048 op, 762865249.50 ns, 372.4928 us/op
+WorkloadResult   9: 2048 op, 769641999.50 ns, 375.8018 us/op
+WorkloadResult  10: 2048 op, 770650082.50 ns, 376.2940 us/op
+WorkloadResult  11: 2048 op, 768153916.50 ns, 375.0752 us/op
+WorkloadResult  12: 2048 op, 766776208.50 ns, 374.4024 us/op
+WorkloadResult  13: 2048 op, 774088083.50 ns, 377.9727 us/op
+WorkloadResult  14: 2048 op, 766607874.50 ns, 374.3203 us/op
+// GC:  216 0 0 1808384736 2048
+// Threading:  0 0 2048
+
+// AfterAll
+// Benchmark Process 64265 has exited with code 0.
+
+Mean = 374.555 μs, StdErr = 0.658 μs (0.18%), N = 14, StdDev = 2.463 μs
+Min = 368.111 μs, Q1 = 373.394 μs, Median = 374.981 μs, Q3 = 376.171 μs, Max = 377.973 μs
+IQR = 2.777 μs, LowerFence = 369.229 μs, UpperFence = 380.336 μs
+ConfidenceInterval = [371.776 μs; 377.334 μs] (CI 99.9%), Margin = 2.779 μs (0.74% of Mean)
+Skewness = -1.04, Kurtosis = 3.81, MValue = 2
+
+// ** Remained 0 (0,0 %) benchmark(s) to run. Estimated finish 2026-03-24 14:59 (0h 0m from now) **
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark-report.csv
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark-report-github.md
+  BenchmarkDotNet.Artifacts/results/Deterministic.GameFramework.Physics.Benchmarks.PhysicsSystemBenchmark-report.html
+
+// * Detailed results *
+PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=10]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 24.515 μs, StdErr = 0.029 μs (0.12%), N = 13, StdDev = 0.105 μs
+Min = 24.287 μs, Q1 = 24.452 μs, Median = 24.525 μs, Q3 = 24.565 μs, Max = 24.704 μs
+IQR = 0.113 μs, LowerFence = 24.283 μs, UpperFence = 24.734 μs
+ConfidenceInterval = [24.390 μs; 24.641 μs] (CI 99.9%), Margin = 0.126 μs (0.51% of Mean)
+Skewness = -0.37, Kurtosis = 2.73, MValue = 2
+-------------------- Histogram --------------------
+[24.229 μs ; 24.763 μs) | @@@@@@@@@@@@@
+---------------------------------------------------
+
+PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=10]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 48.640 μs, StdErr = 0.092 μs (0.19%), N = 15, StdDev = 0.355 μs
+Min = 47.859 μs, Q1 = 48.469 μs, Median = 48.709 μs, Q3 = 48.823 μs, Max = 49.180 μs
+IQR = 0.354 μs, LowerFence = 47.938 μs, UpperFence = 49.355 μs
+ConfidenceInterval = [48.260 μs; 49.019 μs] (CI 99.9%), Margin = 0.380 μs (0.78% of Mean)
+Skewness = -0.49, Kurtosis = 2.5, MValue = 2
+-------------------- Histogram --------------------
+[47.670 μs ; 49.369 μs) | @@@@@@@@@@@@@@@
+---------------------------------------------------
+
+PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=50]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 107.152 μs, StdErr = 0.158 μs (0.15%), N = 14, StdDev = 0.590 μs
+Min = 105.958 μs, Q1 = 106.936 μs, Median = 107.121 μs, Q3 = 107.610 μs, Max = 108.118 μs
+IQR = 0.675 μs, LowerFence = 105.923 μs, UpperFence = 108.623 μs
+ConfidenceInterval = [106.486 μs; 107.818 μs] (CI 99.9%), Margin = 0.666 μs (0.62% of Mean)
+Skewness = -0.3, Kurtosis = 2.31, MValue = 2
+-------------------- Histogram --------------------
+[105.893 μs ; 108.439 μs) | @@@@@@@@@@@@@@
+---------------------------------------------------
+
+PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=50]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 193.593 μs, StdErr = 0.576 μs (0.30%), N = 14, StdDev = 2.154 μs
+Min = 191.337 μs, Q1 = 191.989 μs, Median = 192.983 μs, Q3 = 194.539 μs, Max = 197.872 μs
+IQR = 2.549 μs, LowerFence = 188.166 μs, UpperFence = 198.363 μs
+ConfidenceInterval = [191.164 μs; 196.022 μs] (CI 99.9%), Margin = 2.429 μs (1.25% of Mean)
+Skewness = 0.86, Kurtosis = 2.45, MValue = 2
+-------------------- Histogram --------------------
+[190.411 μs ; 199.045 μs) | @@@@@@@@@@@@@@
+---------------------------------------------------
+
+PhysicsSystemBenchmark.PhysicsUpdate: DefaultJob [EntityCount=100]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 226.320 μs, StdErr = 0.336 μs (0.15%), N = 14, StdDev = 1.256 μs
+Min = 224.498 μs, Q1 = 225.334 μs, Median = 226.305 μs, Q3 = 226.583 μs, Max = 228.991 μs
+IQR = 1.249 μs, LowerFence = 223.459 μs, UpperFence = 228.457 μs
+ConfidenceInterval = [224.903 μs; 227.738 μs] (CI 99.9%), Margin = 1.417 μs (0.63% of Mean)
+Skewness = 0.59, Kurtosis = 2.33, MValue = 2
+-------------------- Histogram --------------------
+[223.814 μs ; 229.675 μs) | @@@@@@@@@@@@@@
+---------------------------------------------------
+
+PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: DefaultJob [EntityCount=100]
+Runtime = .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD; GC = Concurrent Workstation
+Mean = 374.555 μs, StdErr = 0.658 μs (0.18%), N = 14, StdDev = 2.463 μs
+Min = 368.111 μs, Q1 = 373.394 μs, Median = 374.981 μs, Q3 = 376.171 μs, Max = 377.973 μs
+IQR = 2.777 μs, LowerFence = 369.229 μs, UpperFence = 380.336 μs
+ConfidenceInterval = [371.776 μs; 377.334 μs] (CI 99.9%), Margin = 2.779 μs (0.74% of Mean)
+Skewness = -1.04, Kurtosis = 3.81, MValue = 2
+-------------------- Histogram --------------------
+[366.769 μs ; 379.314 μs) | @@@@@@@@@@@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.13.12, macOS 26.3 (25D125) [Darwin 25.3.0]
+Apple M2 Pro, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 10.0.105
+  [Host]     : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+
+
+| Method                    | EntityCount | Mean      | Error    | StdDev   | Gen0     | Allocated |
+|-------------------------- |------------ |----------:|---------:|---------:|---------:|----------:|
+| PhysicsUpdate             | 10          |  24.52 μs | 0.126 μs | 0.105 μs |   6.5613 |  53.76 KB |
+| PhysicsUpdate_WithRebuild | 10          |  48.64 μs | 0.380 μs | 0.355 μs |  11.7798 |  96.57 KB |
+| PhysicsUpdate             | 50          | 107.15 μs | 0.666 μs | 0.590 μs |  31.2500 | 256.08 KB |
+| PhysicsUpdate_WithRebuild | 50          | 193.59 μs | 2.429 μs | 2.154 μs |  52.9785 | 434.55 KB |
+| PhysicsUpdate             | 100         | 226.32 μs | 1.417 μs | 1.256 μs |  62.5000 | 512.46 KB |
+| PhysicsUpdate_WithRebuild | 100         | 374.55 μs | 2.779 μs | 2.463 μs | 105.4688 |  862.3 KB |
+
+// * Hints *
+Outliers
+  PhysicsSystemBenchmark.PhysicsUpdate: Default             -> 2 outliers were removed (25.52 μs, 27.18 μs)
+  PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: Default -> 1 outlier  was  detected (47.86 μs)
+  PhysicsSystemBenchmark.PhysicsUpdate: Default             -> 1 outlier  was  removed (109.66 μs)
+  PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: Default -> 1 outlier  was  removed (203.03 μs)
+  PhysicsSystemBenchmark.PhysicsUpdate: Default             -> 1 outlier  was  removed (232.81 μs)
+  PhysicsSystemBenchmark.PhysicsUpdate_WithRebuild: Default -> 1 outlier  was  removed, 2 outliers were detected (368.11 μs, 380.43 μs)
+
+// * Legends *
+  EntityCount : Value of the 'EntityCount' parameter
+  Mean        : Arithmetic mean of all measurements
+  Error       : Half of 99.9% confidence interval
+  StdDev      : Standard deviation of all measurements
+  Gen0        : GC Generation 0 collects per 1000 operations
+  Allocated   : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  1 μs        : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:02:13 (133.65 sec), executed benchmarks: 6
+
+Global total time: 00:02:19 (139.52 sec), executed benchmarks: 6
+// * Artifacts cleanup *
+Artifacts cleanup is finished

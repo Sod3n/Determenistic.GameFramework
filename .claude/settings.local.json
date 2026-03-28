@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework -name \"*.cs\" -type f -exec grep -l \"namespace Deterministic.GameFramework.CoreV2\" {})",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet stash:*)",
+      "Bash(git stash:*)",
+      "Bash(ls /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/Core/Deterministic.GameFramework.ECS/*.csproj)",
+      "Bash(find /Users/a1/Documents/GitHub/PizzaJam2026 -name *.md -o -name DESIGN* -o -name PLAN* -o -name TODO*)",
+      "Bash(grep -r \"TODO\\\\|FIXME\\\\|NOTE.*nav\\\\|TODO.*nav\\\\|path.*find\\\\|pathfind\" /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework --include=*.cs)",
+      "Bash(xargs cat:*)",
+      "Bash(mkdir -p /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/2D/Deterministic.GameFramework.TwoD.Navigation/Components)",
+      "Bash(mkdir -p /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/2D/Deterministic.GameFramework.TwoD.Navigation/Systems)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet run:*)",
+      "Bash(pkill -f \"Deterministic.GameFramework.Navigation.Benchmarks\")",
+      "Bash(grep \"\\\\.cs$\")",
+      "Bash(grep -r \"SlideOnCeiling\\\\|WallMinSlideAngle\\\\|FloorMaxAngle\" /Users/a1/Documents/GitHub/PizzaJam2026/Server/Framework/2D/Deterministic.GameFramework.TwoD.Physics --include=\"*.cs\" ! -path \"*/obj/*\" ! -path \"*/bin/*\")"
+    ]
+  }
+}

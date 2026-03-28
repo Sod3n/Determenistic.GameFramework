@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Deterministic.GameFramework.Benchmarks.SerializationBenchmark-20260325-181601</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.12, macOS 26.3 (25D125) [Darwin 25.3.0]
+Apple M2 Pro, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 10.0.105
+  [Host]     : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+  Job-VSVGMD : .NET 8.0.19 (8.0.1925.36514), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code>IterationCount=10  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method             </th><th>Mean </th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Serialize_10k</td><td>267.61 &mu;s</td><td>3.886 &mu;s</td><td>2.032 &mu;s</td><td>71.7773</td><td>70.8008</td><td>68.3594</td><td>2209.22 KB</td>
+</tr><tr><td>Deserialize_10k_FullSync</td><td>109.98 &mu;s</td><td>1.074 &mu;s</td><td>0.639 &mu;s</td><td>70.5566</td><td>59.5703</td><td>58.3496</td><td>1029.67 KB</td>
+</tr><tr><td>Deserialize_10k_Rollback</td><td>89.21 &mu;s</td><td>0.732 &mu;s</td><td>0.436 &mu;s</td><td>35.6445</td><td>34.4238</td><td>33.8135</td><td>557.2 KB</td>
+</tr><tr><td>Serialize_100k</td><td>2,837.42 &mu;s</td><td>69.800 &mu;s</td><td>41.537 &mu;s</td><td>519.5313</td><td>519.5313</td><td>500.0000</td><td>22072.79 KB</td>
+</tr><tr><td>Deserialize_100k_FullSync</td><td>1,407.19 &mu;s</td><td>25.329 &mu;s</td><td>16.754 &mu;s</td><td>337.8906</td><td>337.8906</td><td>328.1250</td><td>10258.96 KB</td>
+</tr><tr><td>Deserialize_100k_Rollback</td><td>903.53 &mu;s</td><td>12.893 &mu;s</td><td>8.528 &mu;s</td><td>273.4375</td><td>273.4375</td><td>263.6719</td><td>5567.86 KB</td>
+</tr></tbody></table>
+</body>
+</html>

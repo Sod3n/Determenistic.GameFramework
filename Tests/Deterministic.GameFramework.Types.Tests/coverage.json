@@ -1,0 +1,2601 @@
+{
+  "Deterministic.GameFramework.Types.dll": {
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/BitMask128.cs": {
+      "Deterministic.GameFramework.Types.BitMask128": {
+        "System.Void Deterministic.GameFramework.Types.BitMask128::Set(System.Int32)": {
+          "Lines": {
+            "17": 25,
+            "18": 25,
+            "19": 15,
+            "21": 10,
+            "22": 25
+          },
+          "Branches": [
+            {
+              "Line": 18,
+              "Offset": 8,
+              "EndOffset": 10,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 15
+            },
+            {
+              "Line": 18,
+              "Offset": 8,
+              "EndOffset": 32,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 10
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.BitMask128::Unset(System.Int32)": {
+          "Lines": {
+            "25": 2,
+            "26": 2,
+            "27": 1,
+            "29": 1,
+            "30": 2
+          },
+          "Branches": [
+            {
+              "Line": 26,
+              "Offset": 8,
+              "EndOffset": 10,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 26,
+              "Offset": 8,
+              "EndOffset": 33,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::IsSet(System.Int32)": {
+          "Lines": {
+            "33": 13,
+            "34": 13,
+            "35": 6,
+            "37": 7,
+            "38": 13
+          },
+          "Branches": [
+            {
+              "Line": 34,
+              "Offset": 8,
+              "EndOffset": 10,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 6
+            },
+            {
+              "Line": 34,
+              "Offset": 8,
+              "EndOffset": 31,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 7
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.BitMask128::Clear()": {
+          "Lines": {
+            "41": 3,
+            "42": 3,
+            "43": 3,
+            "44": 3
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::get_IsEmpty()": {
+          "Lines": {
+            "46": 7
+          },
+          "Branches": [
+            {
+              "Line": 46,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 6
+            },
+            {
+              "Line": 46,
+              "Offset": 6,
+              "EndOffset": 20,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::HasAll(Deterministic.GameFramework.Types.BitMask128)": {
+          "Lines": {
+            "49": 4,
+            "50": 4,
+            "51": 4,
+            "52": 4
+          },
+          "Branches": [
+            {
+              "Line": 50,
+              "Offset": 20,
+              "EndOffset": 22,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 3
+            },
+            {
+              "Line": 50,
+              "Offset": 20,
+              "EndOffset": 45,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::HasAny(Deterministic.GameFramework.Types.BitMask128)": {
+          "Lines": {
+            "55": 2,
+            "56": 2,
+            "57": 2,
+            "58": 2
+          },
+          "Branches": [
+            {
+              "Line": 56,
+              "Offset": 14,
+              "EndOffset": 16,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 56,
+              "Offset": 14,
+              "EndOffset": 35,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::Equals(System.Object)": {
+          "Lines": {
+            "60": 4
+          },
+          "Branches": [
+            {
+              "Line": 60,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::Equals(Deterministic.GameFramework.Types.BitMask128)": {
+          "Lines": {
+            "61": 4
+          },
+          "Branches": [
+            {
+              "Line": 61,
+              "Offset": 12,
+              "EndOffset": 14,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 61,
+              "Offset": 12,
+              "EndOffset": 30,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.BitMask128::GetHashCode()": {
+          "Lines": {
+            "62": 4
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::op_Equality(Deterministic.GameFramework.Types.BitMask128,Deterministic.GameFramework.Types.BitMask128)": {
+          "Lines": {
+            "64": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.BitMask128::op_Inequality(Deterministic.GameFramework.Types.BitMask128,Deterministic.GameFramework.Types.BitMask128)": {
+          "Lines": {
+            "65": 1
+          },
+          "Branches": []
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/DeterministicRandom.cs": {
+      "Deterministic.GameFramework.Types.DeterministicRandom": {
+        "System.Boolean Deterministic.GameFramework.Types.DeterministicRandom::Equals(Deterministic.GameFramework.Types.DeterministicRandom)": {
+          "Lines": {
+            "30": 4,
+            "31": 4,
+            "32": 4
+          },
+          "Branches": [
+            {
+              "Line": 31,
+              "Offset": 13,
+              "EndOffset": 15,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 27,
+              "EndOffset": 29,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 41,
+              "EndOffset": 43,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 13,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 27,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 41,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.DeterministicRandom::Equals(System.Object)": {
+          "Lines": {
+            "34": 4
+          },
+          "Branches": [
+            {
+              "Line": 34,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 34,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.DeterministicRandom::GetHashCode()": {
+          "Lines": {
+            "35": 4
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.DeterministicRandom::op_Equality(Deterministic.GameFramework.Types.DeterministicRandom,Deterministic.GameFramework.Types.DeterministicRandom)": {
+          "Lines": {
+            "37": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.DeterministicRandom::op_Inequality(Deterministic.GameFramework.Types.DeterministicRandom,Deterministic.GameFramework.Types.DeterministicRandom)": {
+          "Lines": {
+            "38": 1
+          },
+          "Branches": []
+        },
+        "System.UInt32 Deterministic.GameFramework.Types.DeterministicRandom::Next()": {
+          "Lines": {
+            "44": 978,
+            "45": 978,
+            "46": 978,
+            "48": 978,
+            "49": 978,
+            "50": 978,
+            "51": 978,
+            "53": 978,
+            "54": 978,
+            "56": 978,
+            "57": 978
+          },
+          "Branches": []
+        },
+        "System.Int32 Deterministic.GameFramework.Types.DeterministicRandom::NextInt(System.Int32)": {
+          "Lines": {
+            "63": 102,
+            "64": 104,
+            "65": 100,
+            "66": 102
+          },
+          "Branches": [
+            {
+              "Line": 64,
+              "Offset": 10,
+              "EndOffset": 12,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 64,
+              "Offset": 10,
+              "EndOffset": 16,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 100
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.DeterministicRandom::NextInt(System.Int32,System.Int32)": {
+          "Lines": {
+            "72": 101,
+            "73": 102,
+            "74": 100,
+            "75": 101
+          },
+          "Branches": [
+            {
+              "Line": 73,
+              "Offset": 10,
+              "EndOffset": 12,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 73,
+              "Offset": 10,
+              "EndOffset": 16,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 100
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.DeterministicRandom::NextFloat()": {
+          "Lines": {
+            "81": 396,
+            "110": 396,
+            "111": 396
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.DeterministicRandom::NextFloat(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "117": 296,
+            "118": 296,
+            "119": 296
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.DeterministicRandom::NextOnUnitCircle()": {
+          "Lines": {
+            "125": 110,
+            "129": 135,
+            "130": 135,
+            "132": 135,
+            "133": 135,
+            "135": 135,
+            "136": 135,
+            "137": 110,
+            "138": 110,
+            "139": 110,
+            "141": 25,
+            "142": 110
+          },
+          "Branches": [
+            {
+              "Line": 136,
+              "Offset": 74,
+              "EndOffset": 76,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 135
+            },
+            {
+              "Line": 136,
+              "Offset": 74,
+              "EndOffset": 90,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 0
+            },
+            {
+              "Line": 136,
+              "Offset": 93,
+              "EndOffset": 95,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 110
+            },
+            {
+              "Line": 136,
+              "Offset": 93,
+              "EndOffset": 129,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 25
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.DeterministicRandom::NextInsideUnitCircle()": {
+          "Lines": {
+            "148": 10,
+            "149": 13,
+            "150": 13,
+            "151": 13,
+            "152": 13,
+            "154": 13,
+            "155": 10,
+            "156": 10,
+            "158": 3,
+            "159": 10
+          },
+          "Branches": [
+            {
+              "Line": 154,
+              "Offset": 74,
+              "EndOffset": 76,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 10
+            },
+            {
+              "Line": 154,
+              "Offset": 74,
+              "EndOffset": 87,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.UInt32 Deterministic.GameFramework.Types.DeterministicRandom::Rotl(System.UInt32,System.Int32)": {
+          "Lines": {
+            "162": 1956,
+            "163": 1956,
+            "164": 1956
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.DeterministicRandom::.ctor(System.UInt32)": {
+          "Lines": {
+            "15": 14,
+            "17": 14,
+            "18": 14,
+            "19": 14,
+            "20": 14,
+            "23": 588,
+            "24": 280,
+            "25": 280,
+            "26": 280,
+            "27": 14
+          },
+          "Branches": [
+            {
+              "Line": 23,
+              "Offset": 73,
+              "EndOffset": 53,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 280
+            },
+            {
+              "Line": 23,
+              "Offset": 73,
+              "EndOffset": 75,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 14
+            }
+          ]
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/FixedString32.cs": {
+      "Deterministic.GameFramework.Types.FixedString32": {
+        "System.Void Deterministic.GameFramework.Types.FixedString32::Set(System.String)": {
+          "Lines": {
+            "29": 12,
+            "30": 12,
+            "31": 12,
+            "32": 2,
+            "33": 2,
+            "36": 10,
+            "39": 10,
+            "40": 10,
+            "43": 10,
+            "44": 10,
+            "45": 10,
+            "46": 10,
+            "47": 12
+          },
+          "Branches": [
+            {
+              "Line": 31,
+              "Offset": 52,
+              "EndOffset": 54,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 31,
+              "Offset": 52,
+              "EndOffset": 60,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 10
+            }
+          ]
+        },
+        "System.String Deterministic.GameFramework.Types.FixedString32::ToString()": {
+          "Lines": {
+            "50": 6,
+            "51": 6,
+            "52": 6,
+            "53": 6,
+            "54": 6,
+            "55": 6,
+            "58": 6,
+            "59": 70,
+            "60": 64,
+            "61": 64,
+            "62": 64,
+            "64": 6,
+            "65": 6
+          },
+          "Branches": [
+            {
+              "Line": 59,
+              "Offset": 134,
+              "EndOffset": 106,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 64
+            },
+            {
+              "Line": 59,
+              "Offset": 115,
+              "EndOffset": 117,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 69
+            },
+            {
+              "Line": 59,
+              "Offset": 115,
+              "EndOffset": 131,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            },
+            {
+              "Line": 59,
+              "Offset": 134,
+              "EndOffset": 136,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 6
+            }
+          ]
+        },
+        "System.String Deterministic.GameFramework.Types.FixedString32::op_Implicit(Deterministic.GameFramework.Types.FixedString32)": {
+          "Lines": {
+            "67": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.FixedString32 Deterministic.GameFramework.Types.FixedString32::op_Implicit(System.String)": {
+          "Lines": {
+            "68": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.FixedString32::Equals(Deterministic.GameFramework.Types.FixedString32)": {
+          "Lines": {
+            "71": 6,
+            "72": 6,
+            "73": 6,
+            "74": 6,
+            "75": 6,
+            "76": 6
+          },
+          "Branches": [
+            {
+              "Line": 72,
+              "Offset": 13,
+              "EndOffset": 15,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 3
+            },
+            {
+              "Line": 72,
+              "Offset": 27,
+              "EndOffset": 29,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 3
+            },
+            {
+              "Line": 72,
+              "Offset": 41,
+              "EndOffset": 43,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 3
+            },
+            {
+              "Line": 72,
+              "Offset": 13,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            },
+            {
+              "Line": 72,
+              "Offset": 27,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 3
+            },
+            {
+              "Line": 72,
+              "Offset": 41,
+              "EndOffset": 59,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.FixedString32::Equals(System.Object)": {
+          "Lines": {
+            "78": 4
+          },
+          "Branches": [
+            {
+              "Line": 78,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 78,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.FixedString32::GetHashCode()": {
+          "Lines": {
+            "81": 6,
+            "82": 6,
+            "83": 6
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.FixedString32::op_Equality(Deterministic.GameFramework.Types.FixedString32,Deterministic.GameFramework.Types.FixedString32)": {
+          "Lines": {
+            "85": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.FixedString32::op_Inequality(Deterministic.GameFramework.Types.FixedString32,Deterministic.GameFramework.Types.FixedString32)": {
+          "Lines": {
+            "86": 1
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.FixedString32::.ctor(System.String)": {
+          "Lines": {
+            "20": 12,
+            "21": 12,
+            "22": 12,
+            "23": 12,
+            "24": 12,
+            "25": 12,
+            "26": 12
+          },
+          "Branches": []
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/Float.cs": {
+      "Deterministic.GameFramework.Types.Float": {
+        "System.Int64 Deterministic.GameFramework.Types.Float::get_RawValue()": {
+          "Lines": {
+            "19": 5
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::set_RawValue(System.Int64)": {
+          "Lines": {
+            "20": 0
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::FromRaw(System.Int64)": {
+          "Lines": {
+            "46": 396
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Implicit(System.Int32)": {
+          "Lines": {
+            "48": 908
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Implicit(System.Single)": {
+          "Lines": {
+            "49": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Implicit(FixedMathSharp.Fixed64)": {
+          "Lines": {
+            "50": 1
+          },
+          "Branches": []
+        },
+        "FixedMathSharp.Fixed64 Deterministic.GameFramework.Types.Float::op_Implicit(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "51": 1
+          },
+          "Branches": []
+        },
+        "System.Single Deterministic.GameFramework.Types.Float::op_Explicit(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "53": 4
+          },
+          "Branches": []
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Float::op_Explicit(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "54": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Addition(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "56": 626
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Subtraction(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "57": 466
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_UnaryNegation(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "58": 5
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Multiply(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "60": 1040
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Division(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "61": 233
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::op_Modulus(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "62": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_Equality(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "64": 174
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_Inequality(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "65": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_GreaterThan(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "66": 140
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_LessThan(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "67": 227
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_GreaterThanOrEqual(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "68": 105
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::op_LessThanOrEqual(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "69": 260
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::Equals(System.Object)": {
+          "Lines": {
+            "71": 4
+          },
+          "Branches": [
+            {
+              "Line": 71,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 71,
+              "Offset": 6,
+              "EndOffset": 34,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Float::Equals(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "72": 62
+          },
+          "Branches": []
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Float::GetHashCode()": {
+          "Lines": {
+            "73": 36
+          },
+          "Branches": []
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Float::CompareTo(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "74": 3
+          },
+          "Branches": []
+        },
+        "System.String Deterministic.GameFramework.Types.Float::ToString()": {
+          "Lines": {
+            "76": 21
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Sqrt(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "79": 232,
+            "80": 233,
+            "81": 231,
+            "82": 232
+          },
+          "Branches": [
+            {
+              "Line": 80,
+              "Offset": 19,
+              "EndOffset": 21,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 80,
+              "Offset": 19,
+              "EndOffset": 30,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 231
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Abs(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "83": 133
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Min(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "84": 8
+          },
+          "Branches": [
+            {
+              "Line": 84,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 5
+            },
+            {
+              "Line": 84,
+              "Offset": 17,
+              "EndOffset": 27,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Max(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "85": 8
+          },
+          "Branches": [
+            {
+              "Line": 85,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 5
+            },
+            {
+              "Line": 85,
+              "Offset": 17,
+              "EndOffset": 27,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Clamp(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "86": 307
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Lerp(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "89": 305,
+            "90": 305,
+            "91": 305
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Floor(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "93": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Ceil(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "94": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Round(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "95": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Sin(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "111": 14
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Cos(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "112": 14
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Atan2(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "113": 9
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::Atan(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "114": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Float::CopySign(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "117": 4,
+            "119": 4,
+            "120": 2,
+            "121": 2,
+            "122": 4
+          },
+          "Branches": [
+            {
+              "Line": 119,
+              "Offset": 21,
+              "EndOffset": 23,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 119,
+              "Offset": 21,
+              "EndOffset": 32,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Float::Sign(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "125": 3,
+            "126": 4,
+            "127": 3,
+            "128": 1,
+            "129": 3
+          },
+          "Branches": [
+            {
+              "Line": 126,
+              "Offset": 18,
+              "EndOffset": 20,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 126,
+              "Offset": 18,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            },
+            {
+              "Line": 127,
+              "Offset": 41,
+              "EndOffset": 43,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 127,
+              "Offset": 41,
+              "EndOffset": 47,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::.ctor(System.Int64)": {
+          "Lines": {
+            "27": 400,
+            "28": 400,
+            "29": 400
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::.ctor(System.Int32)": {
+          "Lines": {
+            "32": 2031,
+            "33": 2031,
+            "34": 2031
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::.ctor(System.Single)": {
+          "Lines": {
+            "37": 533,
+            "38": 533,
+            "39": 533
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::.ctor(FixedMathSharp.Fixed64)": {
+          "Lines": {
+            "42": 3114,
+            "43": 3114,
+            "44": 3114
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Float::.cctor()": {
+          "Lines": {
+            "99": 1,
+            "103": 1,
+            "107": 1,
+            "109": 1
+          },
+          "Branches": []
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/List8.cs": {
+      "Deterministic.GameFramework.Types.List8`1": {
+        "T Deterministic.GameFramework.Types.List8`1::get_Item(System.Int32)": {
+          "Lines": {
+            "24": 55,
+            "25": 58,
+            "26": 52,
+            "27": 52,
+            "28": 20,
+            "29": 18,
+            "30": 3,
+            "31": 2,
+            "32": 2,
+            "33": 2,
+            "34": 2,
+            "35": 2,
+            "36": 1,
+            "37": 52,
+            "38": 52
+          },
+          "Branches": [
+            {
+              "Line": 25,
+              "Offset": 3,
+              "EndOffset": 5,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 54
+            },
+            {
+              "Line": 25,
+              "Offset": 3,
+              "EndOffset": 19,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            },
+            {
+              "Line": 25,
+              "Offset": 22,
+              "EndOffset": 24,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 3
+            },
+            {
+              "Line": 25,
+              "Offset": 22,
+              "EndOffset": 30,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 52
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 74,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 20
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 83,
+              "Path": 2,
+              "Ordinal": 6,
+              "Hits": 18
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 92,
+              "Path": 3,
+              "Ordinal": 7,
+              "Hits": 3
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 101,
+              "Path": 4,
+              "Ordinal": 8,
+              "Hits": 2
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 110,
+              "Path": 5,
+              "Ordinal": 9,
+              "Hits": 2
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 119,
+              "Path": 6,
+              "Ordinal": 10,
+              "Hits": 2
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 128,
+              "Path": 7,
+              "Ordinal": 11,
+              "Hits": 2
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 137,
+              "Path": 8,
+              "Ordinal": 12,
+              "Hits": 2
+            },
+            {
+              "Line": 26,
+              "Offset": 35,
+              "EndOffset": 146,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.List8`1::set_Item(System.Int32,T)": {
+          "Lines": {
+            "40": 11,
+            "41": 13,
+            "42": 9,
+            "44": 4,
+            "45": 2,
+            "46": 2,
+            "47": 2,
+            "48": 2,
+            "49": 2,
+            "50": 2,
+            "51": 2,
+            "53": 9
+          },
+          "Branches": [
+            {
+              "Line": 41,
+              "Offset": 3,
+              "EndOffset": 5,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 10
+            },
+            {
+              "Line": 41,
+              "Offset": 3,
+              "EndOffset": 19,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            },
+            {
+              "Line": 41,
+              "Offset": 22,
+              "EndOffset": 24,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 2
+            },
+            {
+              "Line": 41,
+              "Offset": 22,
+              "EndOffset": 30,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 9
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 74,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 2
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 83,
+              "Path": 2,
+              "Ordinal": 6,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 92,
+              "Path": 3,
+              "Ordinal": 7,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 101,
+              "Path": 4,
+              "Ordinal": 8,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 110,
+              "Path": 5,
+              "Ordinal": 9,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 119,
+              "Path": 6,
+              "Ordinal": 10,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 128,
+              "Path": 7,
+              "Ordinal": 11,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 137,
+              "Path": 8,
+              "Ordinal": 12,
+              "Hits": 1
+            },
+            {
+              "Line": 42,
+              "Offset": 35,
+              "EndOffset": 146,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 9
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.List8`1::Add(T)": {
+          "Lines": {
+            "57": 32,
+            "58": 33,
+            "60": 31,
+            "62": 20,
+            "63": 16,
+            "64": 6,
+            "65": 4,
+            "66": 4,
+            "67": 4,
+            "68": 4,
+            "69": 4,
+            "71": 31,
+            "72": 31
+          },
+          "Branches": [
+            {
+              "Line": 58,
+              "Offset": 15,
+              "EndOffset": 17,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 58,
+              "Offset": 15,
+              "EndOffset": 28,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 31
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 77,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 10
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 86,
+              "Path": 2,
+              "Ordinal": 4,
+              "Hits": 8
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 95,
+              "Path": 3,
+              "Ordinal": 5,
+              "Hits": 3
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 104,
+              "Path": 4,
+              "Ordinal": 6,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 113,
+              "Path": 5,
+              "Ordinal": 7,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 122,
+              "Path": 6,
+              "Ordinal": 8,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 131,
+              "Path": 7,
+              "Ordinal": 9,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 140,
+              "Path": 8,
+              "Ordinal": 10,
+              "Hits": 2
+            },
+            {
+              "Line": 60,
+              "Offset": 38,
+              "EndOffset": 149,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 31
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.List8`1::Clear()": {
+          "Lines": {
+            "75": 1,
+            "76": 1,
+            "77": 1,
+            "78": 1,
+            "79": 1,
+            "80": 1,
+            "81": 1,
+            "82": 1,
+            "83": 1,
+            "84": 1,
+            "85": 1
+          },
+          "Branches": []
+        },
+        "System.Collections.IEnumerator Deterministic.GameFramework.Types.List8`1::System.Collections.IEnumerable.GetEnumerator()": {
+          "Lines": {
+            "95": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.List8`1::Equals(Deterministic.GameFramework.Types.List8`1<T>)": {
+          "Lines": {
+            "98": 6,
+            "99": 7,
+            "102": 26,
+            "103": 10,
+            "104": 12,
+            "105": 8,
+            "106": 3,
+            "107": 6
+          },
+          "Branches": [
+            {
+              "Line": 99,
+              "Offset": 20,
+              "EndOffset": 22,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 99,
+              "Offset": 20,
+              "EndOffset": 26,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 5
+            },
+            {
+              "Line": 102,
+              "Offset": 90,
+              "EndOffset": 30,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 10
+            },
+            {
+              "Line": 104,
+              "Offset": 66,
+              "EndOffset": 68,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 2
+            },
+            {
+              "Line": 104,
+              "Offset": 66,
+              "EndOffset": 72,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 8
+            },
+            {
+              "Line": 102,
+              "Offset": 90,
+              "EndOffset": 92,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.List8`1::Equals(System.Object)": {
+          "Lines": {
+            "109": 3
+          },
+          "Branches": [
+            {
+              "Line": 109,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 109,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.List8`1::GetHashCode()": {
+          "Lines": {
+            "112": 4,
+            "113": 4,
+            "114": 4,
+            "115": 24,
+            "116": 8,
+            "117": 8,
+            "118": 8,
+            "119": 4,
+            "120": 4
+          },
+          "Branches": [
+            {
+              "Line": 115,
+              "Offset": 59,
+              "EndOffset": 27,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 8
+            },
+            {
+              "Line": 115,
+              "Offset": 59,
+              "EndOffset": 61,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 4
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.List8`1::op_Equality(Deterministic.GameFramework.Types.List8`1<T>,Deterministic.GameFramework.Types.List8`1<T>)": {
+          "Lines": {
+            "122": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.List8`1::op_Inequality(Deterministic.GameFramework.Types.List8`1<T>,Deterministic.GameFramework.Types.List8`1<T>)": {
+          "Lines": {
+            "123": 1
+          },
+          "Branches": []
+        }
+      },
+      "Deterministic.GameFramework.Types.List8`1/<GetEnumerator>d__15": {
+        "System.Boolean Deterministic.GameFramework.Types.List8`1/<GetEnumerator>d__15::MoveNext()": {
+          "Lines": {
+            "88": 2,
+            "89": 10,
+            "90": 4,
+            "91": 4,
+            "92": 3,
+            "93": 1
+          },
+          "Branches": [
+            {
+              "Line": 89,
+              "Offset": 119,
+              "EndOffset": 41,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 4
+            },
+            {
+              "Line": 89,
+              "Offset": 119,
+              "EndOffset": 121,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            }
+          ]
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/Quaternion.cs": {
+      "Deterministic.GameFramework.Types.Quaternion": {
+        "Deterministic.GameFramework.Types.Quaternion Deterministic.GameFramework.Types.Quaternion::get_Identity()": {
+          "Lines": {
+            "30": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Quaternion::op_Equality(Deterministic.GameFramework.Types.Quaternion,Deterministic.GameFramework.Types.Quaternion)": {
+          "Lines": {
+            "32": 6
+          },
+          "Branches": [
+            {
+              "Line": 32,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 5
+            },
+            {
+              "Line": 32,
+              "Offset": 36,
+              "EndOffset": 38,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 4
+            },
+            {
+              "Line": 32,
+              "Offset": 55,
+              "EndOffset": 57,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 3
+            },
+            {
+              "Line": 32,
+              "Offset": 17,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            },
+            {
+              "Line": 32,
+              "Offset": 36,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 3
+            },
+            {
+              "Line": 32,
+              "Offset": 55,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Quaternion::op_Inequality(Deterministic.GameFramework.Types.Quaternion,Deterministic.GameFramework.Types.Quaternion)": {
+          "Lines": {
+            "33": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Quaternion Deterministic.GameFramework.Types.Quaternion::op_Multiply(Deterministic.GameFramework.Types.Quaternion,Deterministic.GameFramework.Types.Quaternion)": {
+          "Lines": {
+            "35": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Quaternion::op_Multiply(Deterministic.GameFramework.Types.Quaternion,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "36": 1
+          },
+          "Branches": []
+        },
+        "FixedMathSharp.FixedQuaternion Deterministic.GameFramework.Types.Quaternion::op_Implicit(Deterministic.GameFramework.Types.Quaternion)": {
+          "Lines": {
+            "39": 3
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Quaternion Deterministic.GameFramework.Types.Quaternion::op_Implicit(FixedMathSharp.FixedQuaternion)": {
+          "Lines": {
+            "40": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Quaternion::Equals(System.Object)": {
+          "Lines": {
+            "42": 4
+          },
+          "Branches": [
+            {
+              "Line": 42,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 42,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Quaternion::Equals(Deterministic.GameFramework.Types.Quaternion)": {
+          "Lines": {
+            "43": 7
+          },
+          "Branches": [
+            {
+              "Line": 43,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 6
+            },
+            {
+              "Line": 43,
+              "Offset": 36,
+              "EndOffset": 38,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 5
+            },
+            {
+              "Line": 43,
+              "Offset": 55,
+              "EndOffset": 57,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 4
+            },
+            {
+              "Line": 43,
+              "Offset": 17,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            },
+            {
+              "Line": 43,
+              "Offset": 36,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 3
+            },
+            {
+              "Line": 43,
+              "Offset": 55,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Quaternion::GetHashCode()": {
+          "Lines": {
+            "44": 4
+          },
+          "Branches": []
+        },
+        "System.String Deterministic.GameFramework.Types.Quaternion::ToString()": {
+          "Lines": {
+            "46": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Quaternion Deterministic.GameFramework.Types.Quaternion::FromEuler(Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "49": 4,
+            "50": 4,
+            "51": 4,
+            "52": 4,
+            "53": 4,
+            "54": 4,
+            "55": 4,
+            "57": 4,
+            "58": 4,
+            "59": 4,
+            "60": 4,
+            "61": 4,
+            "62": 4,
+            "63": 4
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Quaternion::ToEuler()": {
+          "Lines": {
+            "66": 3,
+            "70": 3,
+            "71": 3,
+            "72": 3,
+            "75": 3,
+            "76": 3,
+            "77": 2,
+            "79": 1,
+            "82": 3,
+            "83": 3,
+            "84": 3,
+            "86": 3,
+            "87": 3
+          },
+          "Branches": [
+            {
+              "Line": 76,
+              "Offset": 200,
+              "EndOffset": 202,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 76,
+              "Offset": 200,
+              "EndOffset": 233,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Void Deterministic.GameFramework.Types.Quaternion::.ctor(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "15": 5,
+            "16": 5,
+            "17": 5,
+            "18": 5,
+            "19": 5,
+            "20": 5
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Quaternion::.ctor(System.Single,System.Single,System.Single,System.Single)": {
+          "Lines": {
+            "23": 12,
+            "24": 12,
+            "25": 12,
+            "26": 12,
+            "27": 12,
+            "28": 12
+          },
+          "Branches": []
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/Vector2.cs": {
+      "Deterministic.GameFramework.Types.Vector2": {
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Zero()": {
+          "Lines": {
+            "24": 5
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_One()": {
+          "Lines": {
+            "25": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Right()": {
+          "Lines": {
+            "26": 3
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Left()": {
+          "Lines": {
+            "27": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Up()": {
+          "Lines": {
+            "28": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Down()": {
+          "Lines": {
+            "29": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Addition(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "31": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Subtraction(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "32": 3
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Multiply(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "33": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Multiply(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "34": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Multiply(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "35": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Division(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "36": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector2::op_Equality(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "38": 5
+          },
+          "Branches": [
+            {
+              "Line": 38,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 4
+            },
+            {
+              "Line": 38,
+              "Offset": 17,
+              "EndOffset": 38,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector2::op_Inequality(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "39": 1
+          },
+          "Branches": []
+        },
+        "FixedMathSharp.Vector2d Deterministic.GameFramework.Types.Vector2::op_Implicit(Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "42": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::op_Implicit(FixedMathSharp.Vector2d)": {
+          "Lines": {
+            "43": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector2::Equals(System.Object)": {
+          "Lines": {
+            "45": 3
+          },
+          "Branches": [
+            {
+              "Line": 45,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 45,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector2::Equals(Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "46": 22
+          },
+          "Branches": [
+            {
+              "Line": 46,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 21
+            },
+            {
+              "Line": 46,
+              "Offset": 17,
+              "EndOffset": 38,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Vector2::GetHashCode()": {
+          "Lines": {
+            "47": 2
+          },
+          "Branches": []
+        },
+        "System.String Deterministic.GameFramework.Types.Vector2::ToString()": {
+          "Lines": {
+            "49": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::get_Magnitude()": {
+          "Lines": {
+            "52": 4
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::get_SqrMagnitude()": {
+          "Lines": {
+            "54": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::get_Normalized()": {
+          "Lines": {
+            "60": 2,
+            "61": 2,
+            "62": 2,
+            "63": 2
+          },
+          "Branches": [
+            {
+              "Line": 62,
+              "Offset": 20,
+              "EndOffset": 22,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 62,
+              "Offset": 20,
+              "EndOffset": 29,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::Dot(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "66": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::Distance(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "68": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::DistanceSquared(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "69": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::Lerp(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "72": 1,
+            "73": 1,
+            "74": 1,
+            "75": 1,
+            "76": 1,
+            "77": 1,
+            "78": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::Min(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "80": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector2 Deterministic.GameFramework.Types.Vector2::Max(Deterministic.GameFramework.Types.Vector2,Deterministic.GameFramework.Types.Vector2)": {
+          "Lines": {
+            "81": 1
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Vector2::Rotate(Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "84": 1,
+            "85": 1,
+            "86": 1,
+            "88": 1,
+            "89": 1,
+            "91": 1,
+            "92": 1,
+            "93": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector2::ToAngle()": {
+          "Lines": {
+            "96": 2,
+            "97": 2,
+            "98": 2
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Vector2::.ctor(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "13": 133,
+            "14": 133,
+            "15": 133,
+            "16": 133
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Vector2::.ctor(System.Single,System.Single)": {
+          "Lines": {
+            "19": 57,
+            "20": 57,
+            "21": 57,
+            "22": 57
+          },
+          "Branches": []
+        }
+      }
+    },
+    "/Users/a1/Documents/GitHub/Determenistic.GameFramework.Example/Server/Framework/Deterministic.GameFramework.Types/Vector3.cs": {
+      "Deterministic.GameFramework.Types.Vector3": {
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Zero()": {
+          "Lines": {
+            "27": 6
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_One()": {
+          "Lines": {
+            "28": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Right()": {
+          "Lines": {
+            "29": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Left()": {
+          "Lines": {
+            "30": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Up()": {
+          "Lines": {
+            "31": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Down()": {
+          "Lines": {
+            "32": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Forward()": {
+          "Lines": {
+            "33": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Back()": {
+          "Lines": {
+            "34": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Addition(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "36": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Subtraction(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "37": 3
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Multiply(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "38": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Multiply(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "39": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Division(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "40": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector3::op_Equality(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "42": 5
+          },
+          "Branches": [
+            {
+              "Line": 42,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 4
+            },
+            {
+              "Line": 42,
+              "Offset": 36,
+              "EndOffset": 38,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 3
+            },
+            {
+              "Line": 42,
+              "Offset": 17,
+              "EndOffset": 57,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            },
+            {
+              "Line": 42,
+              "Offset": 36,
+              "EndOffset": 57,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector3::op_Inequality(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "43": 1
+          },
+          "Branches": []
+        },
+        "FixedMathSharp.Vector3d Deterministic.GameFramework.Types.Vector3::op_Implicit(Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "46": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::op_Implicit(FixedMathSharp.Vector3d)": {
+          "Lines": {
+            "47": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector3::Equals(System.Object)": {
+          "Lines": {
+            "49": 4
+          },
+          "Branches": [
+            {
+              "Line": 49,
+              "Offset": 6,
+              "EndOffset": 8,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 49,
+              "Offset": 6,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Boolean Deterministic.GameFramework.Types.Vector3::Equals(Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "50": 24
+          },
+          "Branches": [
+            {
+              "Line": 50,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 23
+            },
+            {
+              "Line": 50,
+              "Offset": 36,
+              "EndOffset": 38,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 22
+            },
+            {
+              "Line": 50,
+              "Offset": 17,
+              "EndOffset": 57,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            },
+            {
+              "Line": 50,
+              "Offset": 36,
+              "EndOffset": 57,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Int32 Deterministic.GameFramework.Types.Vector3::GetHashCode()": {
+          "Lines": {
+            "51": 4
+          },
+          "Branches": []
+        },
+        "System.String Deterministic.GameFramework.Types.Vector3::ToString()": {
+          "Lines": {
+            "53": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector3::get_Magnitude()": {
+          "Lines": {
+            "56": 4
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector3::get_SqrMagnitude()": {
+          "Lines": {
+            "58": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::get_Normalized()": {
+          "Lines": {
+            "64": 2,
+            "65": 2,
+            "66": 2,
+            "67": 2
+          },
+          "Branches": [
+            {
+              "Line": 66,
+              "Offset": 20,
+              "EndOffset": 22,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 66,
+              "Offset": 20,
+              "EndOffset": 29,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector3::Dot(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "70": 2
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::Cross(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "71": 1,
+            "72": 1,
+            "73": 1,
+            "74": 1,
+            "75": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector3::Distance(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "77": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Float Deterministic.GameFramework.Types.Vector3::DistanceSquared(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "78": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::Lerp(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "81": 1,
+            "82": 1,
+            "83": 1,
+            "84": 1,
+            "85": 1,
+            "86": 1,
+            "87": 1,
+            "88": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::Min(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "90": 1
+          },
+          "Branches": []
+        },
+        "Deterministic.GameFramework.Types.Vector3 Deterministic.GameFramework.Types.Vector3::Max(Deterministic.GameFramework.Types.Vector3,Deterministic.GameFramework.Types.Vector3)": {
+          "Lines": {
+            "91": 1
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Vector3::.ctor(Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float,Deterministic.GameFramework.Types.Float)": {
+          "Lines": {
+            "14": 16,
+            "15": 16,
+            "16": 16,
+            "17": 16,
+            "18": 16
+          },
+          "Branches": []
+        },
+        "System.Void Deterministic.GameFramework.Types.Vector3::.ctor(System.Single,System.Single,System.Single)": {
+          "Lines": {
+            "21": 59,
+            "22": 59,
+            "23": 59,
+            "24": 59,
+            "25": 59
+          },
+          "Branches": []
+        }
+      }
+    }
+  }
+}
