@@ -53,11 +53,11 @@ public class RapierPhysicsSystem : ISystem, IDisposable
             physicsState.PendingDispose = null;
         }
 
-        // Detect Rollback / Initialization / Jump Forward
-        if (physicsState.World == null || gameTime.CurrentTick != physicsState.LastSimulatedTick + 1)
-        {
-            RebuildWorld(state, physicsState);
-        }
+        // Rebuild every tick to guarantee determinism. Rapier's broadphase is
+        // not deterministic across different update histories (rollback vs forward).
+        // Rebuilding from ECS each tick ensures client and server always have
+        // identical Rapier state regardless of rollback history.
+        RebuildWorld(state, physicsState);
 
         // Prune Bodies (Remove destroyed entities)
         PruneBodies(state, physicsState);

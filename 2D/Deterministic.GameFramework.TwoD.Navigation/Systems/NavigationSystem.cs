@@ -48,15 +48,11 @@ public class NavigationSystem : ISystem
         {
             navState = new NavigationState();
             state.SetCustomData(navState);
-
-            // Force nav mesh rebake — NavigationState is transient (not serialized).
-            // After state sync or first creation, we must rebuild from ECS data
-            // to maintain determinism between client and server.
-            foreach (var entity in state.Filter<NavigationWorld2D>())
-            {
-                ref var world = ref state.GetComponent<NavigationWorld2D>(entity);
-                world.ForceBake = true;
-            }
+            // NavigationState is transient (not serialized). A fresh instance has
+            // PhysicsBaked=false, which BakeFromPhysicsIfNeeded already checks —
+            // no need to set ForceBake on the ECS component. Mutating ECS here
+            // would cause desync if client and server create NavigationState on
+            // different ticks.
         }
 
         // Physics-based baking (NavigationWorld2D)
