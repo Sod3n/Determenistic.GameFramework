@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Common\Deterministic.GameFramework.Common.csproj" />
+      <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
       <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Utils\Deterministic.GameFramework.Utils.csproj" />
     </ItemGroup>
 

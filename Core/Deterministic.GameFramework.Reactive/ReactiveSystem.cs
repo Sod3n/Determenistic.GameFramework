@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Common;
 using R3;
 using System.Runtime.CompilerServices;
+using Deterministic.GameFramework.Utils.Logging;
 
 [assembly: InternalsVisibleTo("Deterministic.GameFramework.Reactive.Tests")]
 
@@ -14,7 +16,7 @@ public class ReactiveSystem : IDisposable
 
     private ObserverNode? _head;
     private ObserverNode? _tail;
-    
+
     private GameLoop? _boundLoop;
     private EntityWorld? _boundState;
     private bool _wasResimulating;
@@ -22,6 +24,21 @@ public class ReactiveSystem : IDisposable
 
     public EntityWorld? BoundState => _boundState;
     public bool IsResimulating => _boundLoop?.IsResimulating ?? false;
+
+    // Profiling
+    private readonly Stopwatch _tickStopwatch = new();
+    private int _observerCount;
+
+    /// <summary>Time spent in last Tick() processing all observers.</summary>
+    public double LastTickSeconds { get; private set; }
+
+    /// <summary>Number of active observers processed in last tick.</summary>
+    public int LastObserverCount => _observerCount;
+
+    /// <summary>Total observers registered since last reset of this counter.</summary>
+    public int TotalRegistered { get; private set; }
+    /// <summary>Total observers unregistered since last reset of this counter.</summary>
+    public int TotalUnregistered { get; private set; }
 
     public ReactiveSystem()
     {
@@ -54,7 +71,7 @@ public class ReactiveSystem : IDisposable
     public void Dispose()
     {
         Unbind();
-        
+
         // Dispose all nodes
         var node = _head;
         while (node != null)
@@ -70,9 +87,9 @@ public class ReactiveSystem : IDisposable
     public void Register(ObserverNode node, bool evaluateImmediately = true)
     {
         if (node.Owner != null) throw new InvalidOperationException("Observer already registered to a system");
-        
+
         node.Owner = this;
-        
+
         // Add to tail
         if (_tail == null)
         {
@@ -85,6 +102,9 @@ public class ReactiveSystem : IDisposable
             _tail = node;
         }
 
+        TotalRegistered++;
+        if (TotalRegistered == 15000 || TotalRegistered == 20000 || TotalRegistered == 30000)
+            ILogger.Log($"[ReactiveSystem] Register #{TotalRegistered}: {node.GetType().Name} from:\n{Environment.StackTrace}\n\n");
         // Perform an eager evaluation so observers have an initial value
         // as soon as they are registered, instead of waiting for the next Tick.
         if (evaluateImmediately && !IsResimulating)
@@ -103,7 +123,8 @@ public class ReactiveSystem : IDisposable
     internal void Unregister(ObserverNode node)
     {
         if (node.Owner != this) return;
-        
+        TotalUnregistered++;
+
         // Unlink
         if (node.Prev != null) node.Prev.Next = node.Next;
         else _head = node.Next; // Was head
@@ -119,7 +140,7 @@ public class ReactiveSystem : IDisposable
     public void Tick()
     {
         bool isResimulating = IsResimulating;
-        
+
         // Detect transition from Resimulating -> Normal (End of Rollback)
         if (!isResimulating && _wasResimulating)
         {
@@ -131,12 +152,16 @@ public class ReactiveSystem : IDisposable
         _wasResimulating = isResimulating;
         if (isResimulating) return; // Don't update observers during resimulation
 
+        _tickStopwatch.Restart();
+        int count = 0;
+
         var node = _head;
         while (node != null)
         {
             // Cache next in case node removes itself during callback
             var next = node.Next;
-            
+            count++;
+
             try
             {
                 node.CheckAndNotify();
@@ -145,9 +170,13 @@ public class ReactiveSystem : IDisposable
             {
                 Console.WriteLine($"[ReactiveSystem] Error in observer: {ex}");
             }
-            
+
             node = next;
         }
+
+        _tickStopwatch.Stop();
+        LastTickSeconds = _tickStopwatch.Elapsed.TotalSeconds;
+        _observerCount = count;
     }
 
     public void Reset()
