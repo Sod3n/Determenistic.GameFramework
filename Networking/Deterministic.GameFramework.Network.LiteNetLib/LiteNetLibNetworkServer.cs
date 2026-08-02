@@ -1,10 +1,12 @@
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Network.Packets;
+using Deterministic.GameFramework.Utils.Logging;
 using LiteNetLib;
 using LiteNetLib.Utils;
 
@@ -30,7 +32,7 @@ public class LiteNetLibPeer : INetworkPeer
         var deliveryMethod = DeliveryMethod.ReliableOrdered;
         if (type == PacketType.TickSnapshot)
         {
-            deliveryMethod = DeliveryMethod.ReliableUnordered;
+            deliveryMethod = DeliveryMethod.ReliableOrdered;
         }
         else if (type == PacketType.StateHash)
         {
@@ -42,12 +44,20 @@ public class LiteNetLibPeer : INetworkPeer
     }
 }
 
-public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDisposable
+public class LiteNetLibNetworkServer : INetworkServer, IPooledBroadcastNetworkServer, INetEventListener, IDisposable
 {
     private readonly NetManager _netManager;
     private readonly ConcurrentDictionary<int, LiteNetLibPeer> _peers = new();
     private readonly ConcurrentDictionary<string, HashSet<int>> _groups = new();
     private readonly object _groupLock = new();
+
+    // Shared scratch writer for broadcasts. LiteNetLib's NetPeer.Send(NetDataWriter,...) copies
+    // the writer's data into its internal send queue synchronously, so a single instance can be
+    // safely reused across ticks as long as access is serialized (hence _broadcastLock). This
+    // eliminates the per-broadcast `new NetDataWriter()` allocation that previously fired once
+    // per match per tick.
+    private readonly NetDataWriter _broadcastWriter = new();
+    private readonly object _broadcastLock = new();
 
     // Delegate for processing incoming packets
     private readonly Func<INetworkPeer, byte[], Task> _packetHandler;
@@ -67,25 +77,25 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
         _netManager = new NetManager(this);
         _netManager.UnconnectedMessagesEnabled = true;
         _netManager.BroadcastReceiveEnabled = true;
-        Console.WriteLine($"[LiteNetLibServer] Starting on port {port}...");
+        ILogger.Log($"[LiteNetLibServer] Starting on port {port}...");
         bool started = _netManager.Start(port);
-        Console.WriteLine($"[LiteNetLibServer] Start result: {started}");
-        
+        ILogger.Log($"[LiteNetLibServer] Start result: {started}");
+
         if (!started)
         {
-            Console.WriteLine($"[LiteNetLibServer] FAILED TO START ON PORT {port}. Check permissions or if port is in use.");
+            ILogger.LogError($"[LiteNetLibServer] FAILED TO START ON PORT {port}. Check permissions or if port is in use.");
         }
-        
+
         // Polling loop
         _ = Task.Run(async () =>
         {
-            Console.WriteLine("[LiteNetLibServer] Polling loop started.");
+            ILogger.Log("[LiteNetLibServer] Polling loop started.");
             while (_netManager.IsRunning)
             {
                 _netManager.PollEvents();
                 await Task.Delay(15);
             }
-            Console.WriteLine("[LiteNetLibServer] Polling loop ended.");
+            ILogger.Log("[LiteNetLibServer] Polling loop ended.");
         });
     }
 
@@ -93,7 +103,7 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
     {
         if (peer is LiteNetLibPeer lnlPeer)
         {
-            Console.WriteLine($"[Server] JoinGroup {groupName} add peer {lnlPeer.Peer.Id}");
+            ILogger.Log($"[Server] JoinGroup {groupName} add peer {lnlPeer.Peer.Id}");
             lock (_groupLock)
             {
                 if (!_groups.TryGetValue(groupName, out var set))
@@ -125,36 +135,66 @@ public class LiteNetLibNetworkServer : INetworkServer, INetEventListener, IDispo
 
     public Task BroadcastToGroupAsync(string groupName, byte[] data, PacketType type)
     {
+        return BroadcastInternal(groupName, data, 0, data.Length, type);
+    }
+
+    /// <summary>
+    /// Pooled-buffer broadcast path used by the delta hot loop. The caller passes a
+    /// rented <paramref name="rentedBuffer"/> with valid bytes in <c>[0, length)</c>;
+    /// once LiteNetLib has copied the bytes into its send queue (synchronous), the
+    /// buffer is returned to <see cref="ArrayPool{T}.Shared"/>. Safe because
+    /// <see cref="NetPeer.Send(NetDataWriter, DeliveryMethod)"/> is synchronous — it
+    /// does not retain a reference to our bytes beyond the call.
+    /// </summary>
+    public Task BroadcastToGroupPooledAsync(string groupName, byte[] rentedBuffer, int length, PacketType type)
+    {
+        try
+        {
+            return BroadcastInternal(groupName, rentedBuffer, 0, length, type);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rentedBuffer);
+        }
+    }
+
+    private Task BroadcastInternal(string groupName, byte[] data, int offset, int length, PacketType type)
+    {
         List<int> peerIds;
         lock (_groupLock)
         {
             if (!_groups.TryGetValue(groupName, out var set)) return Task.CompletedTask;
             peerIds = new List<int>(set);
         }
-        Console.WriteLine($"[Server] BroadcastToGroup {groupName}, peers={peerIds.Count}");
-
-        var writer = new NetDataWriter();
-        writer.Put((byte)type);
-        writer.Put(data);
+        ILogger.Log($"[Server] BroadcastToGroup {groupName}, peers={peerIds.Count}");
 
         var deliveryMethod = DeliveryMethod.ReliableOrdered;
         if (type == PacketType.TickSnapshot)
         {
-            deliveryMethod = DeliveryMethod.ReliableUnordered;
+            deliveryMethod = DeliveryMethod.ReliableOrdered;
         }
         else if (type == PacketType.StateHash)
         {
             deliveryMethod = DeliveryMethod.Sequenced;
         }
 
-        foreach (var id in peerIds)
+        // Serialize access to the shared writer. All sends are synchronous, so the critical
+        // section is bounded by the per-peer Send calls — no awaits, no reentrancy risk.
+        lock (_broadcastLock)
         {
-            if (_peers.TryGetValue(id, out var peer))
+            _broadcastWriter.Reset();
+            _broadcastWriter.Put((byte)type);
+            _broadcastWriter.Put(data, offset, length);
+
+            foreach (var id in peerIds)
             {
-                peer.Peer.Send(writer, deliveryMethod);
+                if (_peers.TryGetValue(id, out var peer))
+                {
+                    peer.Peer.Send(_broadcastWriter, deliveryMethod);
+                }
             }
         }
-        
+
         return Task.CompletedTask;
     }
 

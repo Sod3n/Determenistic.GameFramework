@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,14 @@ public class BasicAuthService : IAuthService
 {
     public Task<Guid> AuthenticateAsync(string connectionId, string? authToken = null)
     {
-        // Create deterministic Guid from ConnectionId
-        // Same connection always gets the same player ID
+        // Honor a client-supplied GUID token so the same player can keep their identity
+        // across reconnects (and across offline → online publish). This is the local-dev
+        // stub; production should validate a JWT/OAuth token instead.
+        if (!string.IsNullOrWhiteSpace(authToken) && Guid.TryParse(authToken, out var supplied))
+            return Task.FromResult(supplied);
+
+        // Fallback: deterministic Guid from ConnectionId.
+        // Same connection always gets the same player ID.
         var playerId = CreateDeterministicGuid(connectionId);
         return Task.FromResult(playerId);
     }

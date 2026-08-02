@@ -25,9 +25,13 @@ public class SystemRunner
 {
     private readonly List<ISystem> _systems = new();
 
+    public Action<EntityWorld, ISystem>? AfterSystemUpdate { get; set; }
+
     public SystemRunnerDisposable EnableSystem(ISystem system)
     {
-        if (_systems.Contains(system)) return new SystemRunnerDisposable(this, null);
+        // Prevent duplicate system types (e.g. two Box2DPhysicsSystem instances)
+        var type = system.GetType();
+        if (_systems.Any(s => s.GetType() == type)) return new SystemRunnerDisposable(this, null);
         _systems.Add(system);
         SortSystems();
         return new SystemRunnerDisposable(this, new[] { system });
@@ -104,6 +108,7 @@ public class SystemRunner
                 try
                 {
                     system.Update(state);
+                    AfterSystemUpdate?.Invoke(state, system);
                 }
                 catch (Exception ex)
                 {

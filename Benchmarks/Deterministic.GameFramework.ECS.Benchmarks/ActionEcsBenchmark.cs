@@ -30,7 +30,7 @@ namespace Deterministic.GameFramework.Benchmarks
             // Setup Dispatcher
             _dispatcher = new Dispatcher();
             var service = new BenchmarkActionService();
-            _dispatcher.RegisterAction(service, new List<ReactionService<BenchmarkAction, BenchmarkComponent>>());
+            _dispatcher.RegisterAction(service);
 
             // Fill world
             for (int i = 0; i < Count; i++)

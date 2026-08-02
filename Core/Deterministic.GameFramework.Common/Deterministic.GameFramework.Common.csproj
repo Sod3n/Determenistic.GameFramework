@@ -12,4 +12,10 @@
       <ProjectReference Include="..\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+        <_Parameter1>Deterministic.GameFramework.GGPO</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>

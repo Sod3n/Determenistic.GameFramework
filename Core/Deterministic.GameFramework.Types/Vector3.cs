@@ -19,13 +19,6 @@ public struct Vector3 : IParam, IEquatable<Vector3>
         Z = z;
     }
 
-    public Vector3(float x, float y, float z)
-    {
-        X = new Float(x);
-        Y = new Float(y);
-        Z = new Float(z);
-    }
-
     public static Vector3 Zero => new Vector3(0f, 0f, 0f);
     public static Vector3 One => new Vector3(1f, 1f, 1f);
     public static Vector3 Right => new Vector3(1f, 0f, 0f);

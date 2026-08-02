@@ -31,9 +31,9 @@ public class GapFillingTests
     [Fact]
     public void Disposable_ShouldBeIdempotent()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var service = new TestActionService();
-        dispatcher.RegisterAction(service, Array.Empty<ReactionService<TestAction, TestComponent>>());
+        dispatcher.RegisterAction(service);
         dispatcher.DisableAction(service);
 
         var disposable = dispatcher.EnableActions(new[] { service });
@@ -51,7 +51,7 @@ public class GapFillingTests
     [Fact]
     public void EnableDisable_UnregisteredService_ShouldDoNothing()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var service = new TestActionService(); // Not registered, RuntimeId = -1
         
         // Should not throw
@@ -64,7 +64,7 @@ public class GapFillingTests
     [Fact]
     public void EnableDisable_UnregisteredReaction_ShouldDoNothing()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var service = new PreReactionService(); // Not registered, RuntimeId = -1
         
         // Should not throw
@@ -77,7 +77,7 @@ public class GapFillingTests
     [Fact]
     public void ExecuteByteAction_InvalidId_ShouldDoNothing()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var world = new EntityWorld();
         var entity = world.CreateEntity();
         
@@ -90,7 +90,7 @@ public class GapFillingTests
     [Fact]
     public void RegisterServices_ShouldCatchAndLog_WhenRegistrationFails()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var badService = new BadActionService();
         
         // This should not throw, but catch exception internally and log to Console

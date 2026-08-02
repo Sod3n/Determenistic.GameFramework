@@ -12,11 +12,24 @@ internal class ArchetypeObserver : ObserverNode
     private Action<Entity> _onAdd;
     private Action<Entity> _onRemove;
     private Func<Entity, bool>? _filter;
-    
+
+    // Component types used to build the query mask.
+    // Stored so the mask can be rebuilt during Reset() if LocalIds changed
+    // (e.g. after AdoptMappingsFrom during state sync).
+    private Type[] _componentTypes = Array.Empty<Type>();
+
     // Optimized bitset using ulong[]
     private ulong[] _matchedEntities;
     private int _capacity;
     private bool _isDisposed;
+
+    // Pending removes — buffered until confirmed by Reset().
+    // During normal ticking, entities that stop matching are put here
+    // instead of immediately firing _onRemove. This prevents visual
+    // flickering from temporary entity mask changes during prediction.
+    // Confirmed removes fire during Reset() (after rollback, state sync,
+    // or verified hash match).
+    private readonly List<int> _pendingRemoves = new();
 
     public ArchetypeObserver()
     {
@@ -27,22 +40,23 @@ internal class ArchetypeObserver : ObserverNode
         _onRemove = default!;
     }
 
-    public void Initialize(EntityWorld state, BitMask128 queryMask, Action<Entity> onAdd, Action<Entity> onRemove, Func<Entity, bool>? filter = null)
+    public void Initialize(EntityWorld state, BitMask128 queryMask, Action<Entity> onAdd, Action<Entity> onRemove, Func<Entity, bool>? filter = null, Type[]? componentTypes = null)
     {
         _state = state;
         _queryMask = queryMask;
         _onAdd = onAdd;
         _onRemove = onRemove;
         _filter = filter;
+        _componentTypes = componentTypes ?? Array.Empty<Type>();
         _isDisposed = false;
 
         // Reset tracking
         int requiredLength = _state.NextEntityId;
         EnsureCapacity(requiredLength);
-        
+
         // Clear all bits
         Array.Clear(_matchedEntities, 0, _matchedEntities.Length);
-        
+
         // Initial full scan (O(N) only once)
         FullScan();
     }
@@ -71,8 +85,23 @@ internal class ArchetypeObserver : ObserverNode
 
     public override void Reset()
     {
-        // On reset (e.g. after rollback), we can't trust dirty lists or incremental state.
-        // We must re-scan everything to ensure our bitset matches the restored state.
+        // Rebuild query mask from stored component types in case LocalIds
+        // changed (e.g. after AdoptMappingsFrom during state sync).
+        if (_componentTypes.Length > 0)
+        {
+            _queryMask = new BitMask128();
+            foreach (var type in _componentTypes)
+            {
+                try
+                {
+                    var id = ComponentId.FromType(type);
+                    _queryMask.Set(id.ToDense().Value);
+                }
+                catch { /* Type not registered — skip */ }
+            }
+        }
+
+        // Re-scan everything to ensure our bitset matches the restored state.
         EnsureCapacity(_state.NextEntityId);
         FullScan();
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.ECS;
 
@@ -164,7 +165,7 @@ public record struct ComponentId : IComparable<ComponentId>
                 updateAction(stableId, localCompId);
             }
             
-            Console.WriteLine($"[ComponentId] Registered {type.Name} -> Local({localId}) Stable({stableId})");
+            ILogger.Log($"[ComponentId] Registered {type.Name} -> Local({localId}) Stable({stableId})");
         }
     }
     
@@ -193,6 +194,7 @@ public record struct ComponentId : IComparable<ComponentId>
             DenseToStable.Clear();
             _nextLocalId = 0;
         }
+        ComponentIdSerializer.InvalidateCache();
     }
 
     /// <summary>

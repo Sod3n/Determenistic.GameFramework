@@ -5,6 +5,7 @@ using Deterministic.GameFramework.Physics2D.Components;
 using Deterministic.GameFramework.Physics2D.Systems;
 using Deterministic.GameFramework.TwoD;
 using Deterministic.GameFramework.Common;
+using Deterministic.GameFramework.Serialization;
 using Deterministic.GameFramework.Types;
 using FluentAssertions;
 using Xunit;
@@ -195,7 +196,7 @@ public class PhysicsNavigationTests
 
             ref var t = ref state.GetComponent<Transform2D>(agentEntity);
             ref var a = ref state.GetComponent<NavigationAgent2D>(agentEntity);
-            t.Position += a.Velocity * (Float)(1.0f / 60.0f);
+            t.Position += a.Velocity * (Float)1 / (Float)60;
 
             var dist = Vector2.Distance(t.GlobalPosition, a.TargetPosition);
             if (dist < closestToTarget) closestToTarget = dist;
@@ -232,7 +233,7 @@ public class PhysicsNavigationTests
 
             ref var t = ref state.GetComponent<Transform2D>(agentEntity);
             ref var a = ref state.GetComponent<NavigationAgent2D>(agentEntity);
-            t.Position += a.Velocity * (Float)(1.0f / 60.0f);
+            t.Position += a.Velocity * (Float)1 / (Float)60;
 
             var dist = Vector2.Distance(t.GlobalPosition, a.TargetPosition);
             if (dist < closestToTarget) closestToTarget = dist;
@@ -291,7 +292,7 @@ public class PhysicsNavigationTests
 
             ref var t = ref state.GetComponent<Transform2D>(agentEntity);
             ref var a = ref state.GetComponent<NavigationAgent2D>(agentEntity);
-            t.Position += a.Velocity * (Float)(1.0f / 60.0f);
+            t.Position += a.Velocity * (Float)1 / (Float)60;
 
             var dist = Vector2.Distance(t.GlobalPosition, a.TargetPosition);
             if (dist < closestToTarget) closestToTarget = dist;
@@ -1221,7 +1222,7 @@ public class StraightLineFollowTests
         // Simulate: move target steadily to the right (like a player walking right)
         Float targetX = (Float)15;
         Float targetSpeed = (Float)8; // slightly slower than agent so agent can keep up
-        Float dt = (Float)(1.0f / 60.0f);
+        Float dt = (Float)1 / (Float)60;
         Float targetUpdateThresholdSq = (Float)(1.5f * 1.5f); // match CowFollowSystem
 
         int reversals = 0;
@@ -1345,7 +1346,7 @@ public class StraightLineFollowTests
 
         Float targetX = (Float)10;
         Float targetSpeed = (Float)8;
-        Float dt = (Float)(1.0f / 60.0f);
+        Float dt = (Float)1 / (Float)60;
         Float targetUpdateThresholdSq = (Float)(1.5f * 1.5f);
 
         int reversals = 0;
@@ -1461,7 +1462,7 @@ public class StraightLineFollowTests
 
         Float targetX = (Float)5;
         Float targetSpeed = (Float)8;
-        Float dt = (Float)(1.0f / 60.0f);
+        Float dt = (Float)1 / (Float)60;
         Float targetUpdateThresholdSq = (Float)(1.5f * 1.5f);
 
         int reversals = 0;
@@ -1795,7 +1796,7 @@ public class NavigationDeterminismTests
 internal class FakeGameTime : IGameTime
 {
     public long CurrentTick { get; set; }
-    public float FixedDeltaTime { get; set; } = 1.0f / 60.0f;
+    public Float FixedDeltaTime { get; set; } = (Float)1 / (Float)60;
     public int TickRate { get; set; } = 60;
     public bool IsResimulating { get; set; } = false;
 }

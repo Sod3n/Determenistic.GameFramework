@@ -73,6 +73,27 @@ public struct List8<T> : IParam, IEnumerable<T>, IEquatable<List8<T>> where T : 
         Count++;
     }
     
+    public void RemoveAt(int index)
+    {
+        if (index < 0 || index >= Count) throw new IndexOutOfRangeException();
+        for (int i = index; i < Count - 1; i++)
+            this[i] = this[i + 1];
+        // Clear the last slot directly (can't use indexer since Count is about to shrink)
+        int lastSlot = Count - 1;
+        switch (lastSlot)
+        {
+            case 0: Item0 = default; break;
+            case 1: Item1 = default; break;
+            case 2: Item2 = default; break;
+            case 3: Item3 = default; break;
+            case 4: Item4 = default; break;
+            case 5: Item5 = default; break;
+            case 6: Item6 = default; break;
+            case 7: Item7 = default; break;
+        }
+        Count--;
+    }
+
     public void Clear()
     {
         Count = 0;

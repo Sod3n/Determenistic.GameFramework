@@ -51,7 +51,7 @@ public class CoverageTests
     [Fact]
     public void Dispatcher_GetDenseId_ShouldThrow_ForUnregisteredAction()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         // TestAction is registered in ComponentId, but not in Dispatcher
         
         Action act = () => dispatcher.GetDenseId<TestAction>();
@@ -64,11 +64,11 @@ public class CoverageTests
     public void ReactionService_ShouldReact_False_ShouldSkipReact()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new ConditionalReactionService(); // Returns ShouldReact = false for Amount 0
         
-        dispatcher.RegisterAction(actionService, new[] { reaction });
+        dispatcher.RegisterActionWithReactions(actionService, new[] { reaction });
         dispatcher.EnableAction(actionService);
         dispatcher.EnableReaction(reaction);
         dispatcher.ActionDispatcher = new MockActionDispatcher();
@@ -95,7 +95,7 @@ public class CoverageTests
     [Fact]
     public void RegisterServices_ShouldGroupReactionsCorrectly()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var r1 = new PreReactionService();
         var r2 = new PostReactionService();
@@ -144,7 +144,7 @@ public class CoverageTests
     [Fact]
     public void RegisterServices_ShouldHandleActionWithNoReactions()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         
         dispatcher.RegisterServices(

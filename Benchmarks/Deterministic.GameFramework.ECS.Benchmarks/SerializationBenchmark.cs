@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.Serialization;
 using Deterministic.GameFramework.Types;
 using System.Runtime.InteropServices;
 using System.Reflection;

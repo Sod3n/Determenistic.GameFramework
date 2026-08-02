@@ -159,20 +159,28 @@ public class ComponentModelGenerator : IIncrementalGenerator
         var fields = symbol.GetMembers()
             .OfType<IFieldSymbol>()
             .Where(f => f.DeclaredAccessibility == Accessibility.Public && !f.IsStatic)
-            .Select(f => new FieldInfo 
-            { 
-                Name = f.Name, 
-                Type = f.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) 
+            .Select(f => new FieldInfo
+            {
+                Name = f.Name,
+                Type = f.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                IsEnum = f.Type.TypeKind == TypeKind.Enum,
+                EnumUnderlyingType = f.Type.TypeKind == TypeKind.Enum
+                    ? ((INamedTypeSymbol)f.Type).EnumUnderlyingType?.ToDisplayString() ?? "int"
+                    : ""
             })
             .ToList();
 
         var properties = symbol.GetMembers()
             .OfType<IPropertySymbol>()
             .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic && p.GetMethod != null && p.SetMethod != null)
-            .Select(p => new FieldInfo 
-            { 
-                Name = p.Name, 
-                Type = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) 
+            .Select(p => new FieldInfo
+            {
+                Name = p.Name,
+                Type = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                IsEnum = p.Type.TypeKind == TypeKind.Enum,
+                EnumUnderlyingType = p.Type.TypeKind == TypeKind.Enum
+                    ? ((INamedTypeSymbol)p.Type).EnumUnderlyingType?.ToDisplayString() ?? "int"
+                    : ""
             });
             
         fields.AddRange(properties);
@@ -273,18 +281,27 @@ public class ComponentModelGenerator : IIncrementalGenerator
         sb.AppendLine($"        public {modelName}(global::Deterministic.GameFramework.Reactive.ReactiveSystem reactive, global::Deterministic.GameFramework.DAR.Context context)");
         sb.AppendLine("        {");
         
-        foreach (var field in info.Fields)
+        // Single observer per component — reads the struct once per tick and
+        // sets all ReactiveProperties. R3's ReactiveProperty deduplicates on set,
+        // so unchanged fields are no-ops. This replaces N per-field PollingObservers
+        // with 1 ComponentObserver, drastically reducing linked-list iteration cost.
+        if (info.Fields.Count > 0)
         {
-            var backingName = $"_{char.ToLower(field.Name[0])}{field.Name.Substring(1)}";
-            
-            sb.AppendLine($"            Disposables.Add(reactive.Subscribe(");
+            sb.AppendLine($"            Disposables.Add(reactive.SubscribeComponent<{structFullName}>(");
             sb.AppendLine($"                context.State,");
-            sb.AppendLine($"                (s) => s.GetComponent<{structFullName}>(context.Entity).{field.Name},");
-            sb.AppendLine($"                (s, val) =>");
+            sb.AppendLine($"                context.Entity,");
+            sb.AppendLine($"                (__comp) =>");
             sb.AppendLine($"                {{");
-            
-            var valueExpression = GetConversion("val", field.Type, isGodot);
-            sb.AppendLine($"                    {backingName}.Value = {valueExpression};");
+
+            foreach (var field in info.Fields)
+            {
+                var backingName = $"_{char.ToLower(field.Name[0])}{field.Name.Substring(1)}";
+                var valueExpression = field.IsEnum
+                    ? $"__comp.{field.Name}"
+                    : GetConversion($"__comp.{field.Name}", field.Type, isGodot);
+                sb.AppendLine($"                    {backingName}.Value = {valueExpression};");
+            }
+
             sb.AppendLine($"                }}));");
         }
         
@@ -463,5 +480,7 @@ public class ComponentModelGenerator : IIncrementalGenerator
     {
         public string Name { get; set; } = "";
         public string Type { get; set; } = "";
+        public bool IsEnum { get; set; }
+        public string EnumUnderlyingType { get; set; } = "";
     }
 }

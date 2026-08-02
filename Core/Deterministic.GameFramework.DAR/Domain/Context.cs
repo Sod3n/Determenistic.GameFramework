@@ -29,6 +29,7 @@ public readonly struct Context(EntityWorld state, Entity entity, IActionDispatch
     public void DeleteEntity(Entity entity) => State.DeleteEntity(entity);
     public ref T GetComponent<T>(Entity entity) where T : struct, IComponent => ref State.GetComponent<T>(entity);
     public T? TryGetComponent<T>(Entity entity) where T : struct, IComponent => State.TryGetComponent<T>(entity);
+    public bool TryGetComponent<T>(Entity entity, out T component) where T : struct, IComponent => State.TryGetComponent<T>(entity, out component);
     public bool HasComponent<T>(Entity entity) where T : struct, IComponent => State.HasComponent<T>(entity);
     public IEnumerable<Entity> Filter<T>() where T : struct, IComponent => State.Filter<T>();
     public IEnumerable<Entity> Filter<T1, T2>() where T1 : struct, IComponent where T2 : struct, IComponent => State.Filter<T1, T2>();

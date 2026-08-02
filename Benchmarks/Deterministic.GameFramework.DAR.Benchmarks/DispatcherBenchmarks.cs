@@ -7,7 +7,7 @@ namespace Deterministic.GameFramework.Benchmarks.DAR;
 [MemoryDiagnoser]
 public class DispatcherBenchmarks
 {
-    private Dispatcher _dispatcher;
+    private ReactionDispatcher _dispatcher;
     private EntityWorld _world;
     private ActionScheduler _scheduler;
     private DenseComponentId _actionId;
@@ -28,7 +28,7 @@ public class DispatcherBenchmarks
         catch { }
 
         _world = new EntityWorld();
-        _dispatcher = new Dispatcher();
+        _dispatcher = new ReactionDispatcher();
         _scheduler = new ActionScheduler();
 
         var actionService = new BenchActionService();

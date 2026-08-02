@@ -53,9 +53,9 @@ public class ActionSchedulerTests
     public void ExecuteActions_ShouldResetDirtyTickAfterExecution()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
-        dispatcher.RegisterAction(actionService, Array.Empty<ReactionService<TestAction, TestComponent>>());
+        dispatcher.RegisterAction(actionService);
         dispatcher.ActionDispatcher = new MockActionDispatcher();
         
         var scheduler = new ActionScheduler();
@@ -76,9 +76,9 @@ public class ActionSchedulerTests
     public void ExecuteActions_ShouldExecuteInDeterministicOrder()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
-        dispatcher.RegisterAction(actionService, Array.Empty<ReactionService<TestAction, TestComponent>>());
+        dispatcher.RegisterAction(actionService);
         dispatcher.ActionDispatcher = new MockActionDispatcher();
         
         // We need to enable the action service in the dispatcher
@@ -150,7 +150,7 @@ public class ActionSchedulerTests
         int capturedStableId = 0;
         long capturedTick = 0;
         
-        scheduler.OnActionScheduled += (StableId, data, targetId, tick) =>
+        scheduler.OnActionScheduled += (StableId, data, targetId, tick, originalTick, predictionId) =>
         {
             eventFired = true;
             capturedStableId = StableId;
@@ -169,10 +169,10 @@ public class ActionSchedulerTests
     public void ExecuteActions_ShouldOnlyExecuteActionsForSpecificTick()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         dispatcher.ActionDispatcher = new MockActionDispatcher();
-        dispatcher.RegisterAction(actionService, Array.Empty<ReactionService<TestAction, TestComponent>>());
+        dispatcher.RegisterAction(actionService);
         dispatcher.EnableAction(actionService);
 
         var scheduler = new ActionScheduler();

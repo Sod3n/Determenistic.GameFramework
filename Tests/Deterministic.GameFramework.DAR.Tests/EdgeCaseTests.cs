@@ -40,17 +40,17 @@ public class EdgeCaseTests
     [Fact]
     public void Dispatcher_RegisterAction_CalledTwice_ShouldBeIdempotent()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reactions = Array.Empty<ReactionService<TestAction, TestComponent>>();
         
         // First registration
-        dispatcher.RegisterAction(actionService, reactions);
+        dispatcher.RegisterActionWithReactions(actionService, reactions);
         
         // Second registration - should not throw and likely no-op for runners
         // But might update execution mask or system runners if implementation allows overrides.
         // The implementation checks: if (!_actionRunners.ContainsKey(id))
-        dispatcher.RegisterAction(actionService, reactions);
+        dispatcher.RegisterActionWithReactions(actionService, reactions);
         
         dispatcher.IsActionRegistered(typeof(TestAction)).Should().BeTrue();
     }
@@ -58,7 +58,7 @@ public class EdgeCaseTests
     [Fact]
     public void Dispatcher_ShouldResizeMask_WhenManyReactionsRegistered()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         
         // Create 300 reactions
@@ -69,7 +69,7 @@ public class EdgeCaseTests
         }
         
         // This triggers registration and resizing of execution mask
-        dispatcher.RegisterAction(actionService, reactions);
+        dispatcher.RegisterActionWithReactions(actionService, reactions);
         
         // Verify all have IDs assigned
         reactions[299].RuntimeId.Should().BeGreaterThan(0);

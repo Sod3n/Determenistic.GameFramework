@@ -4,6 +4,7 @@ using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Reactive;
 using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.DAR;
+using Deterministic.GameFramework.Serialization;
 using Deterministic.GameFramework.Types;
 using FluentAssertions;
 using Xunit;
@@ -512,6 +513,255 @@ namespace Deterministic.GameFramework.ECS.Tests
             
             // Verify e1 is NOT removed
             removed.Should().NotContain(e1.Id);
+        }
+
+        /// <summary>
+        /// Reproduces the "disappearing props" bug after a state desync in a networked game.
+        ///
+        /// Timeline:
+        ///   1. Entities exist with PositionComponent+TagComponent. Observer fires onAdd.
+        ///   2. Tick completes. ClearDirty() wipes the dirty list.
+        ///   3. Desync: RemoveComponent strips TagComponent from some entities (simulating
+        ///      entity-ID swap where entity 5 is Grass on client but Player on server).
+        ///      MarkDirty fires. Observer processes removes via CheckAndNotify.
+        ///   4. Tick completes. ClearDirty() wipes the dirty list again.
+        ///   5. State correction: the server state arrives and we restore the entity masks
+        ///      directly (bypassing AddComponent, so MarkDirty is NOT called).
+        ///      This simulates what happens during state sync / deserialization when
+        ///      MarkAllDirty is not called afterwards.
+        ///   6. More ticks run. Observer never re-checks these entities because they are
+        ///      not in the dirty list.
+        ///   7. BUG: The entities are gone from the observer's matched set (removed in
+        ///      step 3) and never re-added. Visual props disappear permanently.
+        ///
+        /// This test should FAIL with the current code, confirming the bug.
+        /// The fix would be to either:
+        ///   a) Always call MarkAllDirty() after state correction, or
+        ///   b) Use IsPaused during the desync window so removes never fire, and
+        ///      Reset() reconciles on unpause.
+        /// </summary>
+        [Fact]
+        public void ArchetypeObserver_DesyncCorrection_EntitiesShouldReappear_WhenMasksRestoredDirectly()
+        {
+            // -- Arrange --
+            var state = new EntityWorld();
+            state.RegisterComponent<PositionComponent>();
+            state.RegisterComponent<TagComponent>();
+            var reactive = new ReactiveSystem();
+
+            var added = new List<int>();
+            var removed = new List<int>();
+
+            reactive.ObserveArchetype<PositionComponent, TagComponent>(
+                state,
+                e => added.Add(e.Id),
+                e => removed.Add(e.Id));
+
+            // Create 5 "prop" entities with both components
+            var entities = new Entity[5];
+            for (int i = 0; i < 5; i++)
+            {
+                entities[i] = state.CreateEntity();
+                state.AddComponent(entities[i], new PositionComponent { X = i * 10 });
+                state.AddComponent(entities[i], new TagComponent { TagId = i });
+            }
+
+            // Step 1: First tick - observer detects all 5 entities
+            reactive.Tick();
+            added.Count.Should().Be(5, "all 5 entities should be detected on first tick");
+            removed.Count.Should().Be(0);
+
+            // Step 2: Clear dirty (simulates end-of-tick in GameSimulation)
+            state.ClearDirty();
+            added.Clear();
+            removed.Clear();
+
+            // Step 3: DESYNC - remove TagComponent from entities 1,2,3
+            // (simulating entity-ID swap: these entities temporarily look like
+            //  Player entities instead of Grass/Prop entities)
+            state.RemoveComponent<TagComponent>(entities[1]);
+            state.RemoveComponent<TagComponent>(entities[2]);
+            state.RemoveComponent<TagComponent>(entities[3]);
+
+            // Observer fires removes for entities 1,2,3
+            reactive.Tick();
+            removed.Count.Should().Be(3, "3 entities should be removed during desync");
+            added.Count.Should().Be(0);
+
+            // Step 4: Clear dirty (end of desync tick)
+            state.ClearDirty();
+            added.Clear();
+            removed.Clear();
+
+            // Step 5: STATE CORRECTION - restore entity masks directly
+            // This simulates what happens when the server sends the correct state
+            // and the client restores entity masks via direct assignment (as in
+            // StateSerializer.Deserialize or manual mask restoration).
+            // Crucially, this does NOT go through AddComponent, so MarkDirty is NOT called.
+            var tagTypeId = ComponentId<TagComponent>.IntId;
+            state.EntityMasks[entities[1].Id].Set(tagTypeId);
+            state.EntityMasks[entities[2].Id].Set(tagTypeId);
+            state.EntityMasks[entities[3].Id].Set(tagTypeId);
+
+            // Step 6: Run several more ticks (simulating ~60 ticks of normal play)
+            for (int i = 0; i < 10; i++)
+            {
+                reactive.Tick();
+                state.ClearDirty();
+            }
+
+            // Step 7: VERIFY - entities 1,2,3 should have been re-added
+            // BUG: They are NOT re-added because they were never in the dirty list
+            // after the mask restoration. The observer's internal bitset still has
+            // them marked as "not matched" from step 3, and CheckAndNotify only
+            // checks dirty entities.
+            added.Count.Should().Be(3,
+                "entities 1,2,3 should be re-added after state correction restores their masks, " +
+                "but they are lost because direct mask writes don't trigger MarkDirty");
+        }
+
+        /// <summary>
+        /// Same desync scenario, but uses IsPaused to suppress callbacks during the
+        /// desync window. When unpaused, Reset() fires which does a FullScan.
+        /// This is the WORKAROUND that should pass -- proves IsPaused+Reset works.
+        /// </summary>
+        [Fact]
+        public void ArchetypeObserver_DesyncWithPause_EntitiesShouldReappear_AfterUnpause()
+        {
+            // -- Arrange --
+            var state = new EntityWorld();
+            state.RegisterComponent<PositionComponent>();
+            state.RegisterComponent<TagComponent>();
+            var reactive = new ReactiveSystem();
+
+            var added = new List<int>();
+            var removed = new List<int>();
+
+            reactive.ObserveArchetype<PositionComponent, TagComponent>(
+                state,
+                e => added.Add(e.Id),
+                e => removed.Add(e.Id));
+
+            // Create 5 "prop" entities
+            var entities = new Entity[5];
+            for (int i = 0; i < 5; i++)
+            {
+                entities[i] = state.CreateEntity();
+                state.AddComponent(entities[i], new PositionComponent { X = i * 10 });
+                state.AddComponent(entities[i], new TagComponent { TagId = i });
+            }
+
+            // First tick - all 5 detected
+            reactive.Tick();
+            added.Count.Should().Be(5);
+            state.ClearDirty();
+            added.Clear();
+            removed.Clear();
+
+            // PAUSE before desync (client detects mismatch, pauses reactive system)
+            reactive.IsPaused = true;
+
+            // DESYNC - remove TagComponent from entities 1,2,3
+            state.RemoveComponent<TagComponent>(entities[1]);
+            state.RemoveComponent<TagComponent>(entities[2]);
+            state.RemoveComponent<TagComponent>(entities[3]);
+
+            // Tick while paused - should NOT fire any callbacks
+            reactive.Tick();
+            removed.Count.Should().Be(0, "no removes should fire while paused");
+            state.ClearDirty();
+
+            // STATE CORRECTION - restore masks directly
+            var tagTypeId = ComponentId<TagComponent>.IntId;
+            state.EntityMasks[entities[1].Id].Set(tagTypeId);
+            state.EntityMasks[entities[2].Id].Set(tagTypeId);
+            state.EntityMasks[entities[3].Id].Set(tagTypeId);
+
+            // UNPAUSE - this triggers Reset() which does FullScan
+            reactive.IsPaused = false;
+
+            // All 5 entities still have both components, observer should have them all matched.
+            // Since entities 1,2,3 were removed from observer's bitset during the mask change
+            // but Reset() re-scans everything, they should be re-added.
+            // Actually: since IsPaused suppressed the tick, the observer's bitset still has
+            // entities 1,2,3 as matched. And after mask restoration + Reset(), they still match.
+            // So no removes or adds should have fired -- net zero change.
+            // The key insight: IsPaused prevents the observer from ever seeing the intermediate
+            // bad state, so no visual flicker occurs.
+            removed.Count.Should().Be(0, "no removes should fire when paused during desync");
+
+            // Run normal ticks - all 5 should still be tracked
+            for (int i = 0; i < 5; i++)
+            {
+                reactive.Tick();
+                state.ClearDirty();
+            }
+
+            // Verify by removing all entities - should get 5 removes
+            removed.Clear();
+            for (int i = 0; i < 5; i++)
+            {
+                state.RemoveComponent<TagComponent>(entities[i]);
+            }
+            reactive.Tick();
+            removed.Count.Should().Be(5,
+                "all 5 entities should still be tracked after desync+pause+unpause cycle");
+        }
+
+        /// <summary>
+        /// Variant: desync where RemoveComponent is used (marks dirty), then state
+        /// correction also uses AddComponent (marks dirty). This SHOULD work because
+        /// both paths go through MarkDirty. Included as a baseline/control test.
+        /// </summary>
+        [Fact]
+        public void ArchetypeObserver_DesyncCorrection_ViaAddComponent_ShouldWork()
+        {
+            var state = new EntityWorld();
+            state.RegisterComponent<PositionComponent>();
+            state.RegisterComponent<TagComponent>();
+            var reactive = new ReactiveSystem();
+
+            var added = new List<int>();
+            var removed = new List<int>();
+
+            reactive.ObserveArchetype<PositionComponent, TagComponent>(
+                state,
+                e => added.Add(e.Id),
+                e => removed.Add(e.Id));
+
+            var entities = new Entity[5];
+            for (int i = 0; i < 5; i++)
+            {
+                entities[i] = state.CreateEntity();
+                state.AddComponent(entities[i], new PositionComponent { X = i * 10 });
+                state.AddComponent(entities[i], new TagComponent { TagId = i });
+            }
+
+            reactive.Tick();
+            added.Count.Should().Be(5);
+            state.ClearDirty();
+            added.Clear();
+            removed.Clear();
+
+            // DESYNC - remove via RemoveComponent (marks dirty)
+            state.RemoveComponent<TagComponent>(entities[1]);
+            state.RemoveComponent<TagComponent>(entities[2]);
+            state.RemoveComponent<TagComponent>(entities[3]);
+            reactive.Tick();
+            removed.Count.Should().Be(3);
+            state.ClearDirty();
+            added.Clear();
+            removed.Clear();
+
+            // STATE CORRECTION - restore via AddComponent (marks dirty!)
+            state.AddComponent(entities[1], new TagComponent { TagId = 1 });
+            state.AddComponent(entities[2], new TagComponent { TagId = 2 });
+            state.AddComponent(entities[3], new TagComponent { TagId = 3 });
+            reactive.Tick();
+
+            // This SHOULD work because AddComponent calls MarkDirty
+            added.Count.Should().Be(3,
+                "entities restored via AddComponent should be re-added (control test)");
         }
 
         [Fact]

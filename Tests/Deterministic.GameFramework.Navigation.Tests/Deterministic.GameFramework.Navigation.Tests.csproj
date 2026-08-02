@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\2D\Deterministic.GameFramework.TwoD.Physics\Deterministic.GameFramework.TwoD.Physics.csproj" />
     <ProjectReference Include="..\..\2D\Deterministic.GameFramework.TwoD\Deterministic.GameFramework.TwoD.csproj" />
     <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Serialization\Deterministic.GameFramework.Serialization.csproj" />
     <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Common\Deterministic.GameFramework.Common.csproj" />
     <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
   </ItemGroup>

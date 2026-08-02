@@ -15,6 +15,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+        <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactions\Deterministic.GameFramework.Reactions.csproj" />
     </ItemGroup>
 
 </Project>

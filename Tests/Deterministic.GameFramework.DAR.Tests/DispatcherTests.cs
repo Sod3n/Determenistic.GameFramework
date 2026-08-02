@@ -23,7 +23,7 @@ public class DispatcherTests
     [Fact]
     public void Dispatcher_ShouldRegisterServicesCorrectly()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new PreReactionService();
         
@@ -38,11 +38,11 @@ public class DispatcherTests
     public void PreReaction_ShouldModifyAction_BeforeExecution()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new PreReactionService();
         
-        dispatcher.RegisterAction(actionService, new[] { reaction });
+        dispatcher.RegisterActionWithReactions(actionService, new[] { reaction });
         dispatcher.EnableAction(actionService);
         dispatcher.EnableReaction(reaction);
         
@@ -65,11 +65,11 @@ public class DispatcherTests
     public void PostReaction_ShouldRun_AfterExecution()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new PostReactionService(); // Clamps to 0
         
-        dispatcher.RegisterAction(actionService, new[] { reaction });
+        dispatcher.RegisterActionWithReactions(actionService, new[] { reaction });
         dispatcher.EnableAction(actionService);
         dispatcher.EnableReaction(reaction);
         dispatcher.ActionDispatcher = new MockActionDispatcher();
@@ -89,11 +89,11 @@ public class DispatcherTests
     public void AbortReaction_ShouldStopExecution()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new AbortReactionService(); // Aborts if amount > 9000
         
-        dispatcher.RegisterAction(actionService, new[] { reaction });
+        dispatcher.RegisterActionWithReactions(actionService, new[] { reaction });
         dispatcher.EnableAction(actionService);
         dispatcher.EnableReaction(reaction);
         dispatcher.ActionDispatcher = new MockActionDispatcher();

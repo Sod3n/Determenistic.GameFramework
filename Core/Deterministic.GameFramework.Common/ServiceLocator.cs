@@ -1,11 +1,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Deterministic.GameFramework.DAR;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.Common;
 
@@ -13,11 +13,9 @@ public class ServiceRegistration
 {
     public SystemRunnerDisposable? Systems { get; set; }
     public ActionRunnerDisposable? Actions { get; set; }
-    public ReactionRunnerDisposable? Reactions { get; set; }
-    
-    // Store raw lists for deep unregistration
+    public IDisposable? Reactions { get; set; }
+
     public List<IActionService> RegisteredActionServices { get; set; } = new();
-    public List<IReactionService> RegisteredReactionServices { get; set; } = new();
 }
 
 public static class ServiceLocator
@@ -27,15 +25,10 @@ public static class ServiceLocator
     private static readonly Dictionary<Type, object> _singletons = new();
     private static readonly object _lock = new();
 
-    // Cache for Action/Reaction types to avoid scanning repeatedly
-    // private static readonly List<Type> _actionServiceTypes = new();
-    // private static readonly List<Type> _reactionServiceTypes = new();
-
     public static ServiceRegistration Register(GameSimulation simulation, IEnumerable<Assembly> assemblies)
     {
         var systems = new List<ISystem>();
         var actions = new List<IActionService>();
-        var reactions = new List<IReactionService>();
 
         foreach (var assembly in assemblies)
         {
@@ -47,29 +40,24 @@ public static class ServiceLocator
 
                 if (typeof(ISystem).IsAssignableFrom(type))
                 {
+                    if (type.GetCustomAttributes(false).Any(a => a.GetType().Name == "ManualSystemAttribute"))
+                        continue;
                     systems.Add((ISystem)GetOrCreate(type));
                 }
                 else if (typeof(IActionService).IsAssignableFrom(type))
                 {
                     actions.Add((IActionService)GetOrCreate(type));
                 }
-                else if (typeof(IReactionService).IsAssignableFrom(type))
-                {
-                    reactions.Add((IReactionService)GetOrCreate(type));
-                }
             }
         }
 
-        // Register Services with Dispatcher first (ensure IDs are assigned)
-        simulation.Dispatcher.RegisterServices(actions, reactions);
+        simulation.Dispatcher.RegisterServices(actions);
 
         var registration = new ServiceRegistration
         {
             Systems = simulation.SystemRunner.EnableSystems(systems),
             Actions = simulation.Dispatcher.EnableActions(actions),
-            Reactions = simulation.Dispatcher.EnableReactions(reactions),
-            RegisteredActionServices = actions,
-            RegisteredReactionServices = reactions
+            RegisteredActionServices = actions
         };
 
         return registration;
@@ -80,8 +68,8 @@ public static class ServiceLocator
         registration.Systems?.Dispose();
         registration.Actions?.Dispose();
         registration.Reactions?.Dispose();
-        
-        simulation.Dispatcher.UnregisterServices(registration.RegisteredActionServices, registration.RegisteredReactionServices);
+
+        simulation.Dispatcher.UnregisterServices(registration.RegisteredActionServices);
     }
 
     /// <summary>
@@ -115,7 +103,7 @@ public static class ServiceLocator
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
+                ILogger.LogError($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
                 throw;
             }
         }
@@ -138,7 +126,7 @@ public static class ServiceLocator
             // and we need to recover if ComponentId mappings were cleared (e.g. in tests).
             ComponentId.RegisterAssembly(assembly);
             
-            Console.WriteLine($"[ServiceLocator] Registered assembly: {assembly.GetName().Name}");
+            ILogger.Log($"[ServiceLocator] Registered assembly: {assembly.GetName().Name}");
         }
     }
 
@@ -182,6 +170,10 @@ public static class ServiceLocator
                 {
                     if (interfaceType.IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                     {
+                        // Skip systems marked [ManualSystem]
+                        if (typeof(ISystem).IsAssignableFrom(interfaceType) &&
+                            type.GetCustomAttributes(false).Any(a => a.GetType().Name == "ManualSystemAttribute"))
+                            continue;
                         if (!_singletons.TryGetValue(type, out var instance))
                         {
                             try
@@ -191,7 +183,7 @@ public static class ServiceLocator
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
+                                ILogger.LogError($"[ServiceLocator] Failed to instantiate {type.Name}: {ex.Message}");
                                 continue;
                             }
                         }
@@ -200,15 +192,15 @@ public static class ServiceLocator
                 }
             }
         }
-        
+
         // Sort for determinism (Critical for System execution order)
-        implementations.Sort((a, b) => 
+        implementations.Sort((a, b) =>
         {
             string? nameA = a?.GetType().FullName;
             string? nameB = b?.GetType().FullName;
             return string.Compare(nameA, nameB, StringComparison.Ordinal);
         });
-        
+
         return implementations;
     }
 

@@ -3,8 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.ECS;
-using Deterministic.GameFramework.Network.Packets;
-using Deterministic.GameFramework.Network.Server;
+using Deterministic.GameFramework.GGPO;
 using Deterministic.GameFramework.Network.Packets;
 using Deterministic.GameFramework.Network.Server;
 using FluentAssertions;
@@ -36,63 +35,62 @@ public class StateVerificationServiceTests
     [Fact]
     public void Should_Broadcast_On_Interval_Correctly()
     {
-         // Arrange
         var state = new EntityWorld();
-        // Use Game constructor to ensure dependencies are linked
         var game = new Game(state, tickRate: 60);
-        
+
         var matchId = System.Guid.NewGuid();
         var match = new Match(matchId, game);
-        
+
+        var history = GGPOSetup.EnableGGPO(game.Loop.Simulation);
+        var strategy = (GGPOSyncStrategy)game.Loop.Simulation.Strategy;
+
         var mockServer = new MockNetworkServer();
         var interval = 10;
-        var service = new StateVerificationService(match, mockServer, interval);
+        var service = new StateVerificationService(match, mockServer, history, strategy, interval);
+        service.ConfirmationWindowTicks = 0;
 
-        // Act & Assert
-        
-        // Tick 0: Should broadcast (0 % 10 == 0)
-        game.Loop.RunSingleTick(); 
+        for (int i = 0; i < 10; i++)
+        {
+            game.Loop.RunSingleTick();
+        }
         mockServer.Broadcasts.Should().HaveCount(1);
         mockServer.Broadcasts[0].data.Should().NotBeEmpty();
-        
-        // Ticks 1-9: Should NOT broadcast
+
         for (int i = 0; i < 9; i++)
         {
             game.Loop.RunSingleTick();
         }
-        mockServer.Broadcasts.Should().HaveCount(1); // Still 1
-        
-        // Tick 10: Should broadcast
+        mockServer.Broadcasts.Should().HaveCount(1);
+
         game.Loop.RunSingleTick();
         mockServer.Broadcasts.Should().HaveCount(2);
     }
-    
+
     [Fact]
     public void Service_Should_Broadcast_Correct_Packet()
     {
-        // Arrange
         var game = new Game(tickRate: 60);
         var matchId = System.Guid.NewGuid();
         var match = new Match(matchId, game);
-        var mockServer = new MockNetworkServer();
-        var service = new StateVerificationService(match, mockServer, intervalTicks: 1); // Every tick
 
-        // Act
+        var history = GGPOSetup.EnableGGPO(game.Loop.Simulation);
+        var strategy = (GGPOSyncStrategy)game.Loop.Simulation.Strategy;
+
+        var mockServer = new MockNetworkServer();
+        var service = new StateVerificationService(match, mockServer, history, strategy, intervalTicks: 1);
+        service.ConfirmationWindowTicks = 0;
+
         game.Loop.RunSingleTick();
 
-        // Assert
         mockServer.Broadcasts.Should().HaveCount(1);
         var broadcast = mockServer.Broadcasts[0];
-        
+
         broadcast.group.Should().Be(matchId.ToString());
         broadcast.type.Should().Be(PacketType.StateHash);
-        
-        // Verify Payload
+
         var span = new ReadOnlySpan<byte>(broadcast.data);
         var packet = MemoryMarshal.Read<StateHashPacket>(span);
-        
-        // Service logic: Tick = currentTick + 1
-        // OnTick runs when CurrentTick=0. So sent Tick should be 1.
+
         packet.Tick.Should().Be(1);
         packet.Hash.Should().NotBeEmpty();
     }

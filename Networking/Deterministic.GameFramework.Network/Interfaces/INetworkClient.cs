@@ -31,6 +31,9 @@ public interface INetworkClient : IAsyncDisposable
     event Action<byte[]> OnFullStateReceived;
     event Action<byte[]> OnComponentMappingReceived;
     event Action<byte[]> OnStateHashReceived;
+
+    /// <summary>Fired when the server broadcasts a <c>TickDelta</c> packet (Delta-sync mode).</summary>
+    event Action<byte[]> OnTickDeltaReceived;
     
     event Action<System.Guid> OnLobbyCreated;
     event Action<System.Guid> OnLobbyJoined;

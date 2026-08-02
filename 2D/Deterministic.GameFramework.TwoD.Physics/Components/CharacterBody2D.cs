@@ -78,7 +78,7 @@ public struct CharacterBody2D : IComponent
 
     public static CharacterBody2D Default => new CharacterBody2D
     {
-        UpDirection = new Vector2(0, 1), 
+        UpDirection = new Vector2(0, 1),
         FloorSnapLength = 0.1f,
         WallMinSlideAngle = 0.261799f, 
         FloorMaxAngle = 0.785398f, 

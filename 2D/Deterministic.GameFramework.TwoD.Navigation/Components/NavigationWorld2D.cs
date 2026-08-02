@@ -76,6 +76,42 @@ public struct NavigationWorld2D : IComponent
     /// </summary>
     public Float ChunkSize;
 
+    // ── Bake state (deterministic, serialized with ECS) ──
+
+    /// <summary>
+    /// Whether the CDT nav mesh has been built at least once.
+    /// Stored here (instead of CDTNavigationState) so it survives
+    /// rollback and state sync — prevents GrassSpawnSystem from
+    /// taking different code paths on server vs client.
+    /// </summary>
+    public bool PhysicsBaked;
+
+    /// <summary>
+    /// Hash of the obstacle layout used for the last bake.
+    /// Used to detect when a rebake is needed.
+    /// </summary>
+    public int LastObstacleHash;
+
+    /// <summary>
+    /// Cached static body count from last hash computation.
+    /// Used as a cheap pre-check before computing the full hash.
+    /// </summary>
+    public int LastStaticBodyCount;
+
+    /// <summary>
+    /// Tick at which the obstacle count was last invalidated.
+    /// Used to debounce rebakes — wait several ticks after the last change.
+    /// </summary>
+    public long DirtyTick;
+
+    /// <summary>
+    /// Hash of the built navigation map (triangles + vertices).
+    /// Stored in ECS so it survives rollback and appears in state diffs.
+    /// If this diverges between client and server, the nav mesh is a desync source.
+    /// After state sync, if the local map's hash doesn't match, forces a rebuild.
+    /// </summary>
+    public int MapHash;
+
     public static NavigationWorld2D Default => new()
     {
         BoundsMin = new Vector2(-500, -500),
@@ -86,5 +122,9 @@ public struct NavigationWorld2D : IComponent
         IncludeDynamicBodies = false,
         ForceBake = true, // Bake on first frame
         ChunkSize = (Float)128,
+        PhysicsBaked = false,
+        LastObstacleHash = 0,
+        LastStaticBodyCount = 0,
+        DirtyTick = -1,
     };
 }

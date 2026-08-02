@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Network.Packets;
+using Deterministic.GameFramework.Utils.Logging;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,11 +43,11 @@ public class LiteNetLibPacketRouter
                 match.RemovePlayer(playerId);
                 await networkServer.LeaveGroupAsync(peer, matchId.ToString());
 
-                Console.WriteLine($"[PacketRouter] Player {playerId} disconnected from match {matchId}. Players remaining: {match.Players.Count}");
+                ILogger.Log($"[PacketRouter] Player {playerId} disconnected from match {matchId}. Players remaining: {match.Players.Count}");
 
                 if (match.Players.Count == 0)
                 {
-                    Console.WriteLine($"[PacketRouter] All players left match {matchId}, removing match.");
+                    ILogger.Log($"[PacketRouter] All players left match {matchId}, removing match.");
                     matchManager.RemoveMatch(matchId);
                 }
             }
@@ -56,12 +57,17 @@ public class LiteNetLibPacketRouter
     public async Task OnPacketReceived(INetworkPeer peer, byte[] data)
     {
         if (data.Length == 0) return;
-        
+
         // Use NetDataReader to parse safely
         var reader = new NetDataReader(data);
         if (!reader.TryGetByte(out byte typeByte)) return;
-        
+
         PacketType type = (PacketType)typeByte;
+
+        // Log every non-Batch packet so we can see what's reaching the server during lobby setup.
+        // Batch packets are per-tick and would flood the log.
+        if (type != PacketType.Batch)
+            ILogger.Log($"[PacketRouter] Received {type} from peer {peer.Id} ({data.Length} bytes)");
 
         switch (type)
         {

@@ -1,37 +1,65 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.DAR;
+using Deterministic.GameFramework.Debugging;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.Serialization;
 using Deterministic.GameFramework.Network.Buffers;
 using Deterministic.GameFramework.Network.Interfaces;
 using Deterministic.GameFramework.Network.Packets;
 using Deterministic.GameFramework.Reactive;
+using Deterministic.GameFramework.Utils.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Deterministic.GameFramework.Network.Client;
 
 public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 {
-    private readonly INetworkClient _networkClient;
-    private readonly string _connectionString;
-    private readonly Game _game;
+    protected readonly INetworkClient _networkClient;
+    private string _connectionString;
+    protected readonly Game _game;
 
-    private System.Guid _currentMatchId;
+    protected System.Guid _currentMatchId;
+    public System.Guid CurrentMatchId => _currentMatchId;
     private readonly PacketBuffer _outgoingBuffer = new PacketBuffer();
-    private readonly TaskCompletionSource<bool> _syncTcs = new TaskCompletionSource<bool>();
-    private bool _isWaitingForFullState = false;
+    protected readonly TaskCompletionSource<bool> _syncTcs = new TaskCompletionSource<bool>();
+    protected bool _isWaitingForFullState = false;
+    protected long _fullStateRequestTick = 0;
+    protected const long FullStateRetryInterval = 120;
 
-    // Buffering for future state hashes
-    private readonly System.Collections.Generic.Dictionary<long, StateHashPacket> _pendingHashes = new();
+    public struct PendingNetworkAction
+    {
+        public long ExecuteTick;
+        public byte[] SerializedBytes;
+    }
+    private readonly List<PendingNetworkAction> _pendingActions = new();
+    private long _serverMinAllowedTick = 0;
 
-    // ── Inbound queues: network thread enqueues, game loop thread dequeues ──
-    private readonly ConcurrentQueue<byte[]> _incomingTickSnapshots = new();
-    private readonly ConcurrentQueue<byte[]> _incomingFullStates = new();
-    private readonly ConcurrentQueue<byte[]> _incomingStateHashes = new();
+    protected struct PredictedAction
+    {
+        public DenseComponentId ComponentId;
+        public byte[] Data;
+        public int TargetEntityId;
+        public long ExecuteTick;
+    }
+    protected readonly List<PredictedAction> _unconfirmedPredictions = new();
+
+    private int _simulatedLatencyMs = 0;
+    private readonly ConcurrentQueue<(long releaseTimestamp, byte[] data, int type)> _delayQueue = new();
+
+    public int SimulatedLatencyMs
+    {
+        get => _simulatedLatencyMs;
+        set => _simulatedLatencyMs = value;
+    }
+
+    protected readonly ConcurrentQueue<byte[]> _incomingFullStates = new();
 
     public event Action<string>? OnLog;
     public event Action? OnConnected;
@@ -52,8 +80,20 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
     public Dispatcher Dispatcher => _game.Dispatcher;
     public ActionScheduler Scheduler => _game.Scheduler;
 
-    public System.Guid PlayerId { get; private set; }
+    public string ConnectionString => _connectionString;
+    public System.Guid PlayerId { get; protected set; }
 
+    /// <summary>Auth token sent during JoinMatch. Set this to the player's persistent ID
+    /// so the server's IAuthService returns it as PlayerId, allowing the same player to
+    /// keep their identity across reconnects and across offline → online publish.</summary>
+    public string? AuthToken { get; set; }
+
+    /// <summary>
+    /// Base GameClient: no synced game loop. For server-authoritative behaviour, use a
+    /// subclass that installs the matching strategy:
+    /// <see cref="Deterministic.GameFramework.DeltaSync.DeltaSyncGameClient"/> or
+    /// <see cref="Deterministic.GameFramework.GGPO.GGPOGameClient"/>.
+    /// </summary>
     public GameClient(INetworkClient networkClient, string connectionString, Game game)
     {
         _game = game;
@@ -61,20 +101,14 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         _connectionString = connectionString;
 
         Reactive = ReactiveSystem.Instance;
-        // Since ReactiveSystem is a singleton, ensure we start with a clean slate
         Reactive.Dispose();
         Reactive.Bind(game.State, game.Loop);
 
-        // Hook into GameLoop — drain inbound queues before each tick
         _game.Loop.OnBeforeTick += DrainNetworkQueues;
         _game.Loop.OnTick += Flush;
-        _game.Loop.OnTick += ProcessPendingHashes;
-        _game.Loop.OnRollbackFailed += OnRollbackFailed;
+        _game.Loop.OnTick += UnpauseReactiveAfterCatchUp;
 
-        // Network callbacks just enqueue raw bytes — never touch game state
-        _networkClient.OnTickSnapshotReceived += data => _incomingTickSnapshots.Enqueue(data);
-        _networkClient.OnFullStateReceived += data => _incomingFullStates.Enqueue(data);
-        _networkClient.OnStateHashReceived += data => _incomingStateHashes.Enqueue(data);
+        SetupModeSpecificHandlers();
 
         _networkClient.OnLobbyCreated += (id) => OnLobbyCreated?.Invoke(id);
         _networkClient.OnLobbyJoined += (id) => OnLobbyJoined?.Invoke(id);
@@ -84,12 +118,21 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         _networkClient.OnConnected += () => OnConnected?.Invoke();
     }
 
+    protected virtual void SetupModeSpecificHandlers()
+    {
+        _networkClient.OnFullStateReceived += data => EnqueueWithDelay(data, 1);
+    }
+
+    public void SetConnectionString(string connectionString)
+    {
+        _connectionString = connectionString;
+    }
+
     private void HandleMatchAssigned(System.Guid matchId)
     {
         Log($"[MatchAssignment] Assigned to match {matchId}");
         OnMatchAssigned?.Invoke(matchId);
 
-        // Auto-join the assigned match
         _ = JoinMatchInternalAsync(matchId);
     }
 
@@ -98,7 +141,7 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         try
         {
             _currentMatchId = matchId;
-            PlayerId = await _networkClient.JoinMatchAsync(matchId, null);
+            PlayerId = await _networkClient.JoinMatchAsync(matchId, AuthToken);
             Log($"Joined match {matchId}. Assigned PlayerId: {PlayerId}");
 
             Log("[GameClient] Requesting full state...");
@@ -110,72 +153,57 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         }
     }
 
-    // ── Called on the game loop thread before each tick (via OnBeforeTick). ──
-    // Also called from WaitForSyncAsync to apply the initial full state before the loop starts.
-    public void DrainNetworkQueues()
+    private bool _latencyActive = false;
+
+    public void ActivateSimulatedLatency() => _latencyActive = true;
+
+    protected void EnqueueWithDelay(byte[] data, int type)
     {
-        // 1. Apply full state (if any) — this resets everything, so do it first
+        if (_simulatedLatencyMs <= 0 || !_latencyActive)
+        {
+            EnqueueDirect(data, type);
+            return;
+        }
+
+        long releaseTime = Stopwatch.GetTimestamp()
+            + (long)(_simulatedLatencyMs * 0.001 * Stopwatch.Frequency);
+        _delayQueue.Enqueue((releaseTime, data, type));
+    }
+
+    protected virtual void EnqueueDirect(byte[] data, int type)
+    {
+        switch (type)
+        {
+            case 1: _incomingFullStates.Enqueue(data); break;
+        }
+    }
+
+    private void FlushDelayQueue()
+    {
+        if (_simulatedLatencyMs <= 0) return;
+
+        long now = Stopwatch.GetTimestamp();
+        while (_delayQueue.TryPeek(out var item) && item.releaseTimestamp <= now)
+        {
+            _delayQueue.TryDequeue(out item);
+            EnqueueDirect(item.data, item.type);
+        }
+    }
+
+    public virtual void DrainNetworkQueues()
+    {
+        FlushDelayQueue();
+
         while (_incomingFullStates.TryDequeue(out var data))
         {
             ApplyFullState(data);
         }
-
-        // 2. Process tick snapshots (schedule actions)
-        while (_incomingTickSnapshots.TryDequeue(out var data))
-        {
-            ApplyTickSnapshot(data);
-        }
-
-        // 3. Buffer state hashes
-        while (_incomingStateHashes.TryDequeue(out var data))
-        {
-            ApplyStateHash(data);
-        }
     }
 
-    private void ApplyTickSnapshot(byte[] packetData)
-    {
-        // Parse Header
-        var packetSpan = new ReadOnlySpan<byte>(packetData);
-        int headerSize = Marshal.SizeOf<TickSnapshotHeader>();
-
-        if (packetSpan.Length < headerSize) return; // Invalid
-
-        var header = MemoryMarshal.Read<TickSnapshotHeader>(packetSpan);
-        var payloadSpan = packetSpan.Slice(headerSize, header.PayloadLength);
-
-        Log($"Received TickSnapshot: ServerTick={header.ServerTick}, PayloadLength={header.PayloadLength}");
-
-        // 1. Process Actions from Binary Payload
-        int offset = 0;
-        int actionHeaderSize = Marshal.SizeOf<NetworkActionHeader>();
-
-        while (offset + actionHeaderSize <= payloadSpan.Length)
-        {
-            var actionHeader = MemoryMarshal.Read<NetworkActionHeader>(payloadSpan.Slice(offset));
-            offset += actionHeaderSize;
-
-            if (offset + actionHeader.DataLength > payloadSpan.Length) break; // Malformed
-
-            var dataSpan = payloadSpan.Slice(offset, actionHeader.DataLength);
-            offset += actionHeader.DataLength;
-
-            Scheduler.ScheduleFromBytes(actionHeader.ComponentId, dataSpan, actionHeader.TargetEntityId, actionHeader.ExecuteTick);
-        }
-
-        // 2. Sync Tick (Basic)
-        long delta = header.ServerTick - Loop.CurrentTick;
-        if (Math.Abs(delta) > 60) // 1 second drift
-        {
-            Log($"Tick Drift Large: {delta}. Server: {header.ServerTick}, Client: {Loop.CurrentTick}");
-        }
-    }
-
-    private void ApplyFullState(byte[] packetData)
+    protected virtual void ApplyFullState(byte[] packetData)
     {
         try
         {
-            // Parse Header
             var packetSpan = new ReadOnlySpan<byte>(packetData);
             int headerSize = Marshal.SizeOf<FullStateHeader>();
 
@@ -190,12 +218,14 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 
             Log($"Received Full State for Tick {header.Tick}. Size: {stateData.Length} bytes");
 
-            // If this is a resync (not initial sync), diff local vs server state
+            long clientTickBeforeSync = Loop.CurrentTick;
+
             if (_isWaitingForFullState)
             {
                 try
                 {
                     byte[] localData = StateSerializer.Serialize(State);
+                    Log($"[StateDiff] Comparing live state at tick {clientTickBeforeSync} with server tick {header.Tick}");
                     StateDumper.LogStateDiff("Client", header.Tick, localData, stateData);
                 }
                 catch (Exception ex)
@@ -204,35 +234,35 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
                 }
             }
 
-            // Adopt server's component ID mappings on every full state sync.
-            // The server state may contain newly active components (e.g. HouseComponent
-            // after building, EnterStateComponent during taming) whose LocalIds the
-            // client hasn't seen yet. Overlaying is safe — it only updates LocalIds
-            // for known StableIds without clearing existing registrations.
             StateSerializer.AdoptMappingsFrom(stateData);
 
             Log("Deserializing state...");
-            StateSerializer.Deserialize(State, stateData, syncComponentIds: false);
+            StateSerializer.Deserialize(State, stateData, syncComponentIds: false, fullInvalidate: true);
             Log("State deserialized!");
 
             Log($"Setting tick to {header.Tick}...");
             Loop.ForceSetTick(header.Tick);
 
-            // Store authoritative state in history
-            Loop.Simulation.History.Store(header.Tick, State);
+            OnFullStateDeserialized(header.Tick, stateData);
 
             Log($"Tick set to {header.Tick}!");
 
-            // Critical: Prune scheduler history to match new authoritative state
             Scheduler.PruneHistory(header.Tick);
 
-            // Critical: Reset Reactive System to re-scan the world.
-            Reactive.Reset();
+            ClearAndReAddPredictions(header.Tick);
+
+            long serverTick = header.ServerTick > 0 ? header.ServerTick : header.Tick;
+
+            Reactive.IsPaused = true;
+            _reactiveUnpauseAtTick = clientTickBeforeSync;
+
+            _isWaitingForFullState = false;
+
+            if (serverTick > Loop.CurrentTick)
+                Loop.TargetTick = serverTick;
 
             Log("Completing sync task...");
             _syncTcs.TrySetResult(true);
-
-            _isWaitingForFullState = false;
         }
         catch (Exception ex)
         {
@@ -242,113 +272,55 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         }
     }
 
-    private void ApplyStateHash(byte[] data)
+    protected void ClearAndReAddPredictions(long tick)
     {
-        try
+        lock (_pendingActions)
         {
-            var span = new ReadOnlySpan<byte>(data);
-            if (span.Length < Marshal.SizeOf<StateHashPacket>()) return;
-
-            var packet = MemoryMarshal.Read<StateHashPacket>(span);
-
-            // If the hash is for a future tick, buffer it
-            if (packet.Tick > Loop.CurrentTick)
-            {
-                _pendingHashes[packet.Tick] = packet;
-                return;
-            }
-
-            VerifyStateHash(packet);
+            _pendingActions.Clear();
         }
-        catch (Exception ex)
+        _serverMinAllowedTick = tick;
+
+        int removedCount = _unconfirmedPredictions.RemoveAll(p => p.ExecuteTick < tick);
+        if (removedCount > 0)
+            Log($"[Resync] Pruned {removedCount} old predictions (execTick < {tick})");
+
+        int reAddedCount = 0;
+        foreach (var predicted in _unconfirmedPredictions)
         {
-            Log($"Error processing StateHash: {ex}");
+            var result = Scheduler.ScheduleFromBytes(
+                predicted.ComponentId, predicted.Data,
+                predicted.TargetEntityId, predicted.ExecuteTick);
+            if (result == ActionScheduler.ScheduleResult.Success)
+                reAddedCount++;
         }
+        if (reAddedCount > 0)
+            Log($"[Resync] Re-added {reAddedCount} predicted actions (execTick >= {tick})");
     }
 
-    private void ProcessPendingHashes()
+    protected virtual void OnFullStateDeserialized(long tick, byte[] stateData) { }
+
+    protected void SetReactiveUnpauseAtTick(long tick)
     {
-        long currentTick = Loop.CurrentTick;
-
-        if (_pendingHashes.TryGetValue(currentTick, out var packet))
-        {
-            VerifyStateHash(packet);
-            _pendingHashes.Remove(currentTick);
-        }
-
-        // Cleanup old hashes
-        var ticksToRemove = new System.Collections.Generic.List<long>();
-        foreach (var tick in _pendingHashes.Keys)
-        {
-            if (tick < currentTick - 300)
-            {
-                ticksToRemove.Add(tick);
-            }
-        }
-
-        foreach (var tick in ticksToRemove)
-        {
-            _pendingHashes.Remove(tick);
-        }
+        _reactiveUnpauseAtTick = tick;
     }
 
-    private void VerifyStateHash(StateHashPacket packet)
+    private long _reactiveUnpauseAtTick;
+
+    private void UnpauseReactiveAfterCatchUp()
     {
-        try
-        {
-            Guid localHash;
+        if (!Reactive.IsPaused) return;
+        if (Loop.CurrentTick < _reactiveUnpauseAtTick) return;
 
-            // ALWAYS use history for thread safety.
-            if (_game.Simulation.History.TryGetSnapshotData(packet.Tick, out byte[]? snapshotData))
-            {
-                localHash = StateHasher.Hash(snapshotData!);
-            }
-            else
-            {
-                Log($"[StateHash] Skipped verification. Tick {packet.Tick} not in history (Current: {Loop.CurrentTick}, Oldest: {Loop.Simulation.History.GetOldestTick()}).");
-                return;
-            }
-
-            if (localHash != packet.Hash)
-            {
-                StateDumper.LogMismatch("Client", packet.Tick, localHash, packet.Hash, snapshotData);
-
-                OnStateMismatch?.Invoke(packet.Tick, (System.Guid)localHash, packet.Hash);
-
-                if (!_isWaitingForFullState)
-                {
-                    Log("[StateHash] Requesting full state sync due to mismatch...");
-                    _isWaitingForFullState = true;
-                    _ = RequestFullState();
-                }
-            }
-            else
-            {
-                Log($"[StateHash] Verified match at Tick {packet.Tick}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log($"Error verifying StateHash: {ex}");
-        }
-    }
-
-    private void OnRollbackFailed()
-    {
-        if (_isWaitingForFullState) return;
-
-        Log("Rollback failed due to missing history. Requesting full state sync...");
-        _isWaitingForFullState = true;
-        _ = RequestFullState();
+        Reactive.IsPaused = false;
     }
 
     public async Task ConnectAsync()
     {
-        Console.WriteLine($"[GameClient] Connecting to server at '{_connectionString}'");
+        ILogger.Log($"[GameClient] Connecting to server at '{_connectionString}'");
         if (_networkClient == null) throw new NullReferenceException("_networkClient is null");
 
         await _networkClient.ConnectAsync(_connectionString);
-        Console.WriteLine("[GameClient] Connected to gateway.");
+        ILogger.Log("[GameClient] Connected to gateway.");
     }
 
     public async Task EnqueuePlayerAsync()
@@ -385,8 +357,6 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
 
     public Task WaitForSyncAsync()
     {
-        // The initial full state arrives on the network thread into the queue.
-        // Spin-drain it here (game loop hasn't started yet) until the sync completes.
         var spinWait = new System.Threading.SpinWait();
         while (!_syncTcs.Task.IsCompleted)
         {
@@ -402,89 +372,122 @@ public class GameClient : IDisposable, IAsyncDisposable, IActionDispatcher
         bool actualPredict = predict ?? DefaultPrediction;
 
         var componentId = ComponentId<TAction>.DenseId;
-        long executeTick = Loop.CurrentTick + actualDelay;
+        long baseTick = GetBaseTickForExecute();
+        long executeTick = baseTick + actualDelay;
 
-        // Serialize
         int size = Marshal.SizeOf<TAction>();
         byte[] data = new byte[size];
         MemoryMarshal.Write(new Span<byte>(data), ref action);
 
-        // Schedule Locally (Prediction)
+        long predictionId = actualPredict ? GetPredictionId() : 0;
+
         if (actualPredict)
         {
-            var result = Scheduler.Schedule(action, componentId, new Entity(targetEntityId), executeTick);
+            var result = Scheduler.Schedule(action, componentId, new Entity(targetEntityId), executeTick, predictionId, out long actualTick);
+            if (actualTick != executeTick)
+                Log($"[Prediction] {typeof(TAction).Name} target={targetEntityId} execTick={executeTick}->{actualTick} pid={predictionId} (local bump) result={result} (clientTick={Loop.CurrentTick})");
+            else
+                Log($"[Prediction] {typeof(TAction).Name} target={targetEntityId} execTick={executeTick} pid={predictionId} result={result} (clientTick={Loop.CurrentTick})");
+
+            executeTick = actualTick;
+
             if (result == ActionScheduler.ScheduleResult.Duplicate)
             {
-                Log($"[Prediction] Duplicate action {typeof(TAction).Name} ignored.");
                 return;
             }
+
+            _unconfirmedPredictions.Add(new PredictedAction
+            {
+                ComponentId = componentId,
+                Data = (byte[])data.Clone(),
+                TargetEntityId = targetEntityId,
+                ExecuteTick = executeTick
+            });
         }
 
-        // Send to Server
-        _ = SendAction(componentId, data, targetEntityId, executeTick);
+        _ = SendAction(componentId, data, targetEntityId, executeTick, predictionId);
     }
+
+    protected virtual long GetBaseTickForExecute() => Loop.CurrentTick;
+
+    protected virtual long GetPredictionId() => 0;
 
     public void Dispatch<TAction>(TAction action, Entity target) where TAction : struct, IAction
     {
         Execute(action, target.Id);
     }
 
-    public Task SendAction(DenseComponentId componentId, byte[] data, int targetEntityId, long tick)
+    public Task SendAction(DenseComponentId componentId, byte[] data, int targetEntityId, long tick, long predictionId = 0)
     {
-        // Buffer the action
-        lock (_outgoingBuffer)
+        int headerSize = Marshal.SizeOf<NetworkActionHeader>();
+        byte[] serialized = new byte[headerSize + data.Length];
+
+        var header = new NetworkActionHeader
         {
-            int headerSize = Marshal.SizeOf<NetworkActionHeader>();
-            int totalSize = headerSize + data.Length;
+            ComponentId = componentId,
+            TargetEntityId = targetEntityId,
+            ExecuteTick = tick,
+            PredictionId = predictionId,
+            DataLength = data.Length
+        };
 
-            var span = _outgoingBuffer.GetSpan(totalSize);
-            var header = new NetworkActionHeader
+        MemoryMarshal.Write(new Span<byte>(serialized), ref header);
+        data.CopyTo(serialized.AsSpan(headerSize));
+
+        lock (_pendingActions)
+        {
+            _pendingActions.Add(new PendingNetworkAction
             {
-                ComponentId = componentId,
-                TargetEntityId = targetEntityId,
                 ExecuteTick = tick,
-                DataLength = data.Length
-            };
-
-            MemoryMarshal.Write(span, ref header);
-            data.CopyTo(span.Slice(headerSize));
-
-            _outgoingBuffer.Advance(totalSize);
+                SerializedBytes = serialized
+            });
         }
 
-        // Note: Actual network send happens in Flush()
         return Task.CompletedTask;
     }
 
     private void Flush()
     {
-        byte[]? payload = null;
-        lock (_outgoingBuffer)
+        lock (_pendingActions)
         {
-            if (_outgoingBuffer.Length > 0)
-            {
-                payload = _outgoingBuffer.ToArray();
-                _outgoingBuffer.Reset();
-            }
-        }
+            if (_pendingActions.Count == 0) return;
 
-        if (payload != null)
-        {
+            FlushPendingActions(_pendingActions);
+
+            if (_pendingActions.Count == 0) return;
+
+            _outgoingBuffer.Reset();
+            foreach (var pending in _pendingActions)
+            {
+                var span = _outgoingBuffer.GetSpan(pending.SerializedBytes.Length);
+                pending.SerializedBytes.CopyTo(span);
+                _outgoingBuffer.Advance(pending.SerializedBytes.Length);
+            }
+
+            byte[] payload = _outgoingBuffer.ToArray();
             _networkClient.SendBatch(payload);
         }
     }
 
-    private void Log(string msg)
+    protected virtual void FlushPendingActions(List<PendingNetworkAction> pending)
+    {
+    }
+
+    protected void Log(string msg)
     {
         OnLog?.Invoke($"[GameClient] {msg}");
     }
 
-    public void Dispose()
+    protected void FireStateMismatch(long tick, System.Guid localHash, System.Guid serverHash)
+    {
+        OnStateMismatch?.Invoke(tick, localHash, serverHash);
+    }
+
+    public virtual void Dispose()
     {
         Reactive.Dispose();
         Loop.OnBeforeTick -= DrainNetworkQueues;
         Loop.OnTick -= Flush;
-        Loop.OnTick -= ProcessPendingHashes;
         _ = DisposeAsync();
     }
 

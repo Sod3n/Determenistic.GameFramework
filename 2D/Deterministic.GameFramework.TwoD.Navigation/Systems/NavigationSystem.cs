@@ -101,15 +101,45 @@ public class NavigationSystem : ISystem
 
     private static void BakeFullIfNeeded(EntityWorld state, NavigationState navState, ref NavigationWorld2D world)
     {
-        // Compute hash of relevant physics state to detect changes
-        int currentHash = ComputePhysicsBakeHash(state, ref world);
-        bool needsBake = world.ForceBake || !navState.PhysicsBaked || currentHash != navState.PhysicsBakeHash;
+        var gameTime = state.GetCustomData<IGameTime>();
+        long currentTick = gameTime?.CurrentTick ?? 0;
 
-        if (!needsBake) return;
-
-        // Clear ForceBake flag
         if (world.ForceBake)
+        {
             world.ForceBake = false;
+            navState.DirtyTick = -1; // bypass debounce
+        }
+        else if (navState.PhysicsBaked)
+        {
+            // Cheap pre-check: count obstacle bodies. Only compute full hash if count changed.
+            int bodyCount = 0;
+            foreach (var e in state.Filter<StaticBody2D, Transform2D, CollisionShape2D>())
+            {
+                var sb = state.GetComponent<StaticBody2D>(e);
+                if ((sb.CollisionLayer & world.ObstacleMask) != 0)
+                    bodyCount++;
+            }
+
+            if (bodyCount == navState.LastStaticBodyCount)
+                return; // nothing changed, skip expensive hash
+
+            // Count changed — mark dirty and debounce
+            if (navState.DirtyTick < 0)
+                navState.DirtyTick = currentTick;
+
+            long ticksSinceDirty = currentTick - navState.DirtyTick;
+            if (ticksSinceDirty < NavigationState.RebakeDebounceFrames)
+                return; // wait for debounce period
+
+            // Debounce elapsed — compute full hash to confirm change
+            int currentHash = ComputePhysicsBakeHash(state, ref world);
+            if (currentHash == navState.PhysicsBakeHash)
+            {
+                navState.LastStaticBodyCount = bodyCount;
+                navState.DirtyTick = -1;
+                return; // false positive (count changed but hash didn't — e.g. entity replaced)
+            }
+        }
 
         // Full rebuild: clear map, bake from physics, then regions will add on top
         navState.Map.Clear();
@@ -119,9 +149,20 @@ public class NavigationSystem : ISystem
         PhysicsNavMeshBaker.Bake(navState.Map, ref world, state);
 
         navState.PhysicsBaked = true;
-        navState.PhysicsBakeHash = currentHash;
+        navState.PhysicsBakeHash = ComputePhysicsBakeHash(state, ref world);
         navState.HasPhysicsBakedMesh = true;
         navState.PhysicsTriangleCount = navState.Map.Triangles.Count;
+
+        // Update cached count and reset debounce
+        int newBodyCount = 0;
+        foreach (var e in state.Filter<StaticBody2D, Transform2D, CollisionShape2D>())
+        {
+            var sb = state.GetComponent<StaticBody2D>(e);
+            if ((sb.CollisionLayer & world.ObstacleMask) != 0)
+                newBodyCount++;
+        }
+        navState.LastStaticBodyCount = newBodyCount;
+        navState.DirtyTick = -1;
 
         FinishPhysicsBake(state, navState);
     }
@@ -135,6 +176,40 @@ public class NavigationSystem : ISystem
         bool forceBake = world.ForceBake;
         if (forceBake)
             world.ForceBake = false;
+
+        // Debounce: after initial bake, cheap-check relevant body count before doing anything expensive
+        if (navState.PhysicsBaked && !forceBake)
+        {
+            int bodyCount = 0;
+            uint obstacleMask = world.ObstacleMask;
+            foreach (var e in state.Filter<StaticBody2D, Transform2D, CollisionShape2D>())
+            {
+                var sb = state.GetComponent<StaticBody2D>(e);
+                if ((sb.CollisionLayer & obstacleMask) != 0)
+                    bodyCount++;
+            }
+
+            if (bodyCount != navState.LastStaticBodyCount)
+            {
+                var gameTime = state.GetCustomData<IGameTime>();
+                long currentTick = gameTime?.CurrentTick ?? 0;
+
+                if (navState.DirtyTick < 0)
+                    navState.DirtyTick = currentTick;
+
+                long ticksSinceDirty = currentTick - navState.DirtyTick;
+                if (ticksSinceDirty < NavigationState.RebakeDebounceFrames)
+                    return; // wait for more changes to batch together
+
+                navState.LastStaticBodyCount = bodyCount;
+                navState.DirtyTick = -1;
+            }
+            else
+            {
+                if (navState.DirtyTick >= 0) navState.DirtyTick = -1;
+                return; // nothing changed
+            }
+        }
 
         // Detect world settings changes that invalidate all chunks
         int settingsHash = ComputeChunkWorldSettingsHash(ref world);
@@ -168,51 +243,51 @@ public class NavigationSystem : ISystem
         PhysicsNavMeshBaker.HashObstaclesIntoChunks(state, ref world, boundsMin, chunkSize, chunkGridW, chunkGridH, chunkHashes);
 
         // Compare hashes and rebake changed chunks
-        for (int cy = 0; cy < chunkGridH; cy++)
         {
-            for (int cx = 0; cx < chunkGridW; cx++)
+            for (int cy = 0; cy < chunkGridH; cy++)
             {
-                long chunkKey = ((long)cx << 32) | (uint)cy;
-                int obstacleHash = chunkHashes[chunkKey];
-
-                if (!forceBake &&
-                    navState.Chunks.TryGetValue(chunkKey, out var existing) &&
-                    existing.ObstacleHash == obstacleHash)
+                for (int cx = 0; cx < chunkGridW; cx++)
                 {
-                    continue;
+                    long chunkKey = ((long)cx << 32) | (uint)cy;
+                    int obstacleHash = chunkHashes[chunkKey];
+
+                    if (!forceBake &&
+                        navState.Chunks.TryGetValue(chunkKey, out var existing) &&
+                        existing.ObstacleHash == obstacleHash)
+                    {
+                        continue;
+                    }
+
+                    var chunkMin = new Vector2(
+                        boundsMin.X + (Float)cx * chunkSize,
+                        boundsMin.Y + (Float)cy * chunkSize);
+                    var chunkMax = new Vector2(
+                        Float.Min(chunkMin.X + chunkSize, boundsMax.X),
+                        Float.Min(chunkMin.Y + chunkSize, boundsMax.Y));
+
+                    var result = PhysicsNavMeshBaker.BakeChunk(ref world, state, chunkMin, chunkMax);
+                    result.ObstacleHash = obstacleHash;
+
+                    if (navState.Chunks.TryGetValue(chunkKey, out var oldChunk))
+                    {
+                        result.TriangleStartIndex = oldChunk.TriangleStartIndex;
+                        result.TriangleCount = oldChunk.TriangleCount;
+                    }
+
+                    navState.Chunks[chunkKey] = result;
+                    changedKeys.Add(chunkKey);
                 }
-
-                var chunkMin = new Vector2(
-                    boundsMin.X + (Float)cx * chunkSize,
-                    boundsMin.Y + (Float)cy * chunkSize);
-                var chunkMax = new Vector2(
-                    Float.Min(chunkMin.X + chunkSize, boundsMax.X),
-                    Float.Min(chunkMin.Y + chunkSize, boundsMax.Y));
-
-                var result = PhysicsNavMeshBaker.BakeChunk(ref world, state, chunkMin, chunkMax);
-                result.ObstacleHash = obstacleHash;
-
-                // Preserve the old chunk's triangle location so the incremental
-                // update can invalidate the stale triangles before overwriting.
-                if (navState.Chunks.TryGetValue(chunkKey, out var oldChunk))
-                {
-                    result.TriangleStartIndex = oldChunk.TriangleStartIndex;
-                    result.TriangleCount = oldChunk.TriangleCount;
-                }
-
-                navState.Chunks[chunkKey] = result;
-                changedKeys.Add(chunkKey);
             }
+
+            if (changedKeys.Count == 0 && !forceBake && navState.PhysicsBaked) return;
         }
 
-        if (changedKeys.Count == 0 && !forceBake && navState.PhysicsBaked) return;
-
-        const int PHYSICS_BAKE_REGION_ID = -1;
         bool isFirstBake = !navState.PhysicsBaked || forceBake || settingsChanged;
 
         if (isFirstBake)
         {
             // First bake: build entire map from all chunks
+            const int PHYSICS_BAKE_REGION_ID = -1;
             navState.Map.Clear();
             navState.Map.RegionCosts.Clear();
             navState.AgentPaths.Clear();
@@ -231,10 +306,10 @@ public class NavigationSystem : ISystem
             }
             navState.Map.BuildAdjacency((Float)MERGE_DISTANCE);
         }
-        else
+        // Incremental update for subsequent bakes
+        else if (changedKeys.Count > 0)
         {
-            // Incremental update: invalidate old triangles of changed chunks,
-            // append new triangles, build adjacency only for the new ones.
+            const int INCR_REGION_ID = -1;
             navState.AgentPaths.Clear();
 
             // Invalidate old triangles for changed chunks
@@ -255,8 +330,8 @@ public class NavigationSystem : ISystem
                 chunk.TriangleStartIndex = navState.Map.Triangles.Count;
                 foreach (var rect in chunk.Rectangles)
                 {
-                    navState.Map.AddTriangle(rect.V0, rect.V1, rect.V2, PHYSICS_BAKE_REGION_ID);
-                    navState.Map.AddTriangle(rect.V0, rect.V2, rect.V3, PHYSICS_BAKE_REGION_ID);
+                    navState.Map.AddTriangle(rect.V0, rect.V1, rect.V2, INCR_REGION_ID);
+                    navState.Map.AddTriangle(rect.V0, rect.V2, rect.V3, INCR_REGION_ID);
                 }
                 chunk.TriangleCount = navState.Map.Triangles.Count - chunk.TriangleStartIndex;
             }
@@ -264,7 +339,6 @@ public class NavigationSystem : ISystem
             // Build adjacency only for newly added triangles + cross-connections
             if (navState.Map.Triangles.Count > newTriStart)
                 navState.Map.BuildAdjacencyFrom(newTriStart, (Float)MERGE_DISTANCE);
-
             // Compact periodically to reclaim tombstoned slots
             // (when >25% of triangles are dead and we have enough to matter)
             int totalTris = navState.Map.Triangles.Count;
@@ -290,6 +364,17 @@ public class NavigationSystem : ISystem
         navState.PhysicsBaked = true;
         navState.HasPhysicsBakedMesh = true;
         navState.PhysicsTriangleCount = navState.Map.Triangles.Count - navState.Map.InvalidatedCount;
+
+        // Cache obstacle body count for cheap dirty check
+        int finalBodyCount = 0;
+        foreach (var e in state.Filter<StaticBody2D, Transform2D, CollisionShape2D>())
+        {
+            var sb = state.GetComponent<StaticBody2D>(e);
+            if ((sb.CollisionLayer & world.ObstacleMask) != 0)
+                finalBodyCount++;
+        }
+        navState.LastStaticBodyCount = finalBodyCount;
+        navState.DirtyTick = -1;
 
         FinishPhysicsBake(state, navState);
     }
@@ -445,6 +530,14 @@ public class NavigationSystem : ISystem
         foreach (var entity in agentBuffer)
         {
             ref var agent = ref state.GetComponent<NavigationAgent2D>(entity);
+
+            // Skip idle agents entirely — they don't need path computation
+            if (agent.IsNavigationFinished && agent.TargetPosition == agent.LastTargetPosition)
+            {
+                agent.Velocity = Vector2.Zero;
+                continue;
+            }
+
             ref var transform = ref state.GetComponent<Transform2D>(entity);
 
             var currentPos = transform.GlobalPosition;
@@ -503,7 +596,10 @@ public class NavigationSystem : ISystem
                 }
 
                 // Runtime shortcut: try to skip ahead using nav mesh LOS with margin.
-                // Margin prevents the agent from taking shortcuts that hug walls.
+                // Only check every 10 ticks to reduce IsPathClear cost.
+                var gameTime = state.GetCustomData<IGameTime>();
+                long tick = gameTime?.CurrentTick ?? 0;
+                if ((tick + entity.Id) % 10 == 0) // stagger across agents
                 {
                     var margin = agent.Radius > navState.Map.CellSize
                         ? agent.Radius : navState.Map.CellSize;
@@ -551,10 +647,9 @@ public class NavigationSystem : ISystem
                                 physicsState, entity.Id);
                         }
 
-                        // Prevent backtracking: if the nav mesh has unobstructed
-                        // line-of-sight to the target with margin (no wall between),
-                        // don't allow the velocity to point away from the target.
-                        if (navState.Map.IsPathClear(currentPos, agent.TargetPosition,
+                        // Prevent backtracking: check LOS to target (staggered for perf)
+                        if ((tick + entity.Id) % 10 == 0 &&
+                            navState.Map.IsPathClear(currentPos, agent.TargetPosition,
                             agent.Radius > navState.Map.CellSize ? agent.Radius : navState.Map.CellSize))
                         {
                             var toTarget = agent.TargetPosition - currentPos;

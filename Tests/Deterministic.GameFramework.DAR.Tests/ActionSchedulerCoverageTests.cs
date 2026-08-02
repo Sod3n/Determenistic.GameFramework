@@ -65,7 +65,7 @@ public class ActionSchedulerCoverageTests
         
         // 4. Execute the remaining action to ensure data integrity preserved
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         
         // Register a byte runner for ID 99 to verify data
         // executed variable removed as it was unused
@@ -99,11 +99,11 @@ public class ActionSchedulerCoverageTests
         
         // 4. Verify "keep" action is still valid and correct
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         dispatcher.ActionDispatcher = new MockActionDispatcher(); // Ensure it's set
         
         var actionService = new TestActionService();
-        dispatcher.RegisterAction(actionService, Array.Empty<ReactionService<TestAction, TestComponent>>());
+        dispatcher.RegisterAction(actionService);
         dispatcher.EnableAction(actionService);
         
         var entity = world.CreateEntity(); // 1 (0 is World)

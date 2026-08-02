@@ -15,6 +15,7 @@
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
         <ProjectReference Include="..\..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\Deterministic.GameFramework.TwoD\Deterministic.GameFramework.TwoD.csproj" />
+        <ProjectReference Include="..\..\Deterministic.GameFramework.Box2D\Deterministic.GameFramework.Box2D.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -50,6 +51,12 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Pack>true</Pack>
             <PackagePath>runtimes/win-x64/native/</PackagePath>
+        </None>
+        <None Include="external/librapier_uniffi_x86_64.so">
+            <Link>librapier_uniffi.so</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/linux-x64/native/</PackagePath>
         </None>
     </ItemGroup>
 

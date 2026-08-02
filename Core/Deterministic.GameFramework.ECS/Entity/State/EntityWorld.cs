@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Deterministic.GameFramework.Types;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.ECS;
 
@@ -10,9 +11,18 @@ public class EntityWorld
     internal Type?[] _componentTypes = new Type?[128];
     internal BitMask128[] _entityMasks = new BitMask128[256]; // Grows with Entity ID
     internal int _nextEntityId = 0;
+    private int _reservedCapacity = 0; // Set by ReserveEntityCapacity; used as minimum for new stores
 
     public int NextEntityId => _nextEntityId;
     public BitMask128[] EntityMasks => _entityMasks;
+
+    /// <summary>
+    /// Incremented whenever a component store is resized (CreateEntity, AddComponent
+    /// that exceeds store capacity). Any 'ref T' from GetComponent obtained before
+    /// this version is stale.
+    /// Usage: save version before entity-creating calls, assert unchanged after.
+    /// </summary>
+    public int StructuralVersion { get; private set; }
 
     // Allows systems to store arbitrary state (e.g. Physics World Serialization) that needs to be snapshotted.
     // Key: System Name (e.g. "RapierPhysics"), Value: Serialized Data
@@ -23,12 +33,43 @@ public class EntityWorld
     public Dictionary<Type, object?> SystemData { get; } = new();
 
 
-    // Dirty tracking
-    internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(256);
-    internal List<int> _dirtyEntities = new List<int>(64);
+    // Dirty tracking. Pre-sized generously so steady-state ticks don't trigger internal
+    // buffer growth (List<T>.AddWithResize was a top-5 per-tick allocator in the VPS trace).
+    internal System.Collections.BitArray _dirtyEntitySet = new System.Collections.BitArray(1024);
+    internal List<int> _dirtyEntities = new List<int>(1024);
 
-    public EntityWorld()
+    // ── Client-side prediction plumbing ───────────────────────────────────────────────
+    // Entity ids come from the single _nextEntityId counter — both normal and predicted.
+    // The dense _entityMasks array can't tolerate a sparse high-bit id range without
+    // ballooning to 2 GB, so we instead let the client allocate predicted entities at
+    // regular sequential ids and correlate them via the PredictedByAction(PredictionId)
+    // tag auto-attached by CreateEntity when CurrentActionPredictionId != 0.
+    //
+    // When the server's authoritative delta arrives carrying an entity tagged with the
+    // same PredictionId, DeltaSyncStrategyClient maps client-predicted → server-authoritative
+    // via its _predictedEntitiesByPid map and destroys the predicted ghost (unless the
+    // ids happen to already match, in which case it's a no-op).
+
+    /// <summary>
+    /// Set by <c>ActionScheduler.ExecuteActions</c> before invoking an action service, cleared
+    /// in <c>finally</c> afterwards. When non-zero, every <see cref="CreateEntity()"/> call
+    /// during that service execution auto-attaches a <see cref="PredictedByAction"/> component
+    /// carrying this id. Zero (the default) means "not predicting" — no tag.
+    /// </summary>
+    public long CurrentActionPredictionId;
+
+    /// <summary>
+    /// Fired from <see cref="CreateEntity()"/> after the entity id has been allocated and
+    /// initial components (including <see cref="PredictedByAction"/> when applicable) have
+    /// been attached. Consumers (like <c>DeltaSyncStrategyClient</c>) use this to record
+    /// the predicted-entity → action-prediction-id mapping needed for later correlation.
+    /// </summary>
+    public event Action<Entity>? OnEntityCreated;
+
+    public EntityWorld(int reserveCapacity = 0)
     {
+        if (reserveCapacity > 0)
+            _reservedCapacity = reserveCapacity;
         var worldEntity = CreateEntity();
         AddComponent(worldEntity, new World());
     }
@@ -55,12 +96,64 @@ public class EntityWorld
         SystemData.Clear();
     }
 
+    /// <summary>
+    /// Invalidates derived/cached state in SystemData after a state restore
+    /// (rollback or full state sync). Determinism-critical flags live in ECS
+    /// components (serialized), but derived objects (physics worlds, nav meshes,
+    /// crowd sims) must be rebuilt from the restored ECS state.
+    ///
+    /// Each system's derived state implements <see cref="IDerivedState"/> to
+    /// define its own invalidation logic. Systems that don't implement the
+    /// interface are left untouched.
+    /// </summary>
+    public void InvalidateDerivedState(bool full = false)
+    {
+        foreach (var kvp in SystemData)
+        {
+            if (kvp.Value is IDerivedState derived)
+                derived.Invalidate(full);
+        }
+    }
+
+    /// <summary>
+    /// Pre-allocates entity masks and all existing component stores to hold at least
+    /// <paramref name="capacity"/> entities. Call this early (e.g. in GameFactory) to
+    /// avoid store resizes during gameplay — each resize invalidates every outstanding
+    /// 'ref T' from GetComponent().
+    /// </summary>
+    public void ReserveEntityCapacity(int capacity)
+    {
+        _reservedCapacity = Math.Max(_reservedCapacity, capacity);
+
+        if (capacity > _entityMasks.Length)
+        {
+            int oldSize = _entityMasks.Length;
+            Array.Resize(ref _entityMasks, capacity);
+            for (int i = oldSize; i < capacity; i++) _entityMasks[i].Clear();
+            _dirtyEntitySet.Length = capacity;
+        }
+
+        for (int i = 0; i < _componentStores.Length; i++)
+        {
+            var store = _componentStores[i];
+            if (store != null && store.Length < capacity)
+                store.Resize(capacity);
+        }
+    }
+
     public Entity CreateEntity()
     {
-        var id = _nextEntityId++;
+        // Predicted entities share the normal id sequence. The PredictedByAction tag attached
+        // below is what lets DeltaSyncStrategyClient correlate them with the server's
+        // authoritative ids later — we don't need a separate id space, and using a sparse
+        // high-bit range would explode _entityMasks' memory footprint.
+        bool predicted = CurrentActionPredictionId != 0;
+        int id = _nextEntityId++;
+
         EnsureEntityCapacity(id);
 
         // Clear memory garbage
+        bool resized = false;
         for (int i = 0; i < _componentStores.Length; i++)
         {
             var store = _componentStores[i];
@@ -70,13 +163,32 @@ public class EntityWorld
                 {
                     int newSize = Math.Max(store.Length * 2, id + 1);
                     store.Resize(newSize);
+                    resized = true;
                 }
 
                 store.Clear(id, 1);
             }
         }
 
-        return new Entity(id);
+        if (resized)
+        {
+            ILogger.LogWarning($"[EntityWorld] Store resize at entity {id}. " +
+                $"All ref T from GetComponent() before this point are stale. " +
+                $"Consider increasing ReserveEntityCapacity.");
+            StructuralVersion++;
+        }
+
+        var entity = new Entity(id);
+
+        // Auto-tag predicted entities so the delta applier can correlate later. We do this
+        // BEFORE firing OnEntityCreated so subscribers see the fully-formed (tagged) entity.
+        if (predicted)
+        {
+            AddComponent(entity, new PredictedByAction { PredictionId = CurrentActionPredictionId });
+        }
+
+        OnEntityCreated?.Invoke(entity);
+        return entity;
     }
 
     public Entity CreateEntity<T>() where T : struct, IComponent
@@ -216,6 +328,17 @@ public class EntityWorld
         return GetComponent<T>(entity);
     }
 
+    public bool TryGetComponent<T>(Entity entity, out T component) where T : struct, IComponent
+    {
+        if (!HasComponent<T>(entity))
+        {
+            component = default;
+            return false;
+        }
+        component = GetComponent<T>(entity);
+        return true;
+    }
+
     public bool HasComponent<T>(Entity entity) where T : struct, IComponent
     {
         if (entity.Id < 0 || entity.Id >= _entityMasks.Length) return false;
@@ -224,37 +347,24 @@ public class EntityWorld
         return _entityMasks[entity.Id].IsSet(typeId);
     }
 
-    public IEnumerable<Entity> Filter<T>() where T : struct, IComponent
+    public MaskFilter Filter<T>() where T : struct, IComponent
     {
-        var typeId = ComponentId<T>.IntId;
-
-        for (int i = 0; i < _entityMasks.Length; i++)
-        {
-            if (_entityMasks[i].IsSet(typeId))
-            {
-                yield return new Entity(i);
-            }
-        }
+        var mask = new BitMask128();
+        mask.Set(ComponentId<T>.IntId);
+        return new MaskFilter(_entityMasks, mask, _nextEntityId);
     }
 
-    public IEnumerable<Entity> Filter<T1, T2>()
+    public MaskFilter Filter<T1, T2>()
         where T1 : struct, IComponent
         where T2 : struct, IComponent
     {
         var mask = new BitMask128();
         mask.Set(ComponentId<T1>.IntId);
         mask.Set(ComponentId<T2>.IntId);
-
-        for (int i = 0; i < _entityMasks.Length; i++)
-        {
-            if (_entityMasks[i].HasAll(mask))
-            {
-                yield return new Entity(i);
-            }
-        }
+        return new MaskFilter(_entityMasks, mask, _nextEntityId);
     }
 
-    public IEnumerable<Entity> Filter<T1, T2, T3>()
+    public MaskFilter Filter<T1, T2, T3>()
         where T1 : struct, IComponent
         where T2 : struct, IComponent
         where T3 : struct, IComponent
@@ -263,15 +373,9 @@ public class EntityWorld
         mask.Set(ComponentId<T1>.IntId);
         mask.Set(ComponentId<T2>.IntId);
         mask.Set(ComponentId<T3>.IntId);
-
-        for (int i = 0; i < _entityMasks.Length; i++)
-        {
-            if (_entityMasks[i].HasAll(mask))
-            {
-                yield return new Entity(i);
-            }
-        }
+        return new MaskFilter(_entityMasks, mask, _nextEntityId);
     }
+
 
 
     public void ForEach<T1>(ComponentAction1<T1> action)
@@ -400,6 +504,31 @@ public class EntityWorld
         return (AlignedComponentStore<T>)_componentStores[typeId]!;
     }
 
+    /// <summary>
+    /// Non-generic component store accessor by dense id. Returns null if the store doesn't
+    /// exist yet (e.g. component type never registered). Used by delta generators that iterate
+    /// by bit index rather than by generic type.
+    /// </summary>
+    public AlignedComponentStore? GetComponentStore(int denseId)
+    {
+        if (denseId < 0 || denseId >= _componentStores.Length) return null;
+        return _componentStores[denseId];
+    }
+
+    /// <summary>Element size (sans alignment padding) for a dense component id. 0 when unregistered.</summary>
+    public int GetComponentElementSize(int denseId)
+    {
+        if (denseId < 0 || denseId >= _componentElementSizes.Length) return 0;
+        return _componentElementSizes[denseId];
+    }
+
+    /// <summary>Runtime type for a dense component id, or null when unregistered.</summary>
+    public Type? GetComponentType(int denseId)
+    {
+        if (denseId < 0 || denseId >= _componentTypes.Length) return null;
+        return _componentTypes[denseId];
+    }
+
     internal void EnsureTypedCapacityInternal(int typeId)
     {
         if (typeId >= _componentStores.Length)
@@ -422,18 +551,27 @@ public class EntityWorld
 
     /// <summary>
     /// Creates an AlignedComponentStore for the given type ID if not already present.
-    /// Called from deserialization when we only have the runtime Type.
+    /// Called from deserialization (and delta apply) when we only have the runtime Type.
+    /// Also populates <see cref="_componentTypes"/> and <see cref="_componentElementSizes"/>
+    /// so serialization does not skip the component.
     /// </summary>
     internal void EnsureStoreFromType(int typeId, Type componentType, int capacity)
     {
         if (typeId >= _componentStores.Length)
             ExpandTypeCapacity(typeId);
 
-        if (_componentStores[typeId] == null || _componentStores[typeId]!.Length != capacity)
+        int effectiveCapacity = Math.Max(capacity, _reservedCapacity);
+        if (_componentStores[typeId] == null || _componentStores[typeId]!.Length < effectiveCapacity)
         {
             var storeType = typeof(AlignedComponentStore<>).MakeGenericType(componentType);
-            _componentStores[typeId] = (AlignedComponentStore)Activator.CreateInstance(storeType, capacity)!;
+            _componentStores[typeId] = (AlignedComponentStore)Activator.CreateInstance(storeType, effectiveCapacity)!;
         }
+
+        if (_componentTypes[typeId] == null)
+            _componentTypes[typeId] = componentType;
+
+        if (_componentElementSizes[typeId] == 0)
+            _componentElementSizes[typeId] = GetManagedSize(componentType);
     }
 
     internal void EnsureTypedCapacity<T>(int typeId) where T : struct, IComponent
@@ -442,7 +580,7 @@ public class EntityWorld
 
         if (_componentStores[typeId] == null)
         {
-            int initialSize = Math.Max(32, _entityMasks.Length);
+            int initialSize = Math.Max(32, Math.Max(_entityMasks.Length, _reservedCapacity));
             _componentStores[typeId] = new AlignedComponentStore<T>(initialSize);
             _componentElementSizes[typeId] = Unsafe.SizeOf<T>();
             _componentTypes[typeId] = typeof(T);
@@ -473,6 +611,17 @@ public class EntityWorld
         }
     }
 
+    /// <summary>
+    /// Mark all entities as dirty so observers re-check them on the next tick.
+    /// Called after state deserialization to ensure reactive observers pick up
+    /// entity mask changes that weren't tracked incrementally.
+    /// </summary>
+    public void MarkAllDirty()
+    {
+        for (int i = 0; i < _nextEntityId; i++)
+            MarkDirty(i);
+    }
+
     public void ClearDirty()
     {
         foreach (var id in _dirtyEntities)
@@ -496,7 +645,10 @@ public class EntityWorld
     private void ExpandStoreCapacity<T>(int typeId, AlignedComponentStore<T> store, int entityId) where T : struct, IComponent
     {
         int newSize = Math.Max(store.Length * 2, entityId + 1);
+        ILogger.LogWarning($"[EntityWorld] Store<{typeof(T).Name}> resize {store.Length}→{newSize} for entity {entityId}. " +
+            $"Consider increasing ReserveEntityCapacity.");
         store.Resize(newSize);
+        StructuralVersion++;
     }
 
     private static int GetManagedSize(Type type)

@@ -18,7 +18,7 @@ public class DispatcherReRegistrationTests
     [Fact]
     public void RegisterServices_CalledTwice_ShouldSkipSecondRegistration()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var r1 = new PreReactionService();
         
@@ -45,7 +45,7 @@ public class DispatcherReRegistrationTests
     [Fact]
     public void RegisterServices_CalledTwice_ShouldSkipSecondRegistration_AndNotRunNewReactions()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var r1 = new PreReactionService(); 
         
@@ -84,7 +84,7 @@ public class DispatcherReRegistrationTests
     [Fact]
     public void Unregister_Then_Register_ShouldReplaceSystem()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var r1 = new PreReactionService();
         
@@ -120,7 +120,7 @@ public class DispatcherReRegistrationTests
     [Fact]
     public void Execute_ShouldWork_AfterUnregister()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         
         dispatcher.RegisterServices(

@@ -319,7 +319,7 @@ public class PhysicsSystemLogicTests
 public class FakeGameTime : IGameTime
 {
     public long CurrentTick { get; set; }
-    public float FixedDeltaTime { get; set; } = 1.0f / 60.0f;
+    public Float FixedDeltaTime { get; set; } = (Float)1 / (Float)60;
     public int TickRate { get; set; } = 60;
     public bool IsResimulating { get; set; } = false;
 }

@@ -6,13 +6,13 @@ namespace Deterministic.GameFramework.DAR.Tests;
 
 public class DispatcherLifecycleTests
 {
-    private readonly Dispatcher _dispatcher;
+    private readonly ReactionDispatcher _dispatcher;
     private readonly TestActionService _actionService;
     private readonly PreReactionService _reactionService;
 
     public DispatcherLifecycleTests()
     {
-        _dispatcher = new Dispatcher();
+        _dispatcher = new ReactionDispatcher();
         _actionService = new TestActionService();
         _reactionService = new PreReactionService();
         

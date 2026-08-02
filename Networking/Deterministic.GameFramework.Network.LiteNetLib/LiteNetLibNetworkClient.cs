@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Network.Interfaces;
 using Deterministic.GameFramework.Network.Packets;
+using Deterministic.GameFramework.Utils.Logging;
 using LiteNetLib;
 using LiteNetLib.Utils;
 
@@ -20,6 +21,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
     public event Action<byte[]>? OnFullStateReceived;
     public event Action<byte[]>? OnComponentMappingReceived;
     public event Action<byte[]>? OnStateHashReceived;
+    public event Action<byte[]>? OnTickDeltaReceived;
     
     public event Action<Guid>? OnLobbyCreated;
     public event Action<Guid>? OnLobbyJoined;
@@ -39,11 +41,11 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
 
     public Task ConnectAsync(string address)
     {
-        Console.WriteLine($"[LiteNetLibClient] ConnectAsync called with address: '{address}'");
-        
+        ILogger.Log($"[LiteNetLibClient] ConnectAsync called with address: '{address}'");
+
         if (_netManager == null)
         {
-             Console.WriteLine("[LiteNetLibClient] FATAL: _netManager is null!");
+             ILogger.LogError("[LiteNetLibClient] FATAL: _netManager is null!");
              throw new NullReferenceException("_netManager is null");
         }
 
@@ -54,7 +56,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         
         if (address == null)
         {
-             Console.WriteLine("[LiteNetLibClient] FATAL: address is null!");
+             ILogger.LogError("[LiteNetLibClient] FATAL: address is null!");
              throw new NullReferenceException("Address is null");
         }
 
@@ -73,24 +75,24 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
              return _connectTcs.Task;
         }
         
-        Console.WriteLine($"[LiteNetLibClient] Connecting to {ip}:{port}...");
+        ILogger.Log($"[LiteNetLibClient] Connecting to {ip}:{port}...");
         _peer = _netManager.Connect(ip, port, "GameKey");
-        
+
         if (_peer == null)
         {
-             Console.WriteLine("[LiteNetLibClient] FATAL: _netManager.Connect returned null!");
+             ILogger.LogError("[LiteNetLibClient] FATAL: _netManager.Connect returned null!");
         }
-        
+
         // Start polling loop
         _ = Task.Run(async () =>
         {
-            Console.WriteLine("[LiteNetLibClient] Polling loop started.");
+            ILogger.Log("[LiteNetLibClient] Polling loop started.");
             while (_netManager.IsRunning)
             {
                 _netManager.PollEvents();
                 await Task.Delay(15);
             }
-            Console.WriteLine("[LiteNetLibClient] Polling loop ended.");
+            ILogger.Log("[LiteNetLibClient] Polling loop ended.");
         });
 
         return _connectTcs.Task;
@@ -180,7 +182,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         writer.Put((byte)PacketType.Batch);
         writer.Put(data);
         
-        _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableUnordered);
+        _peer.Send(writer, LiteNetLib.DeliveryMethod.ReliableOrdered);
     }
 
     public ValueTask DisposeAsync()
@@ -213,7 +215,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
 
     public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
     {
-        Console.WriteLine($"[LiteNetLib] Network Error: {socketError}");
+        ILogger.LogError($"[LiteNetLib] Network Error: {socketError}");
     }
 
     public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber, LiteNetLib.DeliveryMethod deliveryMethod)
@@ -263,6 +265,12 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
                     OnStateHashReceived?.Invoke(data);
                     break;
                 }
+                case PacketType.TickDelta:
+                {
+                    byte[] data = reader.GetRemainingBytes();
+                    OnTickDeltaReceived?.Invoke(data);
+                    break;
+                }
                 case PacketType.LobbyCreated:
                 {
                     byte[] guidBytes = new byte[16];
@@ -288,7 +296,7 @@ public class LiteNetLibNetworkClient : INetworkClient, INetEventListener
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[LiteNetLib] Parse Error: {ex.Message}");
+            ILogger.LogError($"[LiteNetLib] Parse Error: {ex.Message}");
         }
         finally
         {

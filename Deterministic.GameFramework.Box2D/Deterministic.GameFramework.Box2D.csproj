@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>Deterministic.GameFramework.Box2D</RootNamespace>
+    <AssemblyName>Deterministic.GameFramework.Box2D</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Deterministic.GameFramework.Types\Deterministic.GameFramework.Types.csproj" />
+  </ItemGroup>
+
+</Project>

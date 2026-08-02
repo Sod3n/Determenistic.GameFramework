@@ -26,6 +26,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Networking\Deterministic.GameFramework.Network\Deterministic.GameFramework.Network.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.GGPO\Deterministic.GameFramework.GGPO.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DeltaSync\Deterministic.GameFramework.DeltaSync.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Serialization\Deterministic.GameFramework.Serialization.csproj" />
   </ItemGroup>
 
 </Project>

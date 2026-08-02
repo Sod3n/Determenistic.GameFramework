@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Deterministic.GameFramework.DAR;
+using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.ECS;
 using Deterministic.GameFramework.Network.Packets;
+using Deterministic.GameFramework.Serialization;
+using Deterministic.GameFramework.Utils.Logging;
 
 namespace Deterministic.GameFramework.Network.Server;
 
@@ -17,18 +21,40 @@ public class GamePacketProcessor
     private INetworkServer NetworkServer => _networkServer ??= _serviceProvider.GetRequiredService<INetworkServer>();
     private MatchManager MatchManager => _matchManager ??= _serviceProvider.GetRequiredService<MatchManager>();
 
+    // Per-match queue: network thread enqueues, game loop thread drains via OnBeforeTick.
+    // Eliminates the race between ScheduleFromBytes and Tick()'s EarliestDirtyTick read.
+    private readonly ConcurrentDictionary<Guid, ConcurrentQueue<(byte[] payload, INetworkPeer peer)>> _incomingBatches = new();
+
     public GamePacketProcessor(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
+    /// <summary>
+    /// Register a match so incoming actions are queued and drained on the game loop thread.
+    /// Call this when the match is created (e.g. from MatchBroadcaster.OnMatchCreated).
+    /// </summary>
+    public void RegisterMatch(Match match)
+    {
+        _incomingBatches[match.Id] = new ConcurrentQueue<(byte[], INetworkPeer)>();
+        match.Loop.OnBeforeTick += () => DrainMatchQueue(match);
+    }
+
+    /// <summary>
+    /// Unregister a match and remove its queue.
+    /// </summary>
+    public void UnregisterMatch(Guid matchId)
+    {
+        _incomingBatches.TryRemove(matchId, out _);
+    }
+
     public async Task JoinMatchAsync(System.Guid matchId, string? authToken, INetworkPeer peer, IAuthService authService)
     {
-        Console.WriteLine($"[GamePacketProcessor] JoinMatch requested for match {matchId} by {peer.Id}");
+        ILogger.Log($"[GamePacketProcessor] JoinMatch requested for match {matchId} by {peer.Id}");
         var match = MatchManager.GetMatch(matchId);
         if (match == null)
         {
-            Console.WriteLine($"[GamePacketProcessor] Match {matchId} not found");
+            ILogger.LogError($"[GamePacketProcessor] Match {matchId} not found");
             // Optionally send error back
             return;
         }
@@ -36,32 +62,47 @@ public class GamePacketProcessor
         // Authenticate (Passed in service to decouple or injected)
         // Assuming IAuthService is available here or passed
         var playerId = await authService.AuthenticateAsync(peer.Id, authToken);
-        
+
         match.AddPlayer(playerId);
-        
+
         // Add to Network Group
         await NetworkServer.JoinGroupAsync(peer, matchId.ToString());
-        
+
         // Send MatchJoined confirmation with PlayerId
         var packet = new MatchJoinedPacket { PlayerId = playerId };
         var packetData = new byte[16];
         packet.PlayerId.ToByteArray().CopyTo(packetData, 0);
-        
+
         await peer.SendAsync(packetData, PacketType.MatchJoined);
-        
-        Console.WriteLine($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
+
+        ILogger.Log($"[GamePacketProcessor] Player {playerId} ({peer.Id}) joined match {matchId}");
     }
 
-    public async Task ProcessBatchAsync(System.Guid matchId, byte[] payload, INetworkPeer peer)
+    public Task ProcessBatchAsync(System.Guid matchId, byte[] payload, INetworkPeer peer)
     {
-        var match = MatchManager.GetMatch(matchId);
-        if (match == null) return;
-
-        bool fullStateRequired = ProcessBatchInternal(match, payload);
-
-        if (fullStateRequired)
+        // Enqueue for processing on the game loop thread.
+        if (_incomingBatches.TryGetValue(matchId, out var queue))
         {
-            await RequestFullStateAsync(matchId, peer);
+            queue.Enqueue((payload, peer));
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Drain all queued action batches for a match. Called on the game loop thread via OnBeforeTick.
+    /// </summary>
+    private void DrainMatchQueue(Match match)
+    {
+        if (!_incomingBatches.TryGetValue(match.Id, out var queue)) return;
+
+        while (queue.TryDequeue(out var item))
+        {
+            bool fullStateRequired = ProcessBatchInternal(match, item.payload);
+
+            if (fullStateRequired)
+            {
+                _ = RequestFullStateAsync(match.Id, item.peer);
+            }
         }
     }
 
@@ -76,25 +117,37 @@ public class GamePacketProcessor
         {
             var header = MemoryMarshal.Read<NetworkActionHeader>(span.Slice(offset));
             offset += headerSize;
-            
+
             if (offset + header.DataLength > span.Length) break;
-            
+
             var dataSpan = span.Slice(offset, header.DataLength);
             offset += header.DataLength;
-            
-            // Schedule
+
+            // Schedule — forward the client's PredictionId so the server-side execute
+            // path tags the created entity with PredictedByAction(PID). That tag rides
+            // back in the delta so the originating client can correlate.
             if (ComponentId.TryFromDense(header.ComponentId, out var networkId))
             {
-                var result = match.Scheduler.ScheduleFromBytes(networkId.ToDense(), dataSpan, header.TargetEntityId, header.ExecuteTick);
+                var result = match.Scheduler.ScheduleFromBytes(networkId.ToDense(), dataSpan, header.TargetEntityId, header.ExecuteTick, header.PredictionId);
 
-                if (result == ActionScheduler.ScheduleResult.TooOld)
+                // Only log non-Duplicate actions to avoid flooding stdout with GGPO resends
+                // (thousands of lines/second with 2+ clients → 100% CPU from console I/O alone)
+                if (result != ActionScheduler.ScheduleResult.Duplicate)
                 {
-                     fullStateRequired = true;
+                    string actionName = ComponentId.TryGetType(networkId.ToDense(), out var actionType) && actionType != null
+                        ? actionType.Name : $"CID({header.ComponentId})";
+                    ILogger.Log($"[Server] Action: {actionName} target={header.TargetEntityId} " +
+                        $"execTick={header.ExecuteTick} result={result} (serverTick={match.Loop.CurrentTick})");
                 }
+
+                // TooOld is expected with redundant sending (GGPO): the client resends all
+                // pending actions every tick, so stale copies arrive after MinAllowedTick
+                // has advanced. This is NOT a desync — the original was already processed.
+                // Real desyncs are caught by StateVerificationService (hash comparison).
             }
             else
             {
-                Console.WriteLine($"[GamePacketProcessor] Warning: Received unknown ComponentId {header.ComponentId}. Skipping.");
+                ILogger.LogWarning($"[GamePacketProcessor] Warning: Received unknown ComponentId {header.ComponentId}. Skipping.");
             }
         }
         return fullStateRequired;
@@ -106,35 +159,44 @@ public class GamePacketProcessor
         if (match == null) return;
 
         byte[] packetData = CreateFullStatePacket(match);
-        
+
         await peer.SendAsync(packetData, PacketType.FullState);
     }
 
     private byte[] CreateFullStatePacket(Match match)
     {
         byte[] stateData;
-        long currentTick;
+        long stateTick;
+        long serverTick;
 
-        lock (match.State) 
+        lock (match.State)
         {
-            currentTick = match.Loop.CurrentTick;
-            stateData = StateSerializer.Serialize(match.State);
+            if (match.FullStateProvider != null)
+            {
+                stateData = match.FullStateProvider.GetFullState(match, out stateTick, out serverTick);
+            }
+            else
+            {
+                serverTick = match.Loop.CurrentTick;
+                stateData = StateSerializer.Serialize(match.State);
+                stateTick = serverTick;
+            }
         }
 
-        // Create Packet
         int headerSize = Marshal.SizeOf<FullStateHeader>();
         byte[] packetData = new byte[headerSize + stateData.Length];
 
         var header = new FullStateHeader
         {
-            Tick = currentTick,
+            Tick = stateTick,
+            ServerTick = serverTick,
             StateDataLength = stateData.Length
         };
 
         var span = new Span<byte>(packetData);
         MemoryMarshal.Write(span, ref header);
         stateData.CopyTo(span.Slice(headerSize));
-        
+
         return packetData;
     }
 }

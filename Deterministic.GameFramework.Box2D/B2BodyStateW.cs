@@ -1,0 +1,17 @@
+using Float = Deterministic.GameFramework.Types.Float;
+﻿// SPDX-FileCopyrightText: 2025 Erin Catto
+// SPDX-FileCopyrightText: 2025 Ikpil Choi(ikpil@naver.com)
+// SPDX-License-Identifier: MIT
+
+namespace Deterministic.GameFramework.Box2D
+{
+    // wide version of b2BodyState
+    public struct B2BodyStateW
+    {
+        public B2Vec2W v;
+        public B2FloatW w;
+        public B2FloatW flags;
+        public B2Vec2W dp;
+        public B2RotW dq;
+    }
+}

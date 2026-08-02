@@ -8,6 +8,7 @@ using uniffi.rapier_uniffi;
 
 namespace Deterministic.GameFramework.Physics2D.Systems;
 
+[ManualSystem]
 public class RapierPhysicsSystem : ISystem, IDisposable
 {
     // Scratch lists are ThreadStatic so concurrent game loops don't clobber each other
@@ -64,6 +65,22 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
         // Sync ECS changes to Physics (Creation/Destruction)
         SyncEcsToPhysics(state, physicsState);
+
+        // Initialize the query pipeline so MoveShape can detect colliders.
+        // After RebuildWorld creates a fresh world, the pipeline is empty until stepped.
+        if (physicsState.World != null)
+        {
+            var zeroGravity = new RVector(0.0f, 0.0f);
+            var zeroParams = new RIntegrationParameters(
+                dt: 0.0f, minCcdDt: 0.0f, lengthUnit: 1.0f,
+                warmstartCoefficient: 0.0f, contactNaturalFrequency: 30.0f,
+                contactDampingRatio: 1.0f, normalizedAllowedLinearError: 0.001f,
+                normalizedMaxCorrectiveVelocity: 0.0f, normalizedPredictionDistance: 0.002f,
+                numSolverIterations: 0, numInternalPgsIterations: 0,
+                numInternalStabilizationIterations: 0, minIslandSize: 128, maxCcdSubsteps: 0
+            );
+            physicsState.World.Step(zeroGravity, zeroParams);
+        }
 
         // Step Characters (Kinematic Movement) before physics step — needs ECS access
         if (physicsState.World != null)
@@ -391,6 +408,7 @@ public class RapierPhysicsSystem : ISystem, IDisposable
 
                 ulong colliderHandle = physicsState.World.ColliderCreate(shape, bodyHandle, colTranslation, colRotation, 0.5f, 0.0f);
                 physicsState.EntityToCollider[entity.Id] = colliderHandle;
+
                 shape.Dispose();
 
                 // Special handling for Area2D

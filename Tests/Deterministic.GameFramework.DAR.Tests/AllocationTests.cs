@@ -8,7 +8,7 @@ namespace Deterministic.GameFramework.DAR.Tests;
 
 public class AllocationTests
 {
-    private Dispatcher _dispatcher;
+    private ReactionDispatcher _dispatcher;
     private EntityWorld _world;
     private ActionScheduler _scheduler;
     private DenseComponentId _actionId;
@@ -19,7 +19,7 @@ public class AllocationTests
     public AllocationTests()
     {
         _world = new EntityWorld();
-        _dispatcher = new Dispatcher();
+        _dispatcher = new ReactionDispatcher();
         _scheduler = new ActionScheduler();
 
         var actionService = new TestActionService();

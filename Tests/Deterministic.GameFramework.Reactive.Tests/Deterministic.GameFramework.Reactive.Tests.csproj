@@ -27,6 +27,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+        <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Serialization\Deterministic.GameFramework.Serialization.csproj" />
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Types\Deterministic.GameFramework.Types.csproj" />
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactive\Deterministic.GameFramework.Reactive.csproj" />
         <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Common\Deterministic.GameFramework.Common.csproj" />

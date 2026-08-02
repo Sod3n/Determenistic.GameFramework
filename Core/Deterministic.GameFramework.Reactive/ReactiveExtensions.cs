@@ -37,6 +37,21 @@ public static class ReactiveExtensions
         return observer;
     }
 
+    public static IDisposable SubscribeComponent<TComponent>(
+        this ReactiveSystem system,
+        EntityWorld context,
+        Entity entity,
+        Action<TComponent> sync)
+        where TComponent : struct, IComponent
+    {
+        var batch = system.GetOrCreateBatchObserver<TComponent>(context);
+        var handle = new ComponentSubscriptionHandle<TComponent>();
+        handle.Batch = batch;
+        batch.AddEntry(entity.Id, sync, handle);
+        batch.CheckSingleEntry(handle.EntryIndex);
+        return handle;
+    }
+
     public static IDisposable ObserveArchetype<T1>(this ReactiveSystem system, EntityWorld state, Action<Entity> onAdd, Action<Entity> onRemove)
         where T1 : struct, IComponent
     {

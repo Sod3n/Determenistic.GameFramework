@@ -21,11 +21,11 @@ public class RefinedCoverageTests
     public void DisabledReaction_ShouldNotExecute()
     {
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var actionService = new TestActionService();
         var reaction = new PreReactionService(); // Doubles damage if Value == 100
         
-        dispatcher.RegisterAction(actionService, new[] { reaction });
+        dispatcher.RegisterActionWithReactions(actionService, new[] { reaction });
         dispatcher.ActionDispatcher = new MockActionDispatcher();
         
         dispatcher.EnableAction(actionService);

@@ -23,7 +23,9 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
     }
     
     public const int Shift = 32;
-    public const long One = 1L << Shift;
+    public const long RawOne = 1L << Shift;
+    /// <summary>Float value 1.0 — use this instead of RawOne for arithmetic.</summary>
+    public static readonly Float One = FromRaw(RawOne);
     
     public Float(long rawValue)
     {
@@ -52,15 +54,61 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
     public static implicit operator Float(Fixed64 value) => new Float(value);
     public static implicit operator Fixed64(Float value) => value.Value;
     
-    public static explicit operator float(Float value) => (float)value.Value;
+    public static implicit operator float(Float value) => (float)value.Value;
     public static explicit operator int(Float value) => (int)value.Value;
 
-    public static Float operator +(Float a, Float b) => new Float(a.Value + b.Value);
-    public static Float operator -(Float a, Float b) => new Float(a.Value - b.Value);
-    public static Float operator -(Float a) => new Float(-a.Value);
-    
-    public static Float operator *(Float a, Float b) => new Float(a.Value * b.Value);
-    public static Float operator /(Float a, Float b) => new Float(a.Value / b.Value);
+    public static Float operator +(Float a, Float b)
+    {
+        long ar = a.Value.m_rawValue, br = b.Value.m_rawValue;
+        long r = ar + br;
+        // Saturate on overflow: both same sign but result has different sign
+        if (((ar ^ r) & (br ^ r)) < 0)
+            return r < 0 ? MaxValue : MinValue;
+        return FromRaw(r);
+    }
+
+    public static Float operator -(Float a, Float b)
+    {
+        long ar = a.Value.m_rawValue, br = b.Value.m_rawValue;
+        long r = ar - br;
+        // Saturate on overflow: signs differ and result sign doesn't match a
+        if (((ar ^ br) & (ar ^ r)) < 0)
+            return r < 0 ? MaxValue : MinValue;
+        return FromRaw(r);
+    }
+
+    public static Float operator -(Float a)
+    {
+        // Negating MinValue overflows — saturate to MaxValue
+        if (a.Value.m_rawValue == long.MinValue) return MaxValue;
+        return new Float(-a.Value);
+    }
+
+    public static Float operator *(Float a, Float b)
+    {
+        // For values near MaxValue/MinValue, Fixed64 multiply can overflow.
+        // Use checked arithmetic to detect and saturate.
+        try
+        {
+            return new Float(a.Value * b.Value);
+        }
+        catch (OverflowException)
+        {
+            // Saturate based on sign: same sign → MaxValue, different → MinValue
+            bool sameSign = (a.Value.m_rawValue >= 0) == (b.Value.m_rawValue >= 0);
+            return sameSign ? MaxValue : MinValue;
+        }
+    }
+    public static Float operator /(Float a, Float b)
+    {
+        if (b.Value.m_rawValue == 0)
+        {
+            if (a.Value.m_rawValue > 0) return MaxValue;
+            if (a.Value.m_rawValue < 0) return MinValue;
+            return default; // 0/0 = 0
+        }
+        return new Float(a.Value / b.Value);
+    }
     public static Float operator %(Float a, Float b) => new Float(a.Value % b.Value);
 
     public static bool operator ==(Float a, Float b) => a.Value == b.Value;
@@ -109,6 +157,10 @@ public struct Float : IParam, IEquatable<Float>, IComparable<Float>
     public static readonly Float HalfPi = new Float(6746518851L);
     
     public static readonly Float Epsilon = new Float(1L);
+    public static readonly Float MaxValue = FromRaw(long.MaxValue);
+    public static readonly Float MinValue = FromRaw(long.MinValue);
+    public static readonly Float FixedZero = new Float(0);
+    public static readonly Float FixedOne = FromRaw(1L << Shift);
 
     public static Float Sin(Float val) => new Float(FixedMath.Sin(val.Value));
     public static Float Cos(Float val) => new Float(FixedMath.Cos(val.Value));

@@ -21,5 +21,8 @@ public enum PacketType : byte
     
     LobbyCreated = 15,
     LobbyJoined = 16,
-    MatchAssignment = 17
+    MatchAssignment = 17,
+
+    // Server -> Client (Delta sync mode)
+    TickDelta = 18
 }

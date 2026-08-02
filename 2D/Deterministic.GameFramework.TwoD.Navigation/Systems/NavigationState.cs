@@ -56,6 +56,30 @@ public class NavigationState
     /// </summary>
     public int PhysicsTriangleCount { get; set; }
 
+    /// <summary>
+    /// Cached static body count from last hash computation.
+    /// Used as a cheap pre-check before computing the full hash.
+    /// </summary>
+    public int LastStaticBodyCount { get; set; }
+
+    /// <summary>
+    /// Tick at which the physics hash was last invalidated (body count changed).
+    /// Used to debounce rebakes — wait several ticks after the last change.
+    /// </summary>
+    public long DirtyTick { get; set; } = -1;
+
+    /// <summary>Number of ticks to wait after a physics change before rebaking.</summary>
+    public const int RebakeDebounceFrames = 10;
+
+    /// <summary>Max chunks to bake per tick during initial bake. Spreads load across frames.</summary>
+    public const int MaxChunksPerTick = 15;
+
+    /// <summary>Pending chunk keys that still need baking during progressive initial bake.</summary>
+    public List<long> PendingBakeKeys { get; } = new();
+
+    /// <summary>Whether a progressive initial bake is in progress.</summary>
+    public bool IsProgressiveBaking { get; set; }
+
     // --- Chunked bake state ---
 
     /// <summary>

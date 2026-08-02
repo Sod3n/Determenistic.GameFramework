@@ -31,7 +31,7 @@ namespace Deterministic.GameFramework.Benchmarks
 
             // Manually register action service
             var service = new BenchmarkActionService();
-            _dispatcher.RegisterAction(service, new List<ReactionService<BenchmarkAction, BenchmarkComponent>>());
+            _dispatcher.RegisterAction(service);
         }
 
         [Benchmark]

@@ -1,0 +1,19 @@
+using Float = Deterministic.GameFramework.Types.Float;
+﻿// SPDX-FileCopyrightText: 2025 Erin Catto
+// SPDX-FileCopyrightText: 2025 Ikpil Choi(ikpil@naver.com)
+// SPDX-License-Identifier: MIT
+
+namespace Deterministic.GameFramework.Box2D
+{
+    // Temporary data used to track the rebuild of a tree node
+    public struct B2RebuildItem
+    {
+        public int nodeIndex;
+        public int childCount;
+
+        // Leaf indices
+        public int startIndex;
+        public int splitIndex;
+        public int endIndex;
+    }
+}

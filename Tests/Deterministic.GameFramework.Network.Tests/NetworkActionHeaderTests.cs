@@ -9,7 +9,8 @@ public class NetworkActionHeaderTests
     [Fact]
     public void NetworkActionHeader_ShouldHaveCorrectSize()
     {
-        int expectedSize = sizeof(int) + sizeof(int) + sizeof(long) + sizeof(int);
+        int expectedSize = sizeof(int) + sizeof(int) + sizeof(long) + sizeof(long) + sizeof(long) + sizeof(int);
+        // ComponentId + TargetEntityId + ExecuteTick + OriginalExecuteTick + PredictionId + DataLength
         int actualSize = Marshal.SizeOf<NetworkActionHeader>();
         
         actualSize.Should().Be(expectedSize);

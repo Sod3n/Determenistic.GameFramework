@@ -14,7 +14,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Serialization\Deterministic.GameFramework.Serialization.csproj" />
     <ProjectReference Include="..\..\Core\Deterministic.GameFramework.DAR\Deterministic.GameFramework.DAR.csproj" />
+    <ProjectReference Include="..\..\Core\Deterministic.GameFramework.Reactions\Deterministic.GameFramework.Reactions.csproj" />
     <ProjectReference Include="..\..\Deterministic.GameFramework.SourceGenerators\Deterministic.GameFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

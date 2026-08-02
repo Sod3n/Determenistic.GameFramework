@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Deterministic.GameFramework.Debugging;
+using Deterministic.GameFramework.Serialization;
 using FluentAssertions;
 using Xunit;
 

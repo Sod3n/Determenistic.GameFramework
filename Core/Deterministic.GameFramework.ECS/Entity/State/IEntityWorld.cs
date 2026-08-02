@@ -24,6 +24,7 @@ public interface IEntityWorld
     
     ref T GetComponent<T>(Entity entity) where T : struct, IComponent;
     T? TryGetComponent<T>(Entity entity) where T : struct, IComponent;
+    bool TryGetComponent<T>(Entity entity, out T component) where T : struct, IComponent;
     bool HasComponent<T>(Entity entity) where T : struct, IComponent;
     
     IEnumerable<Entity> Filter<T>() where T : struct, IComponent;

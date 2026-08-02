@@ -24,12 +24,30 @@ public abstract class AlignedComponentStore
     /// Deserializes tightly packed bytes into aligned slots.
     /// </summary>
     public abstract void DeserializePacked(ReadOnlyMemory<byte> data, int elementCount);
+
+    /// <summary>
+    /// Copies the tightly packed bytes (<see cref="ElementSize"/> bytes, no alignment padding)
+    /// of one element into <paramref name="dest"/>. Used by delta generators that need
+    /// per-entity component bytes without serializing the entire store.
+    /// </summary>
+    public abstract void CopyElementPacked(int index, Span<byte> dest);
+
+    /// <summary>
+    /// Writes tightly packed bytes (<see cref="ElementSize"/> bytes) into the element slot.
+    /// Inverse of <see cref="CopyElementPacked"/>.
+    /// </summary>
+    public abstract void WriteElementPacked(int index, ReadOnlySpan<byte> src);
 }
 
 /// <summary>
 /// Stores components in a byte[] buffer with 8-byte aligned element slots.
 /// This prevents EXC_ARM_DA_ALIGN crashes on Apple Silicon when Pack=1 structs
 /// contain long/ulong fields (e.g., FixedString32, Fixed64, Vector2).
+///
+/// WARNING: Resize() allocates a new backing buffer. Any 'ref T' obtained via
+/// Get() before a Resize() becomes a dangling reference — reads return stale data,
+/// writes are silently lost. Always re-obtain refs after CreateEntity()/AddComponent()
+/// that may trigger store growth.
 /// </summary>
 public sealed class AlignedComponentStore<T> : AlignedComponentStore where T : struct
 {
@@ -71,6 +89,13 @@ public sealed class AlignedComponentStore<T> : AlignedComponentStore where T : s
         var newBuffer = new byte[newLength * _stride];
         int copyBytes = Math.Min(_length * _stride, newBuffer.Length);
         Buffer.BlockCopy(_buffer, 0, newBuffer, 0, copyBytes);
+#if DEBUG
+        // Poison the old buffer so any stale ref (obtained before this Resize)
+        // reads obviously wrong data instead of silently succeeding.
+        // 0xCD = classic "uninitialized heap" marker. Entity IDs become -842150451,
+        // booleans become non-0/1, floats become NaN — all immediately suspicious.
+        Array.Fill(_buffer, (byte)0xCD);
+#endif
         // New portion is already zeroed by .NET array allocation
         _buffer = newBuffer;
         _length = newLength;
@@ -128,4 +153,26 @@ public sealed class AlignedComponentStore<T> : AlignedComponentStore where T : s
             }
         }
     }
+
+    public override void CopyElementPacked(int index, Span<byte> dest)
+    {
+        new ReadOnlySpan<byte>(_buffer, index * _stride, _elementSize).CopyTo(dest);
+    }
+
+    public ReadOnlySpan<byte> GetElementSpan(int index)
+    {
+        return new ReadOnlySpan<byte>(_buffer, index * _stride, _elementSize);
+    }
+
+    public override void WriteElementPacked(int index, ReadOnlySpan<byte> src)
+    {
+        // Clear the slot (including padding) to keep determinism bytes zero, then write.
+        var slot = new Span<byte>(_buffer, index * _stride, _stride);
+        slot.Clear();
+        src.Slice(0, Math.Min(src.Length, _elementSize)).CopyTo(slot);
+    }
+
+    public ReadOnlySpan<byte> GetBufferSpan() => _buffer;
+
+    public int BufferLength => _buffer.Length;
 }

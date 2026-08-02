@@ -1,0 +1,33 @@
+using Float = Deterministic.GameFramework.Types.Float;
+﻿// SPDX-FileCopyrightText: 2025 Erin Catto
+// SPDX-FileCopyrightText: 2025 Ikpil Choi(ikpil@naver.com)
+// SPDX-License-Identifier: MIT
+
+using static Deterministic.GameFramework.Box2D.B2Diagnostics;
+
+namespace Deterministic.GameFramework.Box2D.Shared
+{
+    public struct Human
+    {
+        public B2FixedArray11<Bone> bones;
+        public float frictionTorque;
+        public float originalScale;
+        public float scale;
+        public bool isSpawned;
+
+        public void Clear()
+        {
+            B2_ASSERT((int)BoneId.bone_count == B2FixedArray11<Bone>.Size);
+
+            for (int i = 0; i < bones.Length; ++i)
+            {
+                bones[i] = new Bone();
+            }
+
+            scale = 0.0f;
+            isSpawned = false;
+            frictionTorque = 0.0f;
+            originalScale = 0.0f;
+        }
+    }
+}

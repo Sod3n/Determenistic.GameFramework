@@ -15,7 +15,7 @@ public class FinalCoverageTests
     {
         var scheduler = new ActionScheduler();
         var world = new EntityWorld();
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         
         // Register types
         ComponentId.RegisterAssembly(typeof(TestAction).Assembly);
@@ -75,7 +75,7 @@ public class FinalCoverageTests
     [Fact]
     public void Execute_UnregisteredAction_ShouldDoNothing()
     {
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var world = new EntityWorld();
         var entity = world.CreateEntity();
         
@@ -91,12 +91,12 @@ public class FinalCoverageTests
         // This test targets the #if DEBUG block in Dispatcher.SystemRunner
         // We need an action that throws during JSON serialization.
         
-        var dispatcher = new Dispatcher();
+        var dispatcher = new ReactionDispatcher();
         var world = new EntityWorld();
         var entity = world.CreateEntity();
         
         var actionService = new ThrowingActionService();
-        dispatcher.RegisterAction(actionService, Array.Empty<ReactionService<ThrowingAction, ThrowingAction>>());
+        dispatcher.RegisterAction(actionService);
         dispatcher.EnableAction(actionService);
         dispatcher.ActionDispatcher = new MockActionDispatcher();
         

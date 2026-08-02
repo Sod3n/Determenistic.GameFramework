@@ -296,54 +296,71 @@ public class NavigationMap
     {
         var mergeDist2 = mergeDistance * mergeDistance;
 
-        // Reuse pooled set to avoid GC allocation
         _checkedPairsPool.Clear();
         var checkedPairs = _checkedPairsPool;
 
-        foreach (var cell in _spatialGrid.Values)
+        // For each NEW triangle, find candidate neighbors via all 3 vertex cells
+        var visitedCells = new HashSet<long>();
+        for (int newIdx = startFrom; newIdx < Triangles.Count; newIdx++)
         {
-            for (int a = 0; a < cell.Count; a++)
+            if (Triangles[newIdx].V0 < 0) continue;
+            visitedCells.Clear();
+
+            for (int v = 0; v < 3; v++)
             {
-                int i = cell[a];
-                for (int b = a + 1; b < cell.Count; b++)
+                var vpos = Vertices[Triangles[newIdx].GetVertex(v)].Position;
+                int cx = (int)(vpos.X / _cellSize);
+                int cy = (int)(vpos.Y / _cellSize);
+
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
                 {
-                    int j = cell[b];
+                    long cellKey = PackCellKey(cx + dx, cy + dy);
+                    if (!visitedCells.Add(cellKey)) continue;
+                    if (!_spatialGrid.TryGetValue(cellKey, out var cell)) continue;
 
-                    // Skip pairs where BOTH triangles are from the existing mesh
-                    if (i < startFrom && j < startFrom) continue;
-
-                    // Pack pair into a single long to deduplicate (smaller index always first)
-                    int lo = i < j ? i : j;
-                    int hi = i < j ? j : i;
-                    long pairKey = ((long)lo << 32) | (uint)hi;
-
-                    if (!checkedPairs.Add(pairKey)) continue;
-
-                    if (AreAdjacent(lo, hi, mergeDist2))
+                    for (int c = 0; c < cell.Count; c++)
                     {
-                        var ci = Triangles[lo].Centroid;
-                        var cj = Triangles[hi].Centroid;
-                        var dist = Vector2.Distance(ci, cj);
+                        int other = cell[c];
+                        if (other == newIdx) continue;
+                        if (Triangles[other].V0 < 0) continue;
 
-                        var costI = GetTravelCost(lo);
-                        var costJ = GetTravelCost(hi);
-                        var avgCost = (costI + costJ) / (Float)2;
+                        int lo = newIdx < other ? newIdx : other;
+                        int hi = newIdx < other ? other : newIdx;
+                        long pairKey = ((long)lo << 32) | (uint)hi;
+                        if (!checkedPairs.Add(pairKey)) continue;
 
-                        Float enterCost = (Float)0;
-                        if (TriangleRegionId[lo] != TriangleRegionId[hi])
+                        // Quick centroid distance pre-filter: skip pairs too far apart to share edges
+                        var cDist2 = Vector2.DistanceSquared(Triangles[lo].Centroid, Triangles[hi].Centroid);
+                        if (cDist2 > (Float)400) continue; // 20 units max
+
+                        if (AreAdjacent(lo, hi, mergeDist2))
                         {
-                            var (_, enterJ) = GetRegionCost(TriangleRegionId[hi]);
-                            var (_, enterI) = GetRegionCost(TriangleRegionId[lo]);
-                            enterCost = enterI > enterJ ? enterI : enterJ;
+                            var ci = Triangles[lo].Centroid;
+                            var cj = Triangles[hi].Centroid;
+                            var dist = Vector2.Distance(ci, cj);
+
+                            var costI = GetTravelCost(lo);
+                            var costJ = GetTravelCost(hi);
+                            var avgCost = (costI + costJ) / (Float)2;
+
+                            Float enterCost = (Float)0;
+                            if (TriangleRegionId[lo] != TriangleRegionId[hi])
+                            {
+                                var (_, enterJ) = GetRegionCost(TriangleRegionId[hi]);
+                                var (_, enterI) = GetRegionCost(TriangleRegionId[lo]);
+                                enterCost = enterI > enterJ ? enterI : enterJ;
+                            }
+
+                            var edgeCost = dist * avgCost + enterCost;
+                            Adjacency[lo].Add(new NavEdge { NeighborIndex = hi, Cost = edgeCost });
+                            Adjacency[hi].Add(new NavEdge { NeighborIndex = lo, Cost = edgeCost });
                         }
-
-                        var edgeCost = dist * avgCost + enterCost;
-
-                        Adjacency[lo].Add(new NavEdge { NeighborIndex = hi, Cost = edgeCost });
-                        Adjacency[hi].Add(new NavEdge { NeighborIndex = lo, Cost = edgeCost });
                     }
                 }
             }
+            } // end vertex loop
         }
 
         IsDirty = false;
@@ -939,7 +956,7 @@ public class NavigationMap
     /// Check if two triangles share a connection — either 2 coincident vertices (standard adjacency)
     /// or collinear overlapping edges (handles T-junctions from greedy-merged rectangles).
     /// </summary>
-    private bool AreAdjacent(int triA, int triB, Float mergeDist2)
+    private bool AreAdjacent(int triA, int triB, Float mergeDist2, bool fastOnly = false)
     {
         // Fast path: check for 2 shared vertices (exact or near-exact match)
         int shared = 0;
@@ -957,6 +974,7 @@ public class NavigationMap
             }
         }
         if (shared >= 2) return true;
+        if (fastOnly) return false;
 
         // Slow path: check for collinear overlapping edges (T-junction support).
         // Two edges are adjacent if they lie on the same line and overlap.

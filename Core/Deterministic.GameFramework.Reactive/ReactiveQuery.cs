@@ -58,7 +58,8 @@ public struct ReactiveQuery<T1>
         }
 
         var observer = ObserverPool<ArchetypeObserver>.Get();
-        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter);
+        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter,
+            componentTypes: new[] { typeof(T1) });
         System.Register(observer);
         return observer;
     }
@@ -86,12 +87,18 @@ public struct ReactiveQuery<T1, T2>
     public ReactiveQuery<T1, T2> Where<TComponent>(Func<TComponent, bool> predicate) where TComponent : struct, IComponent
     {
         var state = State;
-        Filters.Add(entity => 
+        Filters.Add(entity =>
         {
             if (!state.HasComponent<TComponent>(entity)) return false;
             ref var comp = ref state.GetComponent<TComponent>(entity);
             return predicate(comp);
         });
+        return this;
+    }
+
+    public ReactiveQuery<T1, T2> Where(Func<Entity, bool> predicate)
+    {
+        Filters.Add(predicate);
         return this;
     }
 
@@ -112,7 +119,8 @@ public struct ReactiveQuery<T1, T2>
         }
 
         var observer = ObserverPool<ArchetypeObserver>.Get();
-        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter);
+        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter,
+            componentTypes: new[] { typeof(T1), typeof(T2) });
         System.Register(observer);
         return observer;
     }
@@ -168,7 +176,8 @@ public struct ReactiveQuery<T1, T2, T3>
         }
 
         var observer = ObserverPool<ArchetypeObserver>.Get();
-        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter);
+        observer.Initialize(State, Mask, onAdd, onRemove, combinedFilter,
+            componentTypes: new[] { typeof(T1), typeof(T2), typeof(T3) });
         System.Register(observer);
         return observer;
     }

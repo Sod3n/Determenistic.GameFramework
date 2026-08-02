@@ -30,6 +30,8 @@ public class ActionScheduler
         public DenseComponentId Id;
         public int TargetEntityId;
         public long ExecuteTick;
+        public long OriginalExecuteTick; // Pre-bump tick for GGPO deduplication
+        public long PredictionId;        // Delta-sync client prediction correlation id (0 = none)
         public int DataOffset;
         public int DataLength;
     }
@@ -39,6 +41,7 @@ public class ActionScheduler
     {
         public DenseComponentId Id;
         public int TargetEntityId;
+        public long PredictionId;
         public int DataOffset;
         public int DataLength;
         public int Sequence;
@@ -71,14 +74,26 @@ public class ActionScheduler
     /// <summary>
     /// Delegate for the OnActionScheduled event.
     /// </summary>
-    public delegate void ActionScheduledHandler(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick);
+    /// <param name="originalExecuteTick">The tick originally requested before collision bumping.
+    /// When different from executeTick, the action was bumped to resolve a slot collision.</param>
+    /// <param name="predictionId">Delta-sync prediction correlation id (0 if none).</param>
+    public delegate void ActionScheduledHandler(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick, long originalExecuteTick, long predictionId);
+    public delegate void ActionRejectedHandler(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick, long minAllowedTick);
 
     public event ActionScheduledHandler? OnActionScheduled;
+    public event ActionRejectedHandler? OnActionRejected;
+
+    public bool DeterministicOrdering { get; set; } = true;
 
     public long EarliestDirtyTick { get; private set; } = long.MaxValue;
     public long MinAllowedTick { get; private set; } = 0;
 
-    public ScheduleResult Schedule<TAction>(TAction action, DenseComponentId id, Entity target, long executeTick) where TAction : struct, IAction
+    public ScheduleResult Schedule<TAction>(TAction action, DenseComponentId id, Entity target, long executeTick, long predictionId = 0) where TAction : struct, IAction
+    {
+        return Schedule(action, id, target, executeTick, predictionId, out _);
+    }
+
+    public ScheduleResult Schedule<TAction>(TAction action, DenseComponentId id, Entity target, long executeTick, long predictionId, out long actualExecuteTick) where TAction : struct, IAction
     {
         // Create ReadOnlySpan<byte> for struct
 #if NETSTANDARD2_1 || NETSTANDARD2_0
@@ -88,20 +103,23 @@ public class ActionScheduler
 #endif
         var byteSpan = MemoryMarshal.AsBytes(actionSpan);
 
-        return ScheduleInternal(id, target.Id, executeTick, byteSpan);
+        return ScheduleInternal(id, target.Id, executeTick, byteSpan, predictionId, out actualExecuteTick);
     }
 
-    public ScheduleResult ScheduleFromBytes(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick)
+    public ScheduleResult ScheduleFromBytes(DenseComponentId id, ReadOnlySpan<byte> data, int targetEntityId, long executeTick, long predictionId = 0)
     {
         if (executeTick < MinAllowedTick)
         {
+            OnActionRejected?.Invoke(id, data, targetEntityId, executeTick, MinAllowedTick);
             return ScheduleResult.TooOld;
         }
-        return ScheduleInternal(id, targetEntityId, executeTick, data);
+        return ScheduleInternal(id, targetEntityId, executeTick, data, predictionId, out _);
     }
 
-    private ScheduleResult ScheduleInternal(DenseComponentId id, int targetEntityId, long executeTick, ReadOnlySpan<byte> data)
+    private ScheduleResult ScheduleInternal(DenseComponentId id, int targetEntityId, long executeTick, ReadOnlySpan<byte> data, long predictionId, out long actualExecuteTick)
     {
+        actualExecuteTick = executeTick;
+
         lock (_lock)
         {
             // 1. Deduplication (Exact Match)
@@ -110,31 +128,35 @@ public class ActionScheduler
                 return ScheduleResult.Duplicate;
             }
 
+            // Track the original tick before collision resolution bumps it.
+            long originalExecuteTick = executeTick;
+
             // 2. Collision Resolution (Same Slot, Different Data) -> Bump Tick
-            // We loop until we find a tick where this (Action, Target) slot is free.
             while (IsSlotOccupied(id, targetEntityId, executeTick))
             {
                 executeTick++;
             }
-            
+
+            actualExecuteTick = executeTick;
+
             EnsureCapacity();
             EnsureDataCapacity(data.Length);
 
             // Copy bytes to buffer
             data.CopyTo(new Span<byte>(_actionDataBuffer, _actionDataHead, data.Length));
 
-            // Record metadata
-            AddPendingAction(id, targetEntityId, executeTick, _actionDataHead, data.Length);
+            // Record metadata (store original tick for GGPO deduplication of bumped actions)
+            AddPendingAction(id, targetEntityId, executeTick, originalExecuteTick, predictionId, _actionDataHead, data.Length);
 
             // Notify listeners (Network Layer)
             if (OnActionScheduled != null)
             {
                 var span = new ReadOnlySpan<byte>(_actionDataBuffer, _actionDataHead, data.Length);
-                OnActionScheduled.Invoke(id, span, targetEntityId, executeTick);
+                OnActionScheduled.Invoke(id, span, targetEntityId, executeTick, originalExecuteTick, predictionId);
             }
 
             _actionDataHead += data.Length;
-            
+
             // Track for Rollback
             if (executeTick < EarliestDirtyTick) EarliestDirtyTick = executeTick;
         }
@@ -147,9 +169,12 @@ public class ActionScheduler
         for (int i = 0; i < _pendingActionCount; i++)
         {
             ref var pending = ref _pendingActions[i];
-            
-            // Fast checks
-            if (pending.ExecuteTick != tick) continue;
+
+            // Fast checks — match on either ExecuteTick or OriginalExecuteTick.
+            // GGPO resends use the original tick, but bump resolution may have
+            // moved the action to a later tick. Without this, every GGPO resend
+            // of a bumped action creates a new copy → infinite rollback cascade.
+            if (pending.ExecuteTick != tick && pending.OriginalExecuteTick != tick) continue;
             if (pending.Id != id) continue;
             if (pending.TargetEntityId != targetEntityId) continue;
             if (pending.DataLength != data.Length) continue;
@@ -189,8 +214,10 @@ public class ActionScheduler
         {
             // 1. Identify valid actions STRICTLY for this tick
             
-            // Reset earliest dirty tick if we are processing it
-            if (tick >= EarliestDirtyTick)
+            // Reset dirty flag only when processing the exact dirty tick.
+            // Must be == not >=: if a rollback restores past the dirty tick,
+            // >= would clear it before the dirty tick's action executes.
+            if (tick == EarliestDirtyTick)
             {
                  EarliestDirtyTick = long.MaxValue;
             }
@@ -210,6 +237,7 @@ public class ActionScheduler
                     {
                         Id = pending.Id,
                         TargetEntityId = pending.TargetEntityId,
+                        PredictionId = pending.PredictionId,
                         DataOffset = pending.DataOffset,
                         DataLength = pending.DataLength,
                         Sequence = i // Use index as stable sequence
@@ -222,55 +250,70 @@ public class ActionScheduler
 
         if (count == 0) return;
 
-        // 2. Sort (Insertion Sort for stability and zero-allocation)
-        for (int i = 1; i < count; i++)
+        if (DeterministicOrdering)
         {
-            var key = _executionBuffer[i];
-            int j = i - 1;
-
-            while (j >= 0)
+            for (int i = 1; i < count; i++)
             {
-                ref var other = ref _executionBuffer[j];
-                
-                // Compare(key, other) < 0 ?
-                int compare = key.Id.CompareTo(other.Id);
-                if (compare == 0)
+                var key = _executionBuffer[i];
+                int j = i - 1;
+
+                while (j >= 0)
                 {
-                    compare = key.TargetEntityId.CompareTo(other.TargetEntityId);
+                    ref var other = ref _executionBuffer[j];
+
+                    int compare = key.Id.CompareTo(other.Id);
                     if (compare == 0)
                     {
-                        // Deterministic Tie-Breaker: Compare Content
-                        // This ensures that arrival order (Sequence) doesn't dictate execution order for concurrent actions.
-                        var spanKey = new ReadOnlySpan<byte>(bufferToUse, key.DataOffset, key.DataLength);
-                        var spanOther = new ReadOnlySpan<byte>(bufferToUse, other.DataOffset, other.DataLength);
-                        
-                        compare = spanKey.SequenceCompareTo(spanOther);
-                        
+                        compare = key.TargetEntityId.CompareTo(other.TargetEntityId);
                         if (compare == 0)
                         {
-                            compare = key.Sequence.CompareTo(other.Sequence);
+                            var spanKey = new ReadOnlySpan<byte>(bufferToUse, key.DataOffset, key.DataLength);
+                            var spanOther = new ReadOnlySpan<byte>(bufferToUse, other.DataOffset, other.DataLength);
+
+                            compare = spanKey.SequenceCompareTo(spanOther);
+
+                            if (compare == 0)
+                            {
+                                compare = key.Sequence.CompareTo(other.Sequence);
+                            }
                         }
                     }
-                }
 
-                if (compare < 0)
-                {
-                    _executionBuffer[j + 1] = other;
-                    j--;
+                    if (compare < 0)
+                    {
+                        _executionBuffer[j + 1] = other;
+                        j--;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
-                else
-                {
-                    break;
-                }
+                _executionBuffer[j + 1] = key;
             }
-            _executionBuffer[j + 1] = key;
         }
 
         // 3. Execute
+        //
+        // Dispatcher.ExecuteByteAction only adds the action component to the entity — the
+        // actual service call happens LATER in the tick via Dispatcher.Update's ForEach
+        // iteration. So we can't set CurrentActionPredictionId here; by the time the
+        // service runs it'd already be cleared.
+        //
+        // Instead, for predicted actions we attach a transient ActionPendingPrediction
+        // component to the target entity. The Dispatcher's per-service forEachDelegate
+        // reads it, sets CurrentActionPredictionId before the service executes, and
+        // removes both the action component and this one afterwards — so it never ships
+        // in deltas.
         for (int i = 0; i < count; i++)
         {
             ref var action = ref _executionBuffer[i];
-            dispatcher.ExecuteByteAction(action.Id, bufferToUse, action.DataOffset, state, new Entity(action.TargetEntityId));
+            var targetEntity = new Entity(action.TargetEntityId);
+            dispatcher.ExecuteByteAction(action.Id, bufferToUse, action.DataOffset, state, targetEntity);
+            if (action.PredictionId != 0)
+            {
+                state.AddComponent(targetEntity, new ActionPendingPrediction { PredictionId = action.PredictionId });
+            }
         }
     }
 
@@ -351,13 +394,47 @@ public class ActionScheduler
         }
     }
 
-    private void AddPendingAction(DenseComponentId id, int targetId, long tick, int offset, int length)
+    /// <summary>
+    /// Removes a pending action matching (id, targetEntityId, executeTick).
+    /// Used by the client to remove stale predictions when the server bumped the tick.
+    /// </summary>
+    public bool RemoveAction(DenseComponentId id, int targetEntityId, long executeTick)
+    {
+        lock (_lock)
+        {
+            for (int i = 0; i < _pendingActionCount; i++)
+            {
+                ref var pending = ref _pendingActions[i];
+                if (pending.ExecuteTick == executeTick &&
+                    pending.Id == id &&
+                    pending.TargetEntityId == targetEntityId)
+                {
+                    // Shift remaining actions down
+                    for (int j = i; j < _pendingActionCount - 1; j++)
+                        _pendingActions[j] = _pendingActions[j + 1];
+                    _pendingActionCount--;
+
+                    // Dirty the removed tick so rollback undoes this action's
+                    // baked-in effects from history snapshots.
+                    if (executeTick < EarliestDirtyTick)
+                        EarliestDirtyTick = executeTick;
+
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void AddPendingAction(DenseComponentId id, int targetId, long tick, long originalTick, long predictionId, int offset, int length)
     {
         _pendingActions[_pendingActionCount++] = new PendingAction
         {
             Id = id,
             TargetEntityId = targetId,
             ExecuteTick = tick,
+            OriginalExecuteTick = originalTick,
+            PredictionId = predictionId,
             DataOffset = offset,
             DataLength = length
         };

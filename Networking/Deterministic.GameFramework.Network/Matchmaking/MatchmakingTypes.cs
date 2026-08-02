@@ -15,4 +15,6 @@ public class Lobby
     public string Name { get; set; } = string.Empty;
     public Guid OwnerId { get; set; }
     public System.Collections.Generic.List<MatchmakingPlayer> Players { get; } = new();
+    /// <summary>Set when the lobby's match has been started; lets late joiners discover the running match.</summary>
+    public Guid? MatchId { get; set; }
 }

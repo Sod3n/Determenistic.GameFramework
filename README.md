@@ -1,79 +1,79 @@
-# Deterministic Game Framework
+# Deterministic.GameFramework
 
-> **License:** All Rights Reserved - See [LICENSE](LICENSE) for details.
+> **License:** All Rights Reserved — see [LICENSE](LICENSE).
 
-A universal, deterministic game state management framework for building multiplayer games with lockstep synchronization.
+A deterministic ECS game framework for **realtime multiplayer at 60 Hz**: fixed-point simulation, a deterministic 2D physics and navigation stack, and two interchangeable network synchronization strategies.
 
-## Projects
+Everything the simulation touches is bit-reproducible across machines — the physics solver, the navmesh, the RNG — so the server and every client can run the same tick and get the same bytes.
 
-### Deterministic.GameFramework.Core
-Core game state management framework with:
-- Deterministic action processing
-- Domain-driven state management
-- Reaction system for game logic
-- Observable attributes and cached trees
-- Deterministic random number generation
+Looking for the older, much smaller turn-based framework (DAR domain tree, action replay over SignalR)? That line lives on in [DAR.GameFramework](https://github.com/Sod3n/DAR.GameFramework).
 
-### Deterministic.GameFramework.Server
-Server-side networking layer built on SignalR:
-- Game hub for client connections
-- Match management
-- Network synchronization
-- Determinism validation
-- Thread-safe game state execution
+## Synchronization
 
-### Deterministic.GameFramework.Client
-Client-side networking library:
-- SignalR client wrapper
-- Action processor for client-side predictions
-- Network time synchronization
-- REST API client
+Pick per match via `SyncMode`; client and server must agree.
 
-### Deterministic.GameFramework.SourceGenerators
-Roslyn source generators for code generation:
-- Enum generators for game data
+### `SyncMode.GGPO` — rollback + resimulation
 
-### Deterministic.GameFramework.Examples
-Example implementations and documentation.
+Classic rollback. Clients run ahead of the server by a confirmation window, inputs are resent redundantly until acknowledged, and a mispredicted input rewinds the world and resimulates the intervening ticks. State hashes are verified periodically; `DesyncRecorder` captures both sides when they disagree.
 
-## Building
+### `SyncMode.DeltaSync` — correction by delta composition, without resimulation
 
-```bash
-dotnet build Determenistic.GameFramework.sln
+Server-authoritative, and the reason this framework exists in its current form. The server diffs its world against the last broadcast baseline and ships a per-tick op stream. The client predicts locally and records its own per-tick delta. When the server's delta for tick *T* arrives, the client computes
+
+```
+TargetDelta = ServerDelta − ClientDelta
 ```
 
-## Using as a Git Submodule
+algebraically, op by op (`DeltaSubtractor`):
 
-To use this framework in your project as a git submodule:
+- server op matches the client's byte-for-byte → prediction was right, **emit nothing**;
+- server op differs or the client never predicted it → **emit the server op** (snap);
+- client predicted something the server didn't do → **emit a revert** built from the baseline bytes, or the trivial inverse (`EntityDestroy` for `EntityCreate`, `ComponentRemove` for `ComponentAdd`, …).
+
+For modified components the correction is byte arithmetic — `(server_new − baseline) − predicted` — applied on top of the client's *current*, further-advanced state. So a correct prediction costs nothing (`TargetDelta` is empty), a wrong one snaps only the diverged bytes, and **the ticks the client has already simulated past T are never thrown away and re-run**. No rollback buffer, no confirmation window, no resimulation cost that scales with latency.
+
+## Layout
+
+| Area | Projects |
+| --- | --- |
+| `Core/` | `ECS` (aligned component stores, archetypes, systems), `DAR` (actions, scheduler, dispatcher, prediction ids), `Reactive` (reactive queries, observers, view models), `DeltaSync`, `GGPO`, `Serialization` (state serializer, hasher, history), `Debugging` (desync recorder, state dumper), `Scenes`, `Types` (fixed-point math), `Common`, `Utils`, `Extensions` |
+| `2D/` | `TwoD.Physics` (deterministic Box2D port + Rapier interop), `TwoD.Navigation` (navmesh baking, agents, obstacles, queries), `CDT` (constrained Delaunay triangulation), `TwoD` |
+| `Networking/` | `Network` (transport-agnostic client/server, matchmaking, packets), `Network.LiteNetLib` (UDP), `Network.SignalR`, `Server` |
+| `Deterministic.GameFramework.Box2D/` | line-by-line deterministic port of Box2D v3 |
+| `Deterministic.GameFramework.Detour/` | Recast/Detour navmesh + crowd, deterministic port |
+| `Tests/`, `Benchmarks/` | xUnit suites and BenchmarkDotNet projects per area |
+| `Deterministic.GameFramework.SourceGenerators/` | component models, stable ids, struct layout, action generation, determinism analyzer |
+
+Targets `net8.0` and `netstandard2.1` (the latter for Godot/Unity clients).
+
+## Build
 
 ```bash
-# In your game project root
-git submodule add https://github.com/Sod3n/Determenistic.GameFramework.git Framework
+dotnet build Deterministic.GameFramework.sln
+dotnet test  Deterministic.GameFramework.sln
+```
+
+## Use as a submodule
+
+```bash
+git submodule add https://github.com/Sod3n/Deterministic.GameFramework.git Framework
 git submodule update --init --recursive
 ```
 
-Then reference the projects in your game's solution:
-
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\Framework\Deterministic.GameFramework.Core\Deterministic.GameFramework.Core.csproj" />
-  <ProjectReference Include="..\Framework\Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj" />
+  <ProjectReference Include="..\Framework\Core\Deterministic.GameFramework.ECS\Deterministic.GameFramework.ECS.csproj" />
+  <ProjectReference Include="..\Framework\Networking\Deterministic.GameFramework.Server\Deterministic.GameFramework.Server.csproj" />
 </ItemGroup>
 ```
 
-## Configuration
+## Which one do I want?
 
-### Client DLL Auto-Copy
-
-The `Deterministic.GameFramework.Client` project can automatically copy built DLLs to a client plugins folder. To enable this:
-
-```xml
-<PropertyGroup>
-  <CopyToClientPlugins>true</CopyToClientPlugins>
-  <ClientPluginsPath>$(ProjectDir)..\..\YourClient\plugins\Network\</ClientPluginsPath>
-</PropertyGroup>
-```
-
-## License
-
-See LICENSE file for details.
+| | **This repo** | **[DAR.GameFramework](https://github.com/Sod3n/DAR.GameFramework)** |
+| --- | --- | --- |
+| Target | 60 Hz action games | Turn-based, card, tactics, slow real-time |
+| State | ECS component stores | Domain tree of typed objects |
+| Sync | Rollback (GGPO) or delta composition over UDP | Action ordering + replay over SignalR |
+| Physics / navigation | deterministic Box2D port, Detour + CDT navmesh | none |
+| Determinism | structurally enforced — own numeric types and containers, Roslyn analyzer, per-tick hashing | execution-order only, checked by an opt-in shadow simulation |
+| Size | ~650 `.cs` files | ~110 `.cs` files |

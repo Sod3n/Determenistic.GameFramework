@@ -3,12 +3,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Deterministic.GameFramework.Common;
 using Deterministic.GameFramework.ECS;
+using Deterministic.GameFramework.GGPO;
 using Deterministic.GameFramework.Network.Client;
 using Deterministic.GameFramework.Network.Interfaces;
 using Deterministic.GameFramework.Network.Packets;
-using Deterministic.GameFramework.Network.Client;
-using Deterministic.GameFramework.Network.Interfaces;
-using Deterministic.GameFramework.Network.Packets;
+using Deterministic.GameFramework.Serialization;
 using FluentAssertions;
 using Xunit;
 
@@ -35,6 +34,7 @@ public class GameClientStateSyncTests
         public event Action<byte[]>? OnFullStateReceived;
         public event Action<byte[]>? OnComponentMappingReceived;
         public event Action<byte[]>? OnStateHashReceived;
+        public event Action<byte[]>? OnTickDeltaReceived;
         public event Action<System.Guid>? OnLobbyCreated;
         public event Action<Guid>? OnLobbyJoined;
         public event Action<Guid>? OnMatchAssigned;
@@ -144,7 +144,7 @@ public class GameClientStateSyncTests
         // Arrange
         var mockNet = new MockNetworkClient();
         var game = new Game(tickRate: 60);
-        var client = new GameClient(mockNet, "localhost", game);
+        var client = new GGPOGameClient(mockNet, "localhost", game);
 
         // Simulate client running to Tick 10
         for (int i = 0; i < 10; i++)
@@ -158,27 +158,34 @@ public class GameClientStateSyncTests
         
         long targetTick = 5;
         // Get the actual local hash for Tick 5
-        game.Loop.Simulation.History.TryGetSnapshotData(targetTick, out byte[]? realData).Should().BeTrue();
+        ((GGPOGameClient)client).History.TryGetSnapshotData(targetTick, out byte[]? realData).Should().BeTrue();
         var localHash = StateHasher.Hash(realData!);
         
         // Create a DIFFERENT hash for the same tick
         var serverHash = System.Guid.NewGuid();
 
-        bool mismatchDetected = false;
-        client.OnStateMismatch += (tick, local, server) => 
+        int mismatchCount = 0;
+        client.OnStateMismatch += (tick, local, server) =>
         {
-            mismatchDetected = true;
-            tick.Should().Be(targetTick);
-            local.Should().Be((System.Guid)localHash); // Cast wrapper GUID to System.Guid
-            server.Should().Be(serverHash);
+            mismatchCount++;
         };
 
-        // Act
+        // Act — need to drain the network queue (hashes are enqueued, not processed immediately).
+        // GameClient requires ConsecutiveMismatchThreshold (2) consecutive mismatches
+        // before requesting a full state resync. Send two mismatching hashes.
         mockNet.SimulateStateHash(targetTick, serverHash);
+        client.DrainNetworkQueues();
 
-        // Assert
-        mismatchDetected.Should().BeTrue("Client should raise OnStateMismatch event");
-        mockNet.RequestedFullStates.Should().HaveCount(1, "Client should request full state sync");
+        // Assert — first mismatch fires event but doesn't request full state yet
+        mismatchCount.Should().Be(1, "Client should raise OnStateMismatch event");
+        mockNet.RequestedFullStates.Should().BeEmpty("Single mismatch should not trigger resync");
+
+        // Second consecutive mismatch triggers full state request
+        mockNet.SimulateStateHash(targetTick - 1, System.Guid.NewGuid());
+        client.DrainNetworkQueues();
+
+        mismatchCount.Should().Be(2);
+        mockNet.RequestedFullStates.Should().HaveCount(1, "Client should request full state sync after consecutive mismatches");
     }
 
     [Fact]
@@ -187,7 +194,7 @@ public class GameClientStateSyncTests
         // Arrange
         var mockNet = new MockNetworkClient();
         var game = new Game(tickRate: 60);
-        var client = new GameClient(mockNet, "localhost", game);
+        var client = new GGPOGameClient(mockNet, "localhost", game);
 
         // Simulate client running
         for (int i = 0; i < 10; i++)
@@ -196,7 +203,7 @@ public class GameClientStateSyncTests
         }
         
         long targetTick = 5;
-        game.Loop.Simulation.History.TryGetSnapshotData(targetTick, out byte[]? realData).Should().BeTrue();
+        ((GGPOGameClient)client).History.TryGetSnapshotData(targetTick, out byte[]? realData).Should().BeTrue();
         // Calculate expected hash (need to convert from framework Guid to System.Guid if needed, but StateHasher returns framework Guid?)
         // StateHasher.Hash returns Deterministic.GameFramework.Core.Guid
         var localHash = StateHasher.Hash(realData!);

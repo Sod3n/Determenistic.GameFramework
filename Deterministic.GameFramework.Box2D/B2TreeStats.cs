@@ -1,0 +1,17 @@
+using Float = Deterministic.GameFramework.Types.Float;
+﻿// SPDX-FileCopyrightText: 2025 Erin Catto
+// SPDX-FileCopyrightText: 2025 Ikpil Choi(ikpil@naver.com)
+// SPDX-License-Identifier: MIT
+
+namespace Deterministic.GameFramework.Box2D
+{
+    /// These are performance results returned by dynamic tree queries.
+    public struct B2TreeStats
+    {
+        /// Number of internal nodes visited during the query
+        public int nodeVisits;
+
+        /// Number of leaf nodes visited during the query
+        public int leafVisits;
+    }
+}

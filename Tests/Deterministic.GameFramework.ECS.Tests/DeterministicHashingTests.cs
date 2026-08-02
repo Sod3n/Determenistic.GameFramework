@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Deterministic.GameFramework.Serialization;
 using FluentAssertions;
 using Xunit;
 
